@@ -1,0 +1,1149 @@
+{
+  "description": "Exemplos fictícios gerados com o mesmo catálogo e gerador da API.",
+  "generatedAt": "2026-11-14T16:20:25.133Z",
+  "detail": [
+    {
+      "request": "GET /api/v1/areas/radiation?astronautId=astro_demo_001&dataset=simulated",
+      "response": {
+        "apiVersion": "v1",
+        "astronautId": "astro_demo_001",
+        "dataset": "simulated",
+        "isSimulated": true,
+        "area": {
+          "id": "radiation",
+          "title": "Radiação espacial",
+          "summary": "Taxa de dose e dose acumulada simuladas."
+        },
+        "content": [
+          {
+            "id": "introduction",
+            "title": "Sobre esta demonstração",
+            "body": "Acompanhe taxa e total acumulado separadamente. O total possui um intervalo explícito e não é a média das taxas."
+          },
+          {
+            "id": "procedures",
+            "title": "Contexto de uso",
+            "body": "Consulte os procedimentos da missão. Esta demonstração descreve registros e não fornece orientação médica individual."
+          }
+        ],
+        "references": [
+          {
+            "title": "NASA — 5 Hazards of Human Spaceflight",
+            "url": "https://www.nasa.gov/hrp/hazards/"
+          },
+          {
+            "title": "Canadian Space Agency — How does radiation affect the human body in space?",
+            "url": "https://www.asc-csa.gc.ca/eng/astronauts/space-medicine/radiation.asp"
+          }
+        ],
+        "indicatorDefinitions": [
+          {
+            "id": "dose_rate",
+            "label": "Taxa de dose",
+            "valueType": "number",
+            "unit": "uSv/h",
+            "displayUnit": "uSv/h",
+            "recordKind": "environmental_exposure",
+            "description": "Taxa no instante observado; não representa dose acumulada.",
+            "scale": null
+          },
+          {
+            "id": "accumulated_dose",
+            "label": "Dose acumulada",
+            "valueType": "number",
+            "unit": "uSv",
+            "displayUnit": "uSv",
+            "recordKind": "environmental_exposure",
+            "description": "Total entre periodStart e recordedAt; não somar totais sobrepostos.",
+            "scale": null,
+            "periodStartRequired": true
+          }
+        ],
+        "latestRecords": [
+          {
+            "id": "84ae0fdc-7ec8-4762-bb64-238cba62928e",
+            "astronautId": "astro_demo_001",
+            "areaId": "radiation",
+            "indicator": "dose_rate",
+            "value": 12,
+            "unit": "uSv/h",
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z"
+          },
+          {
+            "id": "3dde78fd-8691-48fc-b877-6bca097f523a",
+            "astronautId": "astro_demo_001",
+            "areaId": "radiation",
+            "indicator": "accumulated_dose",
+            "value": 980,
+            "unit": "uSv",
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z",
+            "periodStart": "2026-11-07T16:20:25.133Z"
+          }
+        ]
+      }
+    },
+    {
+      "request": "GET /api/v1/areas/isolation_confinement?astronautId=astro_demo_001&dataset=simulated",
+      "response": {
+        "apiVersion": "v1",
+        "astronautId": "astro_demo_001",
+        "dataset": "simulated",
+        "isSimulated": true,
+        "area": {
+          "id": "isolation_confinement",
+          "title": "Isolamento e confinamento",
+          "summary": "Histórico pessoal de sono, fadiga e humor."
+        },
+        "content": [
+          {
+            "id": "introduction",
+            "title": "Sobre esta demonstração",
+            "body": "Os autorrelatos permitem visualizar mudanças pessoais. As escalas apresentadas são demonstrativas e não validadas clinicamente."
+          },
+          {
+            "id": "procedures",
+            "title": "Contexto de uso",
+            "body": "Consulte os procedimentos da missão. Esta demonstração descreve registros e não fornece orientação médica individual."
+          }
+        ],
+        "references": [
+          {
+            "title": "NASA — 5 Hazards of Human Spaceflight",
+            "url": "https://www.nasa.gov/hrp/hazards/"
+          },
+          {
+            "title": "Canadian Space Agency — Careers in space: Health science experts",
+            "url": "https://www.asc-csa.gc.ca/eng/jobs/careers-in-space/health-sciences.asp"
+          }
+        ],
+        "indicatorDefinitions": [
+          {
+            "id": "sleep_duration",
+            "label": "Sono",
+            "valueType": "number",
+            "unit": "h",
+            "displayUnit": "h",
+            "recordKind": "self_report",
+            "description": "Duração do último episódio de sono.",
+            "scale": null,
+            "allowsPeriodStart": true
+          },
+          {
+            "id": "fatigue",
+            "label": "Fadiga",
+            "valueType": "scale",
+            "unit": null,
+            "displayUnit": null,
+            "recordKind": "self_report",
+            "description": "Escala demonstrativa, não é instrumento clínico validado.",
+            "scale": {
+              "min": 1,
+              "max": 5,
+              "step": 1,
+              "minLabel": "Pouca fadiga percebida",
+              "maxLabel": "Muita fadiga percebida"
+            }
+          },
+          {
+            "id": "mood",
+            "label": "Humor",
+            "valueType": "scale",
+            "unit": null,
+            "displayUnit": null,
+            "recordKind": "self_report",
+            "description": "Escala demonstrativa, não é instrumento clínico validado.",
+            "scale": {
+              "min": 1,
+              "max": 5,
+              "step": 1,
+              "minLabel": "Muito negativo",
+              "maxLabel": "Muito positivo"
+            }
+          }
+        ],
+        "latestRecords": [
+          {
+            "id": "ad255058-17e7-4cc6-94d1-ef88bd439f16",
+            "astronautId": "astro_demo_001",
+            "areaId": "isolation_confinement",
+            "indicator": "sleep_duration",
+            "value": 7,
+            "unit": "h",
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z"
+          },
+          {
+            "id": "97b654cf-7511-4ca5-882f-70c9fd202466",
+            "astronautId": "astro_demo_001",
+            "areaId": "isolation_confinement",
+            "indicator": "fatigue",
+            "value": 2,
+            "unit": null,
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z"
+          },
+          {
+            "id": "d9b94f51-f538-4448-9bbf-c4a47105ce7f",
+            "astronautId": "astro_demo_001",
+            "areaId": "isolation_confinement",
+            "indicator": "mood",
+            "value": 3,
+            "unit": null,
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z"
+          }
+        ]
+      }
+    },
+    {
+      "request": "GET /api/v1/areas/distance_from_earth?astronautId=astro_demo_001&dataset=simulated",
+      "response": {
+        "apiVersion": "v1",
+        "astronautId": "astro_demo_001",
+        "dataset": "simulated",
+        "isSimulated": true,
+        "area": {
+          "id": "distance_from_earth",
+          "title": "Distância da Terra",
+          "summary": "Comunicação e recursos disponíveis a bordo."
+        },
+        "content": [
+          {
+            "id": "introduction",
+            "title": "Sobre esta demonstração",
+            "body": "O atraso de ida e o inventário são contexto operacional. Não representam medidas clínicas nem avaliação de capacidade de tratamento."
+          },
+          {
+            "id": "procedures",
+            "title": "Contexto de uso",
+            "body": "Consulte os procedimentos da missão. Esta demonstração descreve registros e não fornece orientação médica individual."
+          }
+        ],
+        "references": [
+          {
+            "title": "NASA — 5 Hazards of Human Spaceflight",
+            "url": "https://www.nasa.gov/hrp/hazards/"
+          },
+          {
+            "title": "Canadian Space Agency — Careers in space: Health science experts",
+            "url": "https://www.asc-csa.gc.ca/eng/jobs/careers-in-space/health-sciences.asp"
+          }
+        ],
+        "indicatorDefinitions": [
+          {
+            "id": "communication_delay",
+            "label": "Atraso de comunicação",
+            "valueType": "number",
+            "unit": "s",
+            "displayUnit": "s",
+            "recordKind": "operational_context",
+            "description": "Atraso de ida; contexto operacional, não medida clínica.",
+            "scale": null
+          },
+          {
+            "id": "onboard_medical_resources",
+            "label": "Recursos médicos a bordo",
+            "valueType": "text",
+            "unit": null,
+            "displayUnit": null,
+            "recordKind": "operational_context",
+            "description": "Inventário descritivo; não avalia capacidade de tratamento.",
+            "scale": null
+          }
+        ],
+        "latestRecords": [
+          {
+            "id": "a5e502d3-f16f-4548-a116-90d73079e2cd",
+            "astronautId": "astro_demo_001",
+            "areaId": "distance_from_earth",
+            "indicator": "communication_delay",
+            "value": 480,
+            "unit": "s",
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z"
+          },
+          {
+            "id": "654d219a-f2c2-4915-a680-916706201e79",
+            "astronautId": "astro_demo_001",
+            "areaId": "distance_from_earth",
+            "indicator": "onboard_medical_resources",
+            "value": "Inventário fictício: kit de primeiros socorros e equipamento de monitoramento.",
+            "unit": null,
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z"
+          }
+        ]
+      }
+    },
+    {
+      "request": "GET /api/v1/areas/gravity_fields?astronautId=astro_demo_001&dataset=simulated",
+      "response": {
+        "apiVersion": "v1",
+        "astronautId": "astro_demo_001",
+        "dataset": "simulated",
+        "isSimulated": true,
+        "area": {
+          "id": "gravity_fields",
+          "title": "Campos gravitacionais",
+          "summary": "Medições, exercício e relatos de equilíbrio ou visão."
+        },
+        "content": [
+          {
+            "id": "introduction",
+            "title": "Sobre esta demonstração",
+            "body": "Registre observações e seu contexto sem atribuir causalidade aos campos gravitacionais."
+          },
+          {
+            "id": "procedures",
+            "title": "Contexto de uso",
+            "body": "Consulte os procedimentos da missão. Esta demonstração descreve registros e não fornece orientação médica individual."
+          }
+        ],
+        "references": [
+          {
+            "title": "NASA — 5 Hazards of Human Spaceflight",
+            "url": "https://www.nasa.gov/hrp/hazards/"
+          },
+          {
+            "title": "Canadian Space Agency — Careers in space: Health science experts",
+            "url": "https://www.asc-csa.gc.ca/eng/jobs/careers-in-space/health-sciences.asp"
+          }
+        ],
+        "indicatorDefinitions": [
+          {
+            "id": "heart_rate",
+            "label": "Frequência cardíaca",
+            "valueType": "number",
+            "unit": "bpm",
+            "displayUnit": "bpm",
+            "recordKind": "measurement",
+            "description": "Frequência no instante observado; descreva o contexto nas notas.",
+            "scale": null
+          },
+          {
+            "id": "blood_pressure_systolic",
+            "label": "Pressão sistólica",
+            "valueType": "number",
+            "unit": "mmHg",
+            "displayUnit": "mmHg",
+            "recordKind": "measurement",
+            "description": "Componente sistólico; groupId associa o par da mesma observação.",
+            "scale": null
+          },
+          {
+            "id": "blood_pressure_diastolic",
+            "label": "Pressão diastólica",
+            "valueType": "number",
+            "unit": "mmHg",
+            "displayUnit": "mmHg",
+            "recordKind": "measurement",
+            "description": "Componente diastólico; groupId associa o par da mesma observação.",
+            "scale": null
+          },
+          {
+            "id": "exercise_duration",
+            "label": "Exercício",
+            "valueType": "number",
+            "unit": "min",
+            "displayUnit": "min",
+            "recordKind": "self_report",
+            "description": "Duração de uma sessão, sem prescrição.",
+            "scale": null,
+            "allowsPeriodStart": true
+          },
+          {
+            "id": "balance_vision_symptoms",
+            "label": "Equilíbrio e visão",
+            "valueType": "text",
+            "unit": null,
+            "displayUnit": null,
+            "recordKind": "self_report",
+            "description": "Descrição pessoal; sem inferência de causa.",
+            "scale": null
+          }
+        ],
+        "latestRecords": [
+          {
+            "id": "36e1544a-72d0-4726-a63d-9f2c4985d558",
+            "astronautId": "astro_demo_001",
+            "areaId": "gravity_fields",
+            "indicator": "heart_rate",
+            "value": 72,
+            "unit": "bpm",
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z"
+          },
+          {
+            "id": "771aac6f-c7cf-491d-951f-2c67331723c1",
+            "astronautId": "astro_demo_001",
+            "areaId": "gravity_fields",
+            "indicator": "blood_pressure_systolic",
+            "value": 118,
+            "unit": "mmHg",
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z",
+            "groupId": "demo-bp-6"
+          },
+          {
+            "id": "1c3657dc-53aa-42f2-a027-a7b4ea928c6c",
+            "astronautId": "astro_demo_001",
+            "areaId": "gravity_fields",
+            "indicator": "blood_pressure_diastolic",
+            "value": 76,
+            "unit": "mmHg",
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z",
+            "groupId": "demo-bp-6"
+          },
+          {
+            "id": "389a66b0-5766-4937-a975-fe49dd77ca19",
+            "astronautId": "astro_demo_001",
+            "areaId": "gravity_fields",
+            "indicator": "exercise_duration",
+            "value": 30,
+            "unit": "min",
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z"
+          },
+          {
+            "id": "80a1dadb-1a84-4ca0-a290-8be17df6a0b1",
+            "astronautId": "astro_demo_001",
+            "areaId": "gravity_fields",
+            "indicator": "balance_vision_symptoms",
+            "value": "Relato fictício: sensação de desequilíbrio ao mudar de posição.",
+            "unit": null,
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z"
+          }
+        ]
+      }
+    },
+    {
+      "request": "GET /api/v1/areas/hostile_closed_environment?astronautId=astro_demo_001&dataset=simulated",
+      "response": {
+        "apiVersion": "v1",
+        "astronautId": "astro_demo_001",
+        "dataset": "simulated",
+        "isSimulated": true,
+        "area": {
+          "id": "hostile_closed_environment",
+          "title": "Ambientes fechados hostis",
+          "summary": "Condições ambientais e sintomas relatados."
+        },
+        "content": [
+          {
+            "id": "introduction",
+            "title": "Sobre esta demonstração",
+            "body": "CO₂, temperatura e umidade descrevem o ambiente. Relatos pessoais são apresentados separadamente, sem inferir causa."
+          },
+          {
+            "id": "procedures",
+            "title": "Contexto de uso",
+            "body": "Consulte os procedimentos da missão. Esta demonstração descreve registros e não fornece orientação médica individual."
+          }
+        ],
+        "references": [
+          {
+            "title": "NASA — 5 Hazards of Human Spaceflight",
+            "url": "https://www.nasa.gov/hrp/hazards/"
+          },
+          {
+            "title": "Canadian Space Agency — Careers in space: Health science experts",
+            "url": "https://www.asc-csa.gc.ca/eng/jobs/careers-in-space/health-sciences.asp"
+          }
+        ],
+        "indicatorDefinitions": [
+          {
+            "id": "co2_concentration",
+            "label": "Concentração de CO₂",
+            "valueType": "number",
+            "unit": "ppm",
+            "displayUnit": "ppm",
+            "recordKind": "environmental_exposure",
+            "description": "Concentração ambiental no ponto de medição.",
+            "scale": null
+          },
+          {
+            "id": "temperature",
+            "label": "Temperatura",
+            "valueType": "number",
+            "unit": "Cel",
+            "displayUnit": "°C",
+            "recordKind": "environmental_exposure",
+            "description": "Temperatura ambiental no ponto de medição.",
+            "scale": null
+          },
+          {
+            "id": "relative_humidity",
+            "label": "Umidade relativa",
+            "valueType": "number",
+            "unit": "%",
+            "displayUnit": "%",
+            "recordKind": "environmental_exposure",
+            "description": "Umidade relativa ambiental.",
+            "scale": null
+          },
+          {
+            "id": "reported_symptoms",
+            "label": "Sintomas relatados",
+            "valueType": "text",
+            "unit": null,
+            "displayUnit": null,
+            "recordKind": "self_report",
+            "description": "Relato textual, sem associar causa às condições ambientais.",
+            "scale": null
+          }
+        ],
+        "latestRecords": [
+          {
+            "id": "4216d9dc-7000-472e-8ba5-8c5ab7853376",
+            "astronautId": "astro_demo_001",
+            "areaId": "hostile_closed_environment",
+            "indicator": "co2_concentration",
+            "value": 950,
+            "unit": "ppm",
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z"
+          },
+          {
+            "id": "7111c3c2-e54a-4fb5-946a-a874ade1467c",
+            "astronautId": "astro_demo_001",
+            "areaId": "hostile_closed_environment",
+            "indicator": "temperature",
+            "value": 23,
+            "unit": "Cel",
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z"
+          },
+          {
+            "id": "f21c34c2-ae59-4999-8942-236a0c405e25",
+            "astronautId": "astro_demo_001",
+            "areaId": "hostile_closed_environment",
+            "indicator": "relative_humidity",
+            "value": 45,
+            "unit": "%",
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z"
+          },
+          {
+            "id": "8fde87e5-a927-479b-af33-aa16fe5bf3e8",
+            "astronautId": "astro_demo_001",
+            "areaId": "hostile_closed_environment",
+            "indicator": "reported_symptoms",
+            "value": "Relato fictício: desconforto na garganta.",
+            "unit": null,
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z"
+          }
+        ]
+      }
+    }
+  ],
+  "overview": {
+    "request": "GET /api/v1/overview?astronautId=astro_demo_001&dataset=simulated",
+    "response": {
+      "apiVersion": "v1",
+      "astronautId": "astro_demo_001",
+      "dataset": "simulated",
+      "isSimulated": true,
+      "areas": [
+        {
+          "areaId": "radiation",
+          "title": "Radiação espacial",
+          "summary": "Taxa de dose e dose acumulada simuladas.",
+          "isSimulated": true,
+          "dataStatus": "available",
+          "recordCount": 14,
+          "lastRecordedAt": "2026-11-14T16:19:25.133Z",
+          "latestRecord": {
+            "id": "84ae0fdc-7ec8-4762-bb64-238cba62928e",
+            "astronautId": "astro_demo_001",
+            "areaId": "radiation",
+            "indicator": "dose_rate",
+            "value": 12,
+            "unit": "uSv/h",
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z"
+          },
+          "highlights": [
+            {
+              "id": "84ae0fdc-7ec8-4762-bb64-238cba62928e",
+              "astronautId": "astro_demo_001",
+              "areaId": "radiation",
+              "indicator": "dose_rate",
+              "value": 12,
+              "unit": "uSv/h",
+              "recordedAt": "2026-11-14T16:19:25.133Z",
+              "source": "simulated",
+              "isSimulated": true,
+              "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+              "createdAt": "2026-11-14T16:20:25.133Z"
+            },
+            {
+              "id": "3dde78fd-8691-48fc-b877-6bca097f523a",
+              "astronautId": "astro_demo_001",
+              "areaId": "radiation",
+              "indicator": "accumulated_dose",
+              "value": 980,
+              "unit": "uSv",
+              "recordedAt": "2026-11-14T16:19:25.133Z",
+              "source": "simulated",
+              "isSimulated": true,
+              "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+              "createdAt": "2026-11-14T16:20:25.133Z",
+              "periodStart": "2026-11-07T16:20:25.133Z"
+            }
+          ]
+        },
+        {
+          "areaId": "isolation_confinement",
+          "title": "Isolamento e confinamento",
+          "summary": "Histórico pessoal de sono, fadiga e humor.",
+          "isSimulated": true,
+          "dataStatus": "available",
+          "recordCount": 21,
+          "lastRecordedAt": "2026-11-14T16:19:25.133Z",
+          "latestRecord": {
+            "id": "d9b94f51-f538-4448-9bbf-c4a47105ce7f",
+            "astronautId": "astro_demo_001",
+            "areaId": "isolation_confinement",
+            "indicator": "mood",
+            "value": 3,
+            "unit": null,
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z"
+          },
+          "highlights": [
+            {
+              "id": "ad255058-17e7-4cc6-94d1-ef88bd439f16",
+              "astronautId": "astro_demo_001",
+              "areaId": "isolation_confinement",
+              "indicator": "sleep_duration",
+              "value": 7,
+              "unit": "h",
+              "recordedAt": "2026-11-14T16:19:25.133Z",
+              "source": "simulated",
+              "isSimulated": true,
+              "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+              "createdAt": "2026-11-14T16:20:25.133Z"
+            },
+            {
+              "id": "97b654cf-7511-4ca5-882f-70c9fd202466",
+              "astronautId": "astro_demo_001",
+              "areaId": "isolation_confinement",
+              "indicator": "fatigue",
+              "value": 2,
+              "unit": null,
+              "recordedAt": "2026-11-14T16:19:25.133Z",
+              "source": "simulated",
+              "isSimulated": true,
+              "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+              "createdAt": "2026-11-14T16:20:25.133Z"
+            },
+            {
+              "id": "d9b94f51-f538-4448-9bbf-c4a47105ce7f",
+              "astronautId": "astro_demo_001",
+              "areaId": "isolation_confinement",
+              "indicator": "mood",
+              "value": 3,
+              "unit": null,
+              "recordedAt": "2026-11-14T16:19:25.133Z",
+              "source": "simulated",
+              "isSimulated": true,
+              "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+              "createdAt": "2026-11-14T16:20:25.133Z"
+            }
+          ]
+        },
+        {
+          "areaId": "distance_from_earth",
+          "title": "Distância da Terra",
+          "summary": "Comunicação e recursos disponíveis a bordo.",
+          "isSimulated": true,
+          "dataStatus": "available",
+          "recordCount": 14,
+          "lastRecordedAt": "2026-11-14T16:19:25.133Z",
+          "latestRecord": {
+            "id": "a5e502d3-f16f-4548-a116-90d73079e2cd",
+            "astronautId": "astro_demo_001",
+            "areaId": "distance_from_earth",
+            "indicator": "communication_delay",
+            "value": 480,
+            "unit": "s",
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z"
+          },
+          "highlights": [
+            {
+              "id": "a5e502d3-f16f-4548-a116-90d73079e2cd",
+              "astronautId": "astro_demo_001",
+              "areaId": "distance_from_earth",
+              "indicator": "communication_delay",
+              "value": 480,
+              "unit": "s",
+              "recordedAt": "2026-11-14T16:19:25.133Z",
+              "source": "simulated",
+              "isSimulated": true,
+              "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+              "createdAt": "2026-11-14T16:20:25.133Z"
+            },
+            {
+              "id": "654d219a-f2c2-4915-a680-916706201e79",
+              "astronautId": "astro_demo_001",
+              "areaId": "distance_from_earth",
+              "indicator": "onboard_medical_resources",
+              "value": "Inventário fictício: kit de primeiros socorros e equipamento de monitoramento.",
+              "unit": null,
+              "recordedAt": "2026-11-14T16:19:25.133Z",
+              "source": "simulated",
+              "isSimulated": true,
+              "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+              "createdAt": "2026-11-14T16:20:25.133Z"
+            }
+          ]
+        },
+        {
+          "areaId": "gravity_fields",
+          "title": "Campos gravitacionais",
+          "summary": "Medições, exercício e relatos de equilíbrio ou visão.",
+          "isSimulated": true,
+          "dataStatus": "available",
+          "recordCount": 35,
+          "lastRecordedAt": "2026-11-14T16:19:25.133Z",
+          "latestRecord": {
+            "id": "80a1dadb-1a84-4ca0-a290-8be17df6a0b1",
+            "astronautId": "astro_demo_001",
+            "areaId": "gravity_fields",
+            "indicator": "balance_vision_symptoms",
+            "value": "Relato fictício: sensação de desequilíbrio ao mudar de posição.",
+            "unit": null,
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z"
+          },
+          "highlights": [
+            {
+              "id": "36e1544a-72d0-4726-a63d-9f2c4985d558",
+              "astronautId": "astro_demo_001",
+              "areaId": "gravity_fields",
+              "indicator": "heart_rate",
+              "value": 72,
+              "unit": "bpm",
+              "recordedAt": "2026-11-14T16:19:25.133Z",
+              "source": "simulated",
+              "isSimulated": true,
+              "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+              "createdAt": "2026-11-14T16:20:25.133Z"
+            },
+            {
+              "id": "389a66b0-5766-4937-a975-fe49dd77ca19",
+              "astronautId": "astro_demo_001",
+              "areaId": "gravity_fields",
+              "indicator": "exercise_duration",
+              "value": 30,
+              "unit": "min",
+              "recordedAt": "2026-11-14T16:19:25.133Z",
+              "source": "simulated",
+              "isSimulated": true,
+              "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+              "createdAt": "2026-11-14T16:20:25.133Z"
+            }
+          ]
+        },
+        {
+          "areaId": "hostile_closed_environment",
+          "title": "Ambientes fechados hostis",
+          "summary": "Condições ambientais e sintomas relatados.",
+          "isSimulated": true,
+          "dataStatus": "available",
+          "recordCount": 28,
+          "lastRecordedAt": "2026-11-14T16:19:25.133Z",
+          "latestRecord": {
+            "id": "f21c34c2-ae59-4999-8942-236a0c405e25",
+            "astronautId": "astro_demo_001",
+            "areaId": "hostile_closed_environment",
+            "indicator": "relative_humidity",
+            "value": 45,
+            "unit": "%",
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z"
+          },
+          "highlights": [
+            {
+              "id": "4216d9dc-7000-472e-8ba5-8c5ab7853376",
+              "astronautId": "astro_demo_001",
+              "areaId": "hostile_closed_environment",
+              "indicator": "co2_concentration",
+              "value": 950,
+              "unit": "ppm",
+              "recordedAt": "2026-11-14T16:19:25.133Z",
+              "source": "simulated",
+              "isSimulated": true,
+              "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+              "createdAt": "2026-11-14T16:20:25.133Z"
+            },
+            {
+              "id": "7111c3c2-e54a-4fb5-946a-a874ade1467c",
+              "astronautId": "astro_demo_001",
+              "areaId": "hostile_closed_environment",
+              "indicator": "temperature",
+              "value": 23,
+              "unit": "Cel",
+              "recordedAt": "2026-11-14T16:19:25.133Z",
+              "source": "simulated",
+              "isSimulated": true,
+              "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+              "createdAt": "2026-11-14T16:20:25.133Z"
+            },
+            {
+              "id": "f21c34c2-ae59-4999-8942-236a0c405e25",
+              "astronautId": "astro_demo_001",
+              "areaId": "hostile_closed_environment",
+              "indicator": "relative_humidity",
+              "value": 45,
+              "unit": "%",
+              "recordedAt": "2026-11-14T16:19:25.133Z",
+              "source": "simulated",
+              "isSimulated": true,
+              "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+              "createdAt": "2026-11-14T16:20:25.133Z"
+            }
+          ]
+        }
+      ]
+    }
+  },
+  "history": {
+    "request": "GET /api/v1/areas/radiation/history?astronautId=astro_demo_001&dataset=simulated",
+    "response": {
+      "apiVersion": "v1",
+      "astronautId": "astro_demo_001",
+      "dataset": "simulated",
+      "isSimulated": true,
+      "areaId": "radiation",
+      "period": {
+        "from": "2026-11-07T16:20:25.133Z",
+        "to": "2026-11-14T16:20:25.133Z"
+      },
+      "records": [
+        {
+          "id": "6c36d485-98e1-449b-9f45-c49b25ee8172",
+          "astronautId": "astro_demo_001",
+          "areaId": "radiation",
+          "indicator": "dose_rate",
+          "value": 12,
+          "unit": "uSv/h",
+          "recordedAt": "2026-11-08T16:19:25.133Z",
+          "source": "simulated",
+          "isSimulated": true,
+          "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+          "createdAt": "2026-11-14T16:20:25.133Z"
+        },
+        {
+          "id": "814bae67-4ac5-444d-9896-2cea524196f5",
+          "astronautId": "astro_demo_001",
+          "areaId": "radiation",
+          "indicator": "accumulated_dose",
+          "value": 140,
+          "unit": "uSv",
+          "recordedAt": "2026-11-08T16:19:25.133Z",
+          "source": "simulated",
+          "isSimulated": true,
+          "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+          "createdAt": "2026-11-14T16:20:25.133Z",
+          "periodStart": "2026-11-07T16:20:25.133Z"
+        },
+        {
+          "id": "109886b4-08d4-4c9b-ab5b-9962adff8063",
+          "astronautId": "astro_demo_001",
+          "areaId": "radiation",
+          "indicator": "dose_rate",
+          "value": 12.5,
+          "unit": "uSv/h",
+          "recordedAt": "2026-11-09T16:19:25.133Z",
+          "source": "simulated",
+          "isSimulated": true,
+          "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+          "createdAt": "2026-11-14T16:20:25.133Z"
+        },
+        {
+          "id": "59c83a7f-2c71-43d3-bec3-cbe7833b278c",
+          "astronautId": "astro_demo_001",
+          "areaId": "radiation",
+          "indicator": "accumulated_dose",
+          "value": 280,
+          "unit": "uSv",
+          "recordedAt": "2026-11-09T16:19:25.133Z",
+          "source": "simulated",
+          "isSimulated": true,
+          "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+          "createdAt": "2026-11-14T16:20:25.133Z",
+          "periodStart": "2026-11-07T16:20:25.133Z"
+        },
+        {
+          "id": "16a892de-7d60-4c6a-8dc0-c60b72d9436b",
+          "astronautId": "astro_demo_001",
+          "areaId": "radiation",
+          "indicator": "accumulated_dose",
+          "value": 420,
+          "unit": "uSv",
+          "recordedAt": "2026-11-10T16:19:25.133Z",
+          "source": "simulated",
+          "isSimulated": true,
+          "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+          "createdAt": "2026-11-14T16:20:25.133Z",
+          "periodStart": "2026-11-07T16:20:25.133Z"
+        },
+        {
+          "id": "f3f3f6be-777e-4e30-9641-5d8bc5d9bd3c",
+          "astronautId": "astro_demo_001",
+          "areaId": "radiation",
+          "indicator": "dose_rate",
+          "value": 13,
+          "unit": "uSv/h",
+          "recordedAt": "2026-11-10T16:19:25.133Z",
+          "source": "simulated",
+          "isSimulated": true,
+          "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+          "createdAt": "2026-11-14T16:20:25.133Z"
+        },
+        {
+          "id": "07647b4a-601d-4001-9a53-c8e98b351268",
+          "astronautId": "astro_demo_001",
+          "areaId": "radiation",
+          "indicator": "dose_rate",
+          "value": 12,
+          "unit": "uSv/h",
+          "recordedAt": "2026-11-11T16:19:25.133Z",
+          "source": "simulated",
+          "isSimulated": true,
+          "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+          "createdAt": "2026-11-14T16:20:25.133Z"
+        },
+        {
+          "id": "89bf8c11-63eb-4dc5-afd3-65c8a77e314e",
+          "astronautId": "astro_demo_001",
+          "areaId": "radiation",
+          "indicator": "accumulated_dose",
+          "value": 560,
+          "unit": "uSv",
+          "recordedAt": "2026-11-11T16:19:25.133Z",
+          "source": "simulated",
+          "isSimulated": true,
+          "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+          "createdAt": "2026-11-14T16:20:25.133Z",
+          "periodStart": "2026-11-07T16:20:25.133Z"
+        },
+        {
+          "id": "213816f2-e971-4d2e-a139-ea2400977c94",
+          "astronautId": "astro_demo_001",
+          "areaId": "radiation",
+          "indicator": "dose_rate",
+          "value": 12.5,
+          "unit": "uSv/h",
+          "recordedAt": "2026-11-12T16:19:25.133Z",
+          "source": "simulated",
+          "isSimulated": true,
+          "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+          "createdAt": "2026-11-14T16:20:25.133Z"
+        },
+        {
+          "id": "8c5ec10c-d58f-403b-99b7-0392c47b93bf",
+          "astronautId": "astro_demo_001",
+          "areaId": "radiation",
+          "indicator": "accumulated_dose",
+          "value": 700,
+          "unit": "uSv",
+          "recordedAt": "2026-11-12T16:19:25.133Z",
+          "source": "simulated",
+          "isSimulated": true,
+          "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+          "createdAt": "2026-11-14T16:20:25.133Z",
+          "periodStart": "2026-11-07T16:20:25.133Z"
+        },
+        {
+          "id": "3974ec96-e266-4db2-aa1d-b42e899dbd27",
+          "astronautId": "astro_demo_001",
+          "areaId": "radiation",
+          "indicator": "accumulated_dose",
+          "value": 840,
+          "unit": "uSv",
+          "recordedAt": "2026-11-13T16:19:25.133Z",
+          "source": "simulated",
+          "isSimulated": true,
+          "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+          "createdAt": "2026-11-14T16:20:25.133Z",
+          "periodStart": "2026-11-07T16:20:25.133Z"
+        },
+        {
+          "id": "b38918a7-1fc1-4ad0-9f91-ca406a7fbf27",
+          "astronautId": "astro_demo_001",
+          "areaId": "radiation",
+          "indicator": "dose_rate",
+          "value": 13,
+          "unit": "uSv/h",
+          "recordedAt": "2026-11-13T16:19:25.133Z",
+          "source": "simulated",
+          "isSimulated": true,
+          "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+          "createdAt": "2026-11-14T16:20:25.133Z"
+        },
+        {
+          "id": "3dde78fd-8691-48fc-b877-6bca097f523a",
+          "astronautId": "astro_demo_001",
+          "areaId": "radiation",
+          "indicator": "accumulated_dose",
+          "value": 980,
+          "unit": "uSv",
+          "recordedAt": "2026-11-14T16:19:25.133Z",
+          "source": "simulated",
+          "isSimulated": true,
+          "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+          "createdAt": "2026-11-14T16:20:25.133Z",
+          "periodStart": "2026-11-07T16:20:25.133Z"
+        },
+        {
+          "id": "84ae0fdc-7ec8-4762-bb64-238cba62928e",
+          "astronautId": "astro_demo_001",
+          "areaId": "radiation",
+          "indicator": "dose_rate",
+          "value": 12,
+          "unit": "uSv/h",
+          "recordedAt": "2026-11-14T16:19:25.133Z",
+          "source": "simulated",
+          "isSimulated": true,
+          "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+          "createdAt": "2026-11-14T16:20:25.133Z"
+        }
+      ],
+      "trends": [
+        {
+          "indicator": "dose_rate",
+          "source": "simulated",
+          "isSimulated": true,
+          "unit": "uSv/h",
+          "method": "latest_pair_difference",
+          "latestRecordId": "84ae0fdc-7ec8-4762-bb64-238cba62928e",
+          "previousRecordId": "b38918a7-1fc1-4ad0-9f91-ca406a7fbf27",
+          "delta": -1,
+          "direction": "decrease",
+          "status": "available",
+          "message": "O valor simulado passou de 13 para 12 uSv/h. Comparação pontual, sem inferência clínica ou estatística."
+        },
+        {
+          "indicator": "accumulated_dose",
+          "source": "simulated",
+          "isSimulated": true,
+          "unit": "uSv",
+          "method": "latest_pair_difference",
+          "latestRecordId": "3dde78fd-8691-48fc-b877-6bca097f523a",
+          "previousRecordId": "3974ec96-e266-4db2-aa1d-b42e899dbd27",
+          "delta": 140,
+          "direction": "increase",
+          "status": "available",
+          "message": "O valor simulado passou de 840 para 980 uSv. Comparação pontual, sem inferência clínica ou estatística."
+        }
+      ]
+    }
+  },
+  "creation": {
+    "request": "POST /api/v1/areas/radiation/records",
+    "body": {
+      "astronautId": "astro_demo_001",
+      "records": [
+        {
+          "indicator": "dose_rate",
+          "value": 12,
+          "unit": "uSv/h",
+          "recordedAt": "2026-11-14T16:19:25.133Z",
+          "source": "simulated",
+          "notes": "Dado fictício de demonstração; não representa uma pessoa real."
+        }
+      ]
+    },
+    "status": 201,
+    "response": {
+      "apiVersion": "v1",
+      "astronautId": "astro_demo_001",
+      "records": [
+        {
+          "id": "84ae0fdc-7ec8-4762-bb64-238cba62928e",
+          "astronautId": "astro_demo_001",
+          "areaId": "radiation",
+          "indicator": "dose_rate",
+          "value": 12,
+          "unit": "uSv/h",
+          "recordedAt": "2026-11-14T16:19:25.133Z",
+          "source": "simulated",
+          "isSimulated": true,
+          "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+          "createdAt": "2026-11-14T16:20:25.133Z"
+        }
+      ]
+    }
+  }
+}
