@@ -1,38 +1,80 @@
-# Matriz de implementação
+# Matriz de implementação (v2)
 
-Os anexos de 14/11/2026 são insumos de pesquisa. O contrato do projeto usa Express, JSON e as cinco áreas existentes. Critérios oficiais descrevem as referências publicadas. O nível do app é demonstrativo e separado da categoria da referência.
+Fonte da verdade dos números: `shared/config/research.js`, `shared/config/isolation.js` e `shared/config/levels.js`. Cada regra guarda duas origens separadas: `source` (de onde vem o limite) e `levelSource` (de onde vem o nível atribuído à faixa). **O encaixe dos níveis é sempre proposta do time** (`team_proposal`), como diz a seção 2.1 da especificação v2: os nomes Advisory, Caution, Warning e Emergency seguem a seção 10.3 do NASA-STD-3001 Vol. 2 Rev. D, mas a tabela de tipos de alerta não foi lida pelo time.
 
-| Área / indicador | Entrada e unidade | Cálculo e contexto | Fonte e natureza | Estado e justificativa |
-| --- | --- | --- | --- | --- |
-| Isolamento / duração e qualidade do sono | Horários com fuso, latência e vigília em minutos; h e escala 0–100 | Sono líquido no servidor. Regras v1: ≤6 h, ≤4 h e três noites ≤6 h. Qualidade fora da faixa pessoal por três dias | [Jones et al., 2022][rst], resultado de pesquisa. Os níveis, 4 h e sequência são escolhas da equipe. [V1 6001][planning], referência de planejamento | Implementado. 8,5 h é oportunidade de sono, sem corte pessoal. |
-| Isolamento / KSS, Samn–Perelli | Inteiros 1–9 e 1–7 | Bandas demonstrativas legadas v1: KSS 7/≥8 e Samn–Perelli 4/≥5. Mantém o comportamento da versão anterior | [Arsintescu et al., 2019][aviation], estudo de aviação. SAM-TR-82-21 e origem específica dos cortes ainda pendentes | Coleta e regra demonstrativa legada preservadas. Aprovação para reproduzir o instrumento KSS e validação em voo pendentes. |
-| Isolamento / estresse, humor, qualidade | Escalas 0–100 | Sete dias UTC, média ±2 DP amostrais, uma leitura por dia por origem. Três dias consecutivos: estresse acima, humor abaixo, qualidade fora | [Jones et al.][rst]; baseline e bandas são propostas da equipe | Implementado. Exige sete dias com dados e variabilidade. Legados `mood`/`fatigue` permanecem em 1–5. |
-| Isolamento / PVT-B | Eventos em ms; velocidade 1/s; contagens | Média de inversos, lapso ≥355 ms, falso início <100 ms ou sem estímulo, timeout 30 s. Faixa pessoal de velocidade/lapsos com mínimo de dois dias na janela inicial | [Basner et al., 2011][pvt], pesquisa. Baseline e término do estímulo após os 3 min são propostas da equipe | Implementado. Interrupções auditadas sem agregados. Falsos inícios sem classificação pessoal. |
-| Gravidade / massa | kg, método e referência | Diferença e percentual com referência do mesmo método, unidade, astronauta, missão e dataset | Especificação §3.3, comparação descritiva. O registro Food Risk Rev. D citado no anexo precisa de conferência para o corte proposto | Implementado sem bandas de 3% ou 5%. |
-| Gravidade / aeróbico e força | mL/kg/min e N, método e referência | Diferença e percentual pré-missão. Compara com 80% sem arredondar antes da comparação | [NASA-STD-3001 Vol. 1 Rev. C][nasa1], V1 4003 e V1 4024, padrão oficial | Implementado. A banda de 90% é proposta do anexo e ficou inativa. |
-| Gravidade / VO₂max | mL/kg/min, método, atividade e ambiente EVA | Compara em contexto EVA explícito com ≥32,9 microgravidade ou ≥36,5 superfície | [Vol. 1 Rev. C][nasa1], V1 4001/4002, padrão oficial | Implementado como referência de desempenho. O app não autoriza atividade. |
-| Gravidade / exercício | minutos e intervalo opcional | Histórico de sessões | Especificação §3.3 e pesquisa de condicionamento, coleta | Implementado no contrato anterior. Meta universal semanal e alerta de volume pendentes de contexto. |
-| Gravidade / sintomas e Amsler | Enjoo 0–20, cefaleia 0–10, indicadores binários e relato livre legado | Autorrelatos. Amsler descreve mudança percebida | [NASA Standard Measures][standard], [vigilância ocular em voo][eye]; escalas e limites do app são propostas | Coleta implementada. Cortes de sintomas inativos. Amsler não mede acuidade nem estabelece SANS. |
-| Gravidade / sinais por posição | PA em mmHg, pulso em bpm, posição e horários | Diferenças em relação à última amostra supina na mesma avaliação. Apenas registros de observação supervisionada | Especificação §3.4 e [NASA HRP cardiovascular][cardio], contexto de pesquisa | Implementado descritivamente. Sem protocolo de stand test antes do pouso, diagnóstico de POTS ou prescrição de sal/líquidos. |
-| Gravidade / osso | Densitometria e tempo seriam entradas distintas | Projeção linear 1–1,5% ao mês é hipótese educativa da pesquisa | [Vol. 1 Rev. C][nasa1] V1 4027 aplica-se à densidade mensurada em sítio específico | Educativo na documentação. Projeção individual e comparação automática ficaram fora por falta de modelo de exposição, sítio e incerteza individual. |
-| Cabine / ppm, ppCO₂ | ppm, pressão total absoluta e local/horário comuns; mmHg calculado | ppm ÷ 10⁶ × PB. Avalia média de 1 h com cobertura integral, por local/origem | [Vol. 2 Rev. D][nasa2], §6.2.1.3 / V2 6004, padrão oficial ≤3 mmHg. Interpolação é aproximação | Implementado. Janela termina na última amostra e usa segmentos lineares ≤10 min, sem extrapolar. Uma amostra não cobre nenhuma duração. Acima de 3 gera atenção demonstrativa, sem faixa de 4,5. |
-| Cabine / ppCO₂ 7 dias | mmHg | Proposta de limiar 2,5 mmHg | [OCHMO-TB-004][co2brief], pesquisa de sintomas, não regra geral do padrão | Pendente para classificação. Coleta continua. |
-| Cabine / pressão, O₂, ppO₂ e PIO₂ | mmHg, kPa ou psia absolutos; fração 0–1 | Conversão para mmHg. ppO₂ = PB × FiO₂. PIO₂ = (PB − 47) × FiO₂, hipótese de vapor saturado a 37 °C. SpO₂ separado nos vitais | [OCHMO-TB-003 Rev. A][atmos], pp. 2–4 e Vol. 2 Rev. D | Cálculos implementados. Classificações de pressão/PIO₂ pendentes para duração e ambiente. Rev. B e Rev. D têm tabelas diferentes. |
-| Cabine / temperatura e umidade | `temperature` em `Cel` ambiental, umidade em % | Histórico | [Vol. 2 Rev. D][nasa2] V2 6012/6013 | Coleta preservada. Polígono de limites conjunto pendente. O retângulo aproximado do anexo ficou inativo. |
-| Cabine / ruído | dBA, método, local, atividade, início e fim | Duração da medição | [Vol. 2 Rev. D][nasa2] V2 6077–6080 e V2 6115, condições e métricas diferentes | Coleta implementada. Comparações NC exigem bandas de oitava. 85 dBA em V2 6077 tem contexto e método específicos. |
-| Cabine / sintomas pós-EVA | Lista estruturada e horários | Qualquer sintoma relatado sugere avaliação pela tripulação | [NASA HRP DCS][dcs], contexto científico. Gatilho é proposta da equipe | Implementado como atenção demonstrativa, sem atribuir doença descompressiva. |
-| Radiação / taxa e contador legados | uSv/h e uSv; intervalo no contador | Exibe valores e tendência compatível com o mesmo início de contador | Contrato legado, sem identificação do modelo dosimétrico | Preservado. Leituras acumuladas não são somadas. |
-| Radiação / incrementos e contadores | Sv, Gy ou Gy-Eq e prefixos permitidos, período, escopo, série, órgão quando aplicável | Normaliza prefixo dentro da grandeza. Soma incrementos sem sobreposição ou usa último contador monotônico com início comum | Proposta de contabilidade com grandezas separadas. [Vol. 1 Rev. C][nasa1] §4.8 para referências | Implementado. Séries ou modos misturados retornam insuficiência. Limites por órgão não aplicados automaticamente. |
-| Radiação / carreira | Dose efetiva espacial em mSv | Histórico prévio atestado + missão contínua desde início, em NASA_Q. Ref. <600 mSv. Bandas 75% e 90% | [Vol. 1 Rev. C][nasa1], V1 4030, oficial. Bandas são propostas da equipe | Implementado sobre insumos declarados. Cobertura e modelo não certificados pela API. V1 4031, 250 mSv, é evento de projeto de referência. V1 4033 é critério de projeto. Sem comparação automática destes ou da Tabela 4.8-1. |
-| Radiação / evento solar | Estado ativo/inativo explicitamente simulado | Gatilho de demonstração | Anexo §3.5, proposta da equipe | Implementado. Sem integração com GOES e sem inferir liberação de abrigo. |
-| Distância / missão, comunicação e recursos | ISS/Lua/Marte, atividade separada, início, atraso s, disponibilidade e inventário | 2 × ida + processamento configurável, sem ETA se indisponível | [NASA Ames, Parisi et al. 2023][delay], contexto de pesquisa. 900 s é premissa de exemplo | Implementado. Conjunção é simulação de Marte. |
-| Distância / relatório | Recorte por astronauta/dataset, ações com data | Indicadores, tendências, regras acionadas e comunicação. Situação `prepared` / `not_sent` | Anexo §3.7, proposta da equipe | Implementado localmente. Sem notificação. Humor/estresse excluídos dos campos gerados. |
-| Transversal / NEWS2 | PA sistólica, pulso, respiração, SpO₂ escala 1, temperatura corporal, oxigênio e ACVPU de avaliador. Diastólica opcional fora da soma | Pontos oficiais e categorias low, low_medium, medium, high. Mesmo conjunto, máximo de 5 min nesta integração | [RCP 2017, tabelas 1 e 2][rcp], método hospitalar. Janela, idade e níveis do app são escolhas técnicas | Implementado. Dados incompletos sem escore. Exercício mantém todos os componentes. Escala 2 indisponível. |
-| Transversal / histórico | Escritas válidas e avaliações associadas | Registro persistido de regra, versão, IDs, horário, mensagem e seguimento | Proposta da equipe | Implementado a partir das novas escritas. Observação fica aberta. Regra de fechamento após três avaliações não adotada. |
+## Revisão da norma usada
 
-No isolamento, os limiares da especificação DEV coincidem com a versão existente. O Contexto Unificado agrupa os achados sob uma sinalização amarela e enfatiza três noites curtas. Mantive as bandas v1 já integradas, incluindo o aviso com uma noite de até 6 h e a banda de maior atenção em até 4 h. Nenhuma retroclassificação foi persistida. Os textos novos da avaliação são em inglês.
+- **NASA-STD-3001 Vol. 1 Rev. C**: condicionamento (V1 4001, 4002, 4003, 4024) e dose de carreira (V1 4030).
+- **NASA-STD-3001 Vol. 2 Rev. D**: CO₂ (V2 6004), pressão total (V2 6006), temperatura e umidade (V2 6012, 6013), ruído (V2 6077).
+- **PIO₂: tabela da Rev. B**, citada numa apresentação da NASA de 2022. A Rev. D usa outros valores (122 mmHg como limite inferior absoluto e 333 mmHg como limite prático de hiperoxia).
+- **A Rev. E do Vol. 2 já está ativa e não foi conferida.** Nenhum número aqui representa conformidade com a revisão atual nem com os requisitos de uma missão.
 
-Os dados podem ser aceitos sem fornecer evidência suficiente para avaliação. Por exemplo, um teste de massa sem referência compatível ou um ruído em dBA sem espectro continuam disponíveis para histórico. Padrões selecionados permanecem fixados às edições indicadas. A API não representa conformidade completa com a revisão atual ou com requisitos específicos de uma missão.
+## Níveis e regras gerais
+
+| Tema | Como ficou | Origem |
+| --- | --- | --- |
+| Níveis | `level` é `null`, `advisory`, `caution`, `warning` ou `emergency`. `displayLevel` acrescenta `normal` e `unavailable` para a tela. `insufficient_data`, `stale` e `not_applicable` continuam como `status` e aparecem como Unavailable | Especificação 2.1, proposta do time |
+| Emergency | Só `cabin_pressure_total` e `cabin_inspired_oxygen`. Qualquer outra regra que chegue a Emergency é rebaixada para Warning. NEWS2 alto é Warning | Especificação 2.1, proposta do time |
+| Prioridade na tela | Emergency > Warning > Caution > Unavailable de sensor crítico (sinais vitais, pressão, O₂) > Advisory > Normal | Especificação 2.1 |
+| Validade | Sinais vitais 10 min, cabine 5 min, check-in diário 36 h. PVT-B mantém 7 dias, porque é feito a cada 4 dias. FC 0 ou > 250, SpO₂ > 100 e temperatura < 30 °C não são pontuadas | Especificação 2.4, proposta do time |
+| Texto | Caution ou acima termina com "Talk to your Crew Medical Officer." quando a frase ainda não cita o CMO. Ação operacional sem a palavra "procedure" recebe "Follow your mission's approved procedure." | Especificação 2.2 |
+| Confirmação | Warning e Emergency exigem `POST /alerts/:id/acknowledge`. Sem confirmação em 10 min (Warning) ou 2 min (Emergency): `escalatedTo: crew_medical_officer`. O prazo recomeça se o alerta sobe de nível | Especificação 2.3, proposta do time |
+| Relatório para a Terra | `QUEUED → SENT → RECEIVED → REPLIED`, calculado pelo relógio. Chegada = envio + atraso de ida. Resposta = envio + 2 × atraso + 15 min. Sem link fica `QUEUED` até o link voltar | Especificação 3.7, proposta do time; fórmula de [Parisi et al. 2023][delay] |
+
+## Regras por indicador
+
+| Área / indicador | Normal | Advisory | Caution | Warning | Emergency | Fonte do limite | Observação |
+| --- | --- | --- | --- | --- | --- | --- | --- |
+| Isolamento / sono (h) | > 6 | ≤ 6 em 1 ou 2 noites | ≤ 6 em 3 noites seguidas | ≤ 4 | | [Jones et al. 2022][rst]; [V1 6001][planning] | Cortes e níveis são do time |
+| Isolamento / qualidade, estresse, humor (0–100) | Faixa pessoal | Fora 1 ou 2 dias | Fora 3 dias seguidos | | | Faixa pessoal do time | 7 primeiros dias UTC, média ± 2 DP amostrais, **piso de DP de 5 pontos**. Qualidade compara nos dois sentidos, estresse só acima, humor só abaixo |
+| Isolamento / KSS (1–9) | 1 a 6 | 7 | 8 ou 9 | | | [Arsintescu et al. 2019][aviation] | Aviação, não validado em voo. Rótulos próprios até confirmar a licença |
+| Isolamento / Samn–Perelli (1–7) | 1 a 3 | 4 | 5 ou 6 | 7 | | SAM-TR-82-21 | 7 = "performance definitely impaired" na própria escala |
+| Isolamento / PVT-B velocidade | Faixa pessoal | | Abaixo em 1 teste | | | [Basner et al. 2011][pvt] | Linha de base do backend mantida: 7 dias, mínimo 2 testes, sem piso de DP |
+| Isolamento / PVT-B lapsos | Faixa pessoal | Acima em 1 teste | | | | [Basner et al. 2011][pvt] | Falsos inícios só são contados |
+| Gravidade / aeróbico e força (% do pré-voo) | ≥ 90% | 80% a 89% | < 80% | | | [Vol. 1 Rev. C][nasa1] V1 4003, V1 4024 | 80% é oficial; a faixa de 90% é do time |
+| Gravidade / VO₂max em EVA | ≥ 32,9 (microgravidade) ou ≥ 36,5 (superfície) | | | Abaixo do mínimo | | [Vol. 1 Rev. C][nasa1] V1 4001, V1 4002 | Só com contexto de EVA explícito. O app não autoriza EVA |
+| Gravidade / massa (% de perda) | < 3% | 3% a 5% | > 5% | | | Food and Nutrition Risk Record | 5% é marco do registro de risco, não limite oficial |
+| Gravidade / enjoo (0–20) | 0 a 4 | 5 a 19 | 20 | | | [NASA Standard Measures][standard] | Cortes do time |
+| Gravidade / tontura | Não | Sim | | Sim + quase desmaio | | Escala própria | Quase desmaio sem tontura não está na tabela 3.4: tratado como Advisory |
+| Gravidade / visão e Amsler | Não | | Sim | | | [Vigilância ocular][eye] | Autorrelato; não mede acuidade nem estabelece SANS |
+| Gravidade / dor de cabeça (0–10) | 0 a 3 | 4 a 10 | | | | Escala própria | Aparece ao lado do CO₂, sem afirmar causa |
+| Gravidade / stand test | Queda < 20/10 mmHg | FC sobe ≥ 30 bpm | Queda ≥ 20 sistólica ou ≥ 10 diastólica em até 3 min | Queda + tontura ou quase desmaio relatados depois de levantar | | [Freeman et al. 2011][ortho], definição clínica da Terra | **Só com `activity: post_landing`**; fora disso fica `not_applicable` |
+| Sinais vitais / NEWS2 | Soma 0, ou 1 a 4 sem parâmetro valendo 3 | | Um parâmetro valendo 3, ou soma 5 a 6 | Soma ≥ 7 | | [RCP 2017][rcp] | Hospitalar, não validado para astronautas. Escala 1 apenas |
+| Cabine / ppCO₂ 1 h | ≤ 3,0 mmHg | | 3,0 a 4,5 | > 4,5 | | [Vol. 2 Rev. D][nasa2] V2 6004; [OCHMO-TB-004][co2brief] | 4,5 é faixa de sintomas relatados, não limite oficial |
+| Cabine / ppCO₂ 7 dias | < 2,5 mmHg | ≥ 2,5 | | | | [OCHMO-TB-004][co2brief] | Exige 7 dias contínuos de leituras; sem isso fica Unavailable |
+| Cabine / pressão total | 5,0 a 15,0 psia | | | | Fora da faixa | [Vol. 2 Rev. D][nasa2] V2 6006 | Não considera tempo de exposição nem composição |
+| Cabine / O₂ inspirado (PIO₂) | 145 a 155 mmHg | | 127 a 144 ou 156 a 356 | | < 127 ou > 356 | Tabela da Rev. B | PIO₂ = (PB − 47) × FiO₂ |
+| Cabine / temperatura e umidade | 20 a 25 °C e 30 a 60% | Fora do Normal, entre 18 e 27 °C | Fora de 18 a 27 °C, ou umidade < 25% | | | [Vol. 2 Rev. D][nasa2] V2 6012, V2 6013 | Ver simplificações |
+| Cabine / ruído | ≤ 58 dBA (trabalho) ou ≤ 49 dBA (sono) | Acima da referência | ≥ 85 dBA | | | [Vol. 2 Rev. D][nasa2] V2 6077; [Goodman][acoustics] | Ver simplificações |
+| Cabine / sintomas pós-EVA | Nenhum item | | | Qualquer item | | [OCHMO-TB-037][dcs] | Não há critério aprovado de Emergency |
+| Radiação / carreira (% de 600 mSv) | < 75% | 75% a 89% | 90% a 99% | ≥ 100% | | [Vol. 1 Rev. C][nasa1] V1 4030 | Só avalia com histórico prévio atestado + contador contínuo desde o início da missão, em NASA_Q |
+| Radiação / evento solar | Sem evento | SPE dentro da nave | | SPE com atividade `eva`, ou `eventClass: ESPE` | | [NASA SRAG][srag] | Flag simulada, sem integração com GOES |
+| Distância / link com a Terra | Disponível ou com atraso | Sem link | | | | Proposta do time | Só informa. O escalonamento local não muda |
+
+## Simplificações do protótipo
+
+1. **Temperatura e umidade:** caixa retangular no lugar do polígono oficial entre 18 °C/75% e 27 °C/25%. Usa a última leitura, não uma média.
+2. **Ruído:** dBA de banda larga no lugar das curvas NC-50 (≈ 58 dBA) e NC-40 (≈ 49 dBA), que exigem bandas de oitava.
+3. **Pressão e O₂:** limites instantâneos, sem tempo de exposição nem composição da atmosfera.
+4. **Cabine como um único volume:** uma leitura nova de qualquer local substitui a anterior do mesmo indicador ao resolver alertas.
+5. **Relatório para a Terra:** simulação no mesmo navegador ou servidor. Nenhuma telemetria real sai do aparelho. O relatório lista os parâmetros em Caution ou acima; a tendência de 24 h não foi incluída. Humor e estresse nunca são exportados.
+6. **Sensor ao vivo e cenários:** dados simulados (`source: simulated`).
+
+## Onde o backend prevaleceu sobre a especificação v2
+
+| Tema | Backend (mantido) | Especificação v2 |
+| --- | --- | --- |
+| NEWS2 em exercício | Pulso e respiração continuam pontuando, fiel ao NEWS2 original | Mandava tirar |
+| NEWS2 Advisory | Não implementado: exige faixa pessoal de sinais vitais, que o backend não tem | Soma 1 a 4 com sinal fora da faixa pessoal |
+| ppCO₂ 1 h | Média ponderada no tempo, cobertura integral, sem extrapolar | Média simples |
+| Linha de base do PVT-B | 7 primeiros dias, mínimo 2 testes | 3 primeiros testes |
+| Taxa diária de radiação | Sem nível: `dose_rate` legado não tem grandeza dosimétrica definida e V1 4033 é critério de projeto | Advisory acima da referência por 3 dias |
+| Carreira de radiação | Só com histórico prévio atestado e ledger contínuo | Soma direta ÷ 600 |
+| Osso | Fora do backend. No front, só curva ilustrativa com selo e Bone Protection Tracker | Igual |
+| Exercício (min/dia) e força vs. plano | Só histórico | Advisory por volume |
+| Saída de "em observação" | Não adotada | Após 3 avaliações Normal |
+
+Os dados podem ser aceitos sem dar evidência suficiente para avaliação. Um teste de massa sem referência compatível, por exemplo, continua no histórico e aparece como Unavailable.
 
 [rst]: https://pmc.ncbi.nlm.nih.gov/articles/PMC8919197/
 [planning]: https://www.nasa.gov/reference/6-0-medical-operations/
@@ -42,9 +84,10 @@ Os dados podem ser aceitos sem fornecer evidência suficiente para avaliação. 
 [nasa2]: https://standards.nasa.gov/sites/default/files/standards/NASA/D/nasa-std-3001-vol-2-rev-d-signature.pdf
 [standard]: https://www.nasa.gov/reference/standard-measures/
 [eye]: https://ntrs.nasa.gov/api/citations/20170009173/downloads/20170009173.pdf
-[cardio]: https://www.nasa.gov/reference/risk-of-cardiovascular-adaptations/
+[ortho]: https://www.msdmanuals.com/professional/cardiovascular-disorders/symptoms-of-cardiovascular-disorders/orthostatic-hypotension
 [co2brief]: https://www.nasa.gov/wp-content/uploads/2023/12/ochmo-tb-004-carbon-dioxide.pdf
-[atmos]: https://www.nasa.gov/wp-content/uploads/2023/12/ochmo-tb-003-habitable-atmosphere.pdf
-[dcs]: https://www.nasa.gov/reference/risk-of-decompression-sickness/
+[acoustics]: https://ntrs.nasa.gov/api/citations/20090043801/downloads/20090043801.pdf
+[dcs]: https://www.nasa.gov/sites/default/files/atoms/files/dcs_technical_brief_ochmo.pdf
+[srag]: https://www.nationalacademies.org/cdn/materials/9fba0b8d-da37-49fe-9fc5-45b736630da3
 [delay]: https://ntrs.nasa.gov/api/citations/20230010972/downloads/Proof_Slides_Parisi_Megan_797.pdf
 [rcp]: https://www.rcp.ac.uk/resources/national-early-warning-score-news-2/

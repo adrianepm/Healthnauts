@@ -1,6 +1,6 @@
-import { randomUUID } from 'node:crypto';
+import { randomUUID } from './id.js';
 import { catalog } from './config/catalog.js';
-import { activities, destinations, doseCanonical, doseUnits, evaSymptoms, fitnessUnits, gas, rules } from './config/research.js';
+import { activities, destinations, doseCanonical, doseUnits, evaSymptoms, fitnessUnits, gas, rules, solarClasses } from './config/research.js';
 import { invalid, numericError, timestamp, validAstronaut, validId } from './validation.js';
 
 export const inDataset = (value, dataset) => dataset === 'simulated' ? value.source === 'simulated' : ['manual','sensor'].includes(value.source);
@@ -24,7 +24,7 @@ const inputs = {
   vitals: ['activity','spo2Scale','recordedAt','measurements'],
   posture: ['supervised','activity','standAt','samples'],
   radiation: ['missionId','scope','quantity','organ','mode','seriesId','periodStart','recordedAt','value','unit','completePriorHistory','doseMethod'],
-  solar: ['recordedAt','active'],
+  solar: ['recordedAt','active','eventClass'],
   mission: ['missionId','destination','activity','startedAt','recordedAt','oneWaySeconds','communication','solarConjunction','medicalResources','processingSeconds'],
   reference: ['missionId','indicator','method','recordedAt','value','unit'],
   report: ['actions'],
@@ -164,6 +164,7 @@ export function calculateResearch(kind, body, now) {
     }
     case 'solar':
       oneOf(source,['simulated'],'source'); flag(body.active,'active'); date(body.recordedAt,'recordedAt');
+      if (body.eventClass !== undefined) oneOf(body.eventClass,solarClasses,'eventClass');
       add('solar_event_simulated',Number(body.active)); break;
     case 'mission': {
       id(body.missionId,'missionId'); oneOf(body.destination,destinations,'destination'); oneOf(body.activity,activities,'activity');

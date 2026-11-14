@@ -4,17 +4,71 @@ Base local `http://127.0.0.1:3000/api/v1`. Use `astronautId=astro_demo_001&datas
 
 | Tela | Rotas e grupos |
 | --- | --- |
-| Inicial | `GET /overview`. Os cinco IDs, contagens, últimas leituras e destaques continuam disponíveis. |
+| Inicial | `GET /overview`. Os cinco IDs, contagens, últimas leituras e destaques continuam disponíveis, agora com o nível de cada área (ver "Níveis v2" abaixo). |
 | Radiação | `GET /areas/radiation`, `/history` e `/records` na mesma área. Grupos de exposição e evento solar. Operações `radiation` e `solar`. |
 | Isolamento | Detalhe, histórico e registros em `/areas/isolation_confinement`. `sleep-episodes` e `pvt-sessions` continuam com seus POSTs e GETs por ID. |
 | Distância | Detalhe e histórico em `/areas/distance_from_earth`. `GET /mission` reúne contexto e referências. Operações `mission`, `reference`, `report`. |
 | Gravidade | Detalhe e histórico em `/areas/gravity_fields`. Condicionamento e sintomas em `/records`. Sinais vitais e postura em `vitals` e `posture`. Mostre NEWS2 como grupo dentro desta tela. |
 | Cabine | Detalhe e histórico em `/areas/hostile_closed_environment`. Use `atmosphere`, `noise`, `post_eva` para entradas compostas. |
-| Histórico transversal | `GET /alerts` retorna `assessments`, `alerts` e `inObservation`. Pode ser mostrado no perfil ou dentro das telas existentes. |
+| Histórico transversal | `GET /alerts` retorna `assessments`, `alerts` e `inObservation` (contrato antigo) e, na v2, `notifications`, `active` e `acknowledgement`. |
+| Ground Control | `GET /ground-reports` e `POST /ground-reports`. Simulação no mesmo navegador ou servidor. |
+
+## Níveis v2
+
+Toda avaliação traz:
+
+- `level`: `null`, `advisory`, `caution`, `warning` ou `emergency`. `null` quer dizer que nenhuma regra foi acionada.
+- `displayLevel`: o que a tela mostra. Acrescenta `normal` (avaliado, sem regra acionada) e `unavailable` (`insufficient_data`, `stale`, `not_applicable` e faixa pessoal em coleta).
+- `status`, `message` (texto "What to do" da especificação v2), `group`, `critical` (sinal vital, pressão ou O₂), `requiresAcknowledgement` (Warning ou Emergency) e `inObservation` (Caution ou acima).
+- `rule.source` (de onde vem o limite) e `rule.levelSource` (de onde vem o nível, sempre `team_proposal`).
+
+Cor, ícone e rótulo de cada nível vêm em `GET /overview` → `levels`; não fixe no front. Emergency só existe para pressão da cabine e O₂ inspirado. Prioridade na tela: Emergency > Warning > Caution > Unavailable crítico > Advisory > Normal.
+
+### `GET /overview`
+
+Além dos campos antigos, devolve:
+
+| Campo | Conteúdo |
+| --- | --- |
+| `overallLevel`, `overallDisplayLevel`, `headline` | Pior avaliação atual entre todas as áreas. `headline` tem `level`, `displayLevel`, `indicator` e `message`. |
+| `vitalSigns` | Nível próprio dos sinais vitais (NEWS2), separado da área de gravidade. |
+| `activeAlerts` | Alertas ativos (Caution ou acima), no formato de `/alerts`. |
+| `link` | Estado do link com a Terra: `status` (`available`, `delayed`, `unavailable`, `unknown`), `oneWaySeconds`, `estimatedResponseSeconds`, `message`. |
+| `levels`, `footer` | Tabela de níveis e o texto fixo do rodapé. |
+| `areas[].level`, `areas[].displayLevel`, `areas[].headline` | Pior avaliação da área. Na gravidade, sem os sinais vitais. |
+| `areas[].groups` | Pior avaliação por grupo da área (ex.: `atmosphere`, `noise`, `post_eva`), no formato de `headline`. |
+
+### `POST /alerts/:id/acknowledge`
+
+Corpo `{ "astronautId": "astro_demo_001", "dataset": "simulated" }` (`dataset` opcional). O `id` vem de `GET /alerts` → `active[].id`.
+
+- 200 com `alert` atualizado e `note`. Repetir não muda `acknowledgedAt`.
+- 404 `ALERT_NOT_FOUND`; 409 `ACKNOWLEDGEMENT_NOT_REQUIRED` para Caution; 400 para corpo inválido.
+
+Cada alerta de `notifications`/`active` tem `shownAt`, `active`, `resolvedAt`, `level`, `peakLevel`, `message`, `value`, `unit`, `recordedAt`, `requiresAcknowledgement`, `acknowledgeBy`, `acknowledgedAt`, `acknowledgementStatus` (`not_required`, `pending`, `acknowledged`, `not_acknowledged`, `resolved_before_acknowledgement`), `escalatedTo` e `groundReportId`. Sem confirmação em 10 min (Warning) ou 2 min (Emergency), `escalatedTo` vira `crew_medical_officer`. Tudo é calculado pelo relógio a cada consulta: atualize a tela de tempos em tempos. Mostre sempre `acknowledgementNote`: "No acknowledgement does not mean loss of consciousness." O alerta continua ativo, mesmo confirmado, até uma avaliação válida abaixo de Caution; dado indisponível não encerra alerta.
+
+### `GET /ground-reports` e `POST /ground-reports`
+
+`GET /ground-reports?astronautId=...&dataset=simulated` devolve `link`, `source` e `reports`, do mais novo para o mais antigo. Warning e Emergency geram relatório automático (`kind: automatic`); alertas que surgem no mesmo instante vão no mesmo relatório (`alertIds`). Cada relatório tem `createdAt`, `level`, `immediate` (Emergency), `mission`, `parameters` (Caution ou acima, com `measuredAt` e `receivedAt`), `acknowledgement` (com `mark: "not acknowledged"` quando algum alerta passou do prazo) e `transmission`:
+
+| `transmission.status` | Quando |
+| --- | --- |
+| `QUEUED` | Sem link com a Terra (ou sem missão cadastrada). `message`: "No contact with Earth. Follow the onboard procedure with your Crew Medical Officer." Sai da fila quando um novo contexto de missão com link é gravado. |
+| `SENT` | `sentAt` = criação ou volta do link. `expectedArrivalAt = sentAt + oneWaySeconds`; `expectedReplyAt = sentAt + 2 × oneWaySeconds + 15 min`. |
+| `RECEIVED` | Depois de `expectedArrivalAt`. |
+| `REPLIED` | Depois de `expectedReplyAt`; `reply`: "Flight surgeon reviewed your report. Continue the onboard procedure and send new vitals in 30 min." |
+
+Não existe status `NO_LINK`. Para ligar ou desligar o link na demo, grave uma nova operação `mission` com `communication` `unavailable` ou `delayed`.
+
+`POST /ground-reports` cria um relatório manual: `{ astronautId, id, source, actions: [{ recordedAt, description }], note? }`. 201 na primeira vez, 200 com `replayed: true` no reenvio idêntico, 409 com conteúdo diferente. A operação antiga `report` continua igual (`prepared` / `not_sent`).
+
+### Perfil padrão e cenários
+
+`POST /demo/profile` com `{ astronautId }` grava, uma vez só, a missão de demonstração (Marte, 480 s de atraso), referências pré-voo e histórico de dose atestado, para a dose de carreira ser avaliada. Os cenários já chamam isso sozinhos; chame no início da sessão do front. Cenários de cabine usam o local `cabin-main`, o mesmo do sensor simulado ao vivo; `location` opcional no corpo troca o local.
 
 Para qualquer operação nova, use `POST /areas/:areaId/operations/:kind` com `{ astronautId, id, source, ...campos }`. Consulte com `GET` no mesmo caminho acrescido de `/:id` e da query do dataset. Um reenvio idêntico devolve 200 e `replayed: true`. A primeira gravação retorna 201. Conteúdo diferente com mesmo tipo, astronauta e ID retorna 409. O POST legado de `records` preserva a gravação de cada lote, mas avaliações equivalentes não duplicam o histórico.
 
-Os payloads completos abaixo, inclusive retorno real das rotas, estão no objeto `research` dos [exemplos da API](examples.json). Os exemplos anteriores de sono, PVT e registros continuam no mesmo arquivo.
+Os payloads completos abaixo, inclusive retorno real das rotas, estão no objeto `research` dos [exemplos da API](examples.json). O fluxo v2 (perfil, cenário de despressurização, confirmação e relatório) está no objeto `v2`, gerado por `node docs/generate-examples.mjs`. Os exemplos anteriores de sono, PVT e registros continuam no mesmo arquivo.
 
 | Exemplo | Campos necessários e saída |
 | --- | --- |
@@ -35,6 +89,6 @@ Durante o carregamento mostre estado de espera. Em erro de resposta use `error.c
 
 Mostre `rule.id`, `rule.version`, `rule.source`, `context`, `recordIds`, `message`, `limitation` e `quality`. Em NEWS2 mostre `scientificCategory`, `components` e `score` separadamente. A diastólica fica disponível em histórico sem somar pontos. Use `/alerts` para observações persistidas e o detalhe para a avaliação atual. Uma observação pode continuar aberta quando o dado fica antigo.
 
-Liste os cenários com `GET /scenarios`. Execute `POST /scenarios/:scenario` com `{ "astronautId": "astro_demo_001", "id": "run-1" }`. Use ID próprio por execução. Há `high-co2`, `solar-event`, `poor-sleep`, `fitness-change` e `offline-report`. Eles gravam dados relativos ao instante da primeira execução e não se repetem ao reiniciar. Para achar o relatório do cenário offline use `operation.calculation.reportId`. Os dados ficam no dataset simulado, mesmo quando o cenário modela indisponibilidade de comunicação.
+Liste os cenários com `GET /scenarios`. Execute `POST /scenarios/:scenario` com `{ "astronautId": "astro_demo_001", "id": "run-1" }`. Use ID próprio por execução. Há `high-co2`, `solar-event`, `poor-sleep`, `fitness-change`, `offline-report`, `depressurization` (Emergency), `sensor-fault` (Unavailable) e `fever` (NEWS2 alto, Warning). Eles gravam dados relativos ao instante da primeira execução e não se repetem ao reiniciar. Para achar o relatório do cenário offline use `operation.calculation.reportId`. Os dados ficam no dataset simulado, mesmo quando o cenário modela indisponibilidade de comunicação.
 
 O front-end pode ser publicado separadamente. Para demonstração pública, hospede o Express em um serviço próprio com armazenamento persistente e configure `CORS_ORIGINS` para a origem do front-end. O localhost da máquina do Bernardo só está disponível naquela máquina. Privacidade por papel depende de autenticação. A API atual é para dados fictícios, inclusive ao usar o dataset de demonstração do fluxo manual.

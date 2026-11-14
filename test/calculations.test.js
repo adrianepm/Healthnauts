@@ -3,9 +3,9 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm, rename, mkdir } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { calculateSleep, calculatePvt } from '../src/calculations.js';
-import { openStore } from '../src/store.js';
-import { createApp } from '../src/app.js';
+import { calculateSleep, calculatePvt } from '../shared/calculations.js';
+import { openStore } from '../server/store.js';
+import { createApp } from '../server/app.js';
 const sleep = (extra = {}) => ({ astronautId: 'astro_demo_001', episodeId: 'sleep-001', source: 'manual', bedAt: '2026-11-13T23:00:00-03:00', wakeAt: '2026-11-14T07:00:00-03:00', sleepLatencyMinutes: 20, awakeMinutes: 25, ...extra });
 const pvt = (extra = {}) => ({ astronautId: 'astro_demo_001', sessionId: 'pvt-001', source: 'manual', startedAt: '2026-11-14T11:00:00Z', endedAt: '2026-11-14T11:03:00Z', durationMs: 180000, completed: true, events: [
   { kind: 'response', atMs: 1500, rtMs: 500 },

@@ -1,4 +1,4 @@
-import { randomUUID } from 'node:crypto';
+import { randomUUID } from './id.js';
 import { activities } from './config/research.js';
 export const validAstronaut = value => typeof value === 'string' && /^astro_[A-Za-z0-9_-]{1,64}$/.test(value);
 export const validId = value => typeof value === 'string' && /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(value);

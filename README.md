@@ -232,7 +232,7 @@ A API também aceita check-ins parciais. `collection.schedule` propõe coleta
 diária para os seis indicadores de check-in. Para PVT-B, propõe quatro dias
 entre testes (referência da pesquisa) e coleta antes de tarefas críticas
 (proposta da equipe). São metadados configuráveis em
-`src/config/isolation.js`; não são agendamentos nem bloqueios de POST.
+`shared/config/isolation.js`; não são agendamentos nem bloqueios de POST.
 
 O front-end executa o teste e usa `performance.now()` para medir os tempos.
 A integração legada pode continuar enviando os três agregados a `/records`,
@@ -432,7 +432,7 @@ são classificações demonstrativas, sem diagnóstico ou alertas de emergência
 Não há conclusão “Normal”. Consulte `status` para distinguir ausência de
 sinal demonstrativo de ausência de dados, baseline insuficiente e coleta.
 
-As regras em `src/config/isolation.js` são configuráveis e expostas no
+As regras em `shared/config/isolation.js` são configuráveis e expostas no
 catálogo. Cada regra identifica `basis: "fonte"` com referências ou
 `basis: "proposta da equipe"` com nota. Mesmo os limiares referenciados têm
 uso demonstrativo; não validam o produto para astronautas. Sono ≤6 h,

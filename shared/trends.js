@@ -10,10 +10,10 @@ export function trends(records, definitions, dataset) {
     const base = { indicator: def.id, source, isSimulated: source === 'simulated', unit: def.unit,
       method: def.valueType === 'text' ? null : 'latest_pair_difference', latestRecordId: latest?.id ?? null,
       previousRecordId: null, delta: null, direction: null };
-    if (def.valueType === 'text' || def.dynamicUnit) return { ...base, status: 'not_applicable', message: 'Relatos textuais estão disponíveis no histórico; não há comparação numérica.' };
-    if (!previous) return { ...base, status: 'insufficient_history', message: 'Histórico insuficiente: faltam dois registros comparáveis em instantes distintos no período consultado.' };
+    if (def.valueType === 'text' || def.dynamicUnit) return { ...base, status: 'not_applicable', message: 'Text reports are available in the history. There is no numeric comparison.' };
+    if (!previous) return { ...base, status: 'insufficient_history', message: 'Not enough history: two comparable records at different times are needed in this period.' };
     const delta = Number((latest.value - previous.value).toPrecision(12));
     return { ...base, previousRecordId: previous.id, delta, direction: delta > 0 ? 'increase' : delta < 0 ? 'decrease' : 'unchanged',
-      status: 'available', message: `O valor${source === 'simulated' ? ' simulado' : ''} passou de ${previous.value} para ${latest.value}${def.unit ? ` ${def.unit}` : ' na escala demonstrativa'}. Comparação pontual, sem inferência clínica ou estatística.` };
+      status: 'available', message: `The${source === 'simulated' ? ' simulated' : ''} value went from ${previous.value} to ${latest.value}${def.unit ? ` ${def.unit}` : ' on the prototype scale'}. Point comparison, with no clinical or statistical inference.` };
   }));
 }

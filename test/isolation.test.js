@@ -3,12 +3,12 @@ import assert from 'node:assert/strict';
 import { mkdtemp, writeFile, readFile, rm } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { catalog, pvtIndicators } from '../src/config/catalog.js';
-import { validateBatch } from '../src/validation.js';
-import { monitoring } from '../src/monitoring.js';
-import { createDemo, ASTRONAUT } from '../src/demo.js';
-import { openStore } from '../src/store.js';
-import { createApp } from '../src/app.js';
+import { catalog, pvtIndicators } from '../shared/config/catalog.js';
+import { validateBatch } from '../shared/validation.js';
+import { monitoring } from '../shared/monitoring.js';
+import { createDemo, ASTRONAUT } from '../shared/demo.js';
+import { openStore } from '../server/store.js';
+import { createApp } from '../server/app.js';
 const definitions = catalog.isolation_confinement;
 const now = new Date('2026-11-14T15:00:00Z');
 const record = (indicator, value, extra = {}) => ({ indicator, value, unit: definitions.find(d => d.id === indicator).unit, source: 'manual', recordedAt: now.toISOString(), ...extra });
@@ -57,12 +57,13 @@ test('baseline aguarda sete dias, exige dias suficientes e variância, usa médi
   assert.ok(Math.abs(ready.baseline.standardDeviation - Math.sqrt(4 / 6)) < 1e-10);
   assert.equal(ready.baseline.config.basis, 'proposta da equipe');
   assert.equal(assess('sleep_quality', [50, 51]).status, 'baseline_insufficient');
-  assert.equal(assess('sleep_quality', Array(10).fill(50)).baseline.reason, 'zero_variance');
-  assert.equal(assess('sleep_quality', [...values, 90, 90]).level, null);
-  assert.equal(assess('sleep_quality', [...values, 90, 90, 90]).level, 'attention');
+  assert.equal(assess('sleep_quality', Array(10).fill(50)).baseline.appliedStandardDeviation, 5);
+  assert.equal(assess('pvt_lapses', Array(10).fill(2)).baseline.reason, 'zero_variance');
+  assert.equal(assess('sleep_quality', [...values, 90, 90]).level, 'advisory');
+  assert.equal(assess('sleep_quality', [...values, 90, 90, 90]).level, 'caution');
   assert.equal(assess('stress', [...values, 10, 10, 10]).level, null);
-  assert.equal(assess('stress', [...values, 90, 90, 90]).level, 'attention');
-  assert.equal(assess('mood_score', [...values, 10, 10, 10]).level, 'attention');
+  assert.equal(assess('stress', [...values, 90, 90, 90]).level, 'caution');
+  assert.equal(assess('mood_score', [...values, 10, 10, 10]).level, 'caution');
 });
 
 test('não mistura origens nem duplica dias, lacunas quebram sequência e futuro é excluído', () => {
@@ -70,22 +71,22 @@ test('não mistura origens nem duplica dias, lacunas quebram sequência e futuro
   const records = series('sleep_quality', [50, 51, 49, 50, 51, 49, 50, 90, 90, 90]);
   records[8].recordedAt = records[7].recordedAt;
   let result = monitoring(records, def, 'real', '2026-11-11')[0];
-  assert.equal(result.level, null);
+  assert.equal(result.level, 'advisory');
   const noBaseline = [...series('sleep_quality', [50, 51, 49]), ...series('sleep_quality', [50, 51, 49, 50, 51, 49, 50], 'sensor')];
   result = monitoring(noBaseline, def, 'real', '2026-11-11')[0];
   assert.equal(result.baseline.status, 'insufficient');
   const future = monitoring(series('sleep_quality', [50, 51, 49, 50, 51, 49, 50, 90, 90, 90]), def, 'real', '2026-11-09')[0];
-  assert.equal(future.level, null); assert.equal(future.recordedAt, '2026-11-08T12:00:00.000Z');
+  assert.equal(future.level, 'advisory'); assert.equal(future.recordedAt, '2026-11-08T12:00:00.000Z');
 });
 
 test('limites demonstrativos, origem das regras e PVT com duas amostras em sete dias', () => {
-  for (const [id, value, level] of [['sleep_duration', 4, 'risk'], ['sleep_duration', 6, 'attention'], ['sleep_duration', 6.01, null], ['sleepiness_kss', 7, 'attention'], ['sleepiness_kss', 8, 'risk'], ['fatigue_samn_perelli', 4, 'attention'], ['fatigue_samn_perelli', 5, 'risk']]) {
+  for (const [id, value, level] of [['sleep_duration', 4, 'warning'], ['sleep_duration', 6, 'advisory'], ['sleep_duration', 6.01, null], ['sleepiness_kss', 7, 'advisory'], ['sleepiness_kss', 8, 'caution'], ['fatigue_samn_perelli', 4, 'advisory'], ['fatigue_samn_perelli', 5, 'caution']]) {
     const result = assess(id, [value]); assert.equal(result.level, level); assert.ok(result.isDemonstrative);
   }
   const records = series('pvt_response_speed', [3, 4, 1]);
   records[1].recordedAt = '2026-11-05T12:00:00Z'; records[2].recordedAt = '2026-11-09T12:00:00Z';
   const result = monitoring(records, definitions.filter(d => d.id === 'pvt_response_speed'), 'real', '2026-11-10')[0];
-  assert.equal(result.baseline.sampleCount, 2); assert.equal(result.level, 'attention');
+  assert.equal(result.baseline.sampleCount, 2); assert.equal(result.level, 'caution');
   for (const def of definitions.filter(d => d.monitoring)) for (const rule of def.monitoring.rules) {
     assert.ok(['fonte', 'proposta da equipe'].includes(rule.basis)); assert.ok(rule.note);
     if (rule.basis === 'fonte') assert.ok(rule.references.length);
@@ -138,7 +139,7 @@ test('HTTP mantém contrato, persiste check-in/PVT e usa histórico completo na 
   const response = await fetch(`${base}/history?${query}&indicator=sleep_quality&from=2026-11-10T00:00:00Z&to=2026-11-11T00:00:00Z`);
   const history = await response.json();
   assert.equal(response.status, 200); assert.equal(history.records.length, 1);
-  assert.equal(history.monitoring[0].baseline.sampleCount, 7); assert.equal(history.monitoring[0].level, 'attention');
+  assert.equal(history.monitoring[0].baseline.sampleCount, 7); assert.equal(history.monitoring[0].level, 'caution');
   assert.ok(Array.isArray(history.trends));
   const detail = await (await fetch(`${base}?${query}`)).json();
   assert.ok(detail.indicatorDefinitions && detail.latestRecords && detail.monitoring);

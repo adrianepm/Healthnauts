@@ -3,11 +3,11 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { openStore } from '../src/store.js';
-import { createApp } from '../src/app.js';
-import { catalog } from '../src/config/catalog.js';
-import { trends } from '../src/trends.js';
-import { timestamp } from '../src/validation.js';
+import { openStore } from '../server/store.js';
+import { createApp } from '../server/app.js';
+import { catalog } from '../shared/config/catalog.js';
+import { trends } from '../shared/trends.js';
+import { timestamp } from '../shared/validation.js';
 const astronautId = 'astro_demo_001';
 const now = new Date('2026-11-14T15:00:00Z');
 async function fixture(t) {
@@ -92,7 +92,7 @@ test('arquivo inválido não é sobrescrito e datas impossíveis são rejeitadas
   assert.equal(timestamp('2026-02-29T10:00:00Z'), false);
 });
 test('validação das escalas e intervalos segue o catálogo', async () => {
-  const { validateBatch } = await import('../src/validation.js');
+  const { validateBatch } = await import('../shared/validation.js');
   const validate = (area, r) => validateBatch({ astronautId, records: [r] }, area, catalog[area]);
   const fatigue = { indicator: 'fatigue', unit: null, value: 3, recordedAt: now.toISOString(), source: 'simulated' };
   for (const value of [0, 6, 2.5, '3']) assert.throws(() => validate('isolation_confinement', { ...fatigue, value }));
