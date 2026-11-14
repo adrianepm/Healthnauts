@@ -1,222 +1,87 @@
-import React, { useState, useEffect } from 'react';
-import { motion } from 'framer-motion';
-import { ScoreRing } from '../components/ScoreRing';
-import { HazardCard, AreaHazardData } from '../components/HazardCard';
-import { VitalTile, VitalTileData } from '../components/VitalTile';
-import { BodyMap } from '../components/BodyMap';
-import { TaskList } from '../components/TaskList';
-import { AlertList } from '../components/AlertList';
+import { useEffect, useState } from 'react';
+import { ArrowRight, CircleCheck, ClipboardList, Database, Radio, TriangleAlert } from 'lucide-react';
+import { Link } from 'react-router-dom';
+import { areas, crewName, labelFor, timeLabel } from '../config/presentation';
+import { apiService, type ApiAlertsResponse, type ApiMissionResponse, type ApiOverviewResponse } from '../services/api';
 import { useStore } from '../store/useStore';
-import { apiService, ApiOverviewResponse, ApiAlertsResponse } from '../services/api';
-import { StatusLevel } from '../types';
-import { AlertOctagon, RefreshCw, Database, ShieldAlert, WifiOff } from 'lucide-react';
+import { CrewFigure } from '../components/CrewFigure';
+import { DesignStatus } from '../components/DesignStatus';
 
-export const Geral: React.FC = () => {
-  const { astronautId, dataset, refreshTrigger, triggerRefresh } = useStore();
+type Snapshot = { context: string; overview: ApiOverviewResponse; alerts: ApiAlertsResponse | null; mission: ApiMissionResponse | null };
 
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState<string | null>(null);
-  const [overview, setOverview] = useState<ApiOverviewResponse | null>(null);
-  const [alertsData, setAlertsData] = useState<ApiAlertsResponse | null>(null);
-
+export function Geral() {
+  const { astronautId, dataset, refreshTrigger, triggerRefresh, setIsNewLogModalOpen } = useStore();
+  const context = JSON.stringify([astronautId, dataset, refreshTrigger]);
+  const [snapshot, setSnapshot] = useState<Snapshot>();
+  const [failure, setFailure] = useState('');
   useEffect(() => {
-    let isCancelled = false;
     const controller = new AbortController();
-
-    setLoading(true);
-    setError(null);
-
-    Promise.all([
-      apiService.getOverview(astronautId, dataset, controller.signal),
-      apiService.getAlerts(astronautId, dataset, controller.signal),
-    ])
-      .then(([ov, al]) => {
-        if (!isCancelled) {
-          setOverview(ov);
-          setAlertsData(al);
-          setLoading(false);
-        }
-      })
-      .catch((err) => {
-        if (!isCancelled && err.name !== 'AbortError') {
-          setError(
-            err.message ||
-              'Não foi possível conectar ao back-end da API (http://127.0.0.1:3000/api/v1). Certifique-se de que o servidor está rodando (npm start).'
-          );
-          setLoading(false);
-        }
+    const args = [astronautId, dataset, controller.signal] as const;
+    Promise.allSettled([apiService.getOverview(...args), apiService.getAlerts(...args), apiService.getMission(...args)])
+      .then(([overview, alerts, mission]) => {
+        if (controller.signal.aborted) return;
+        if (overview.status === 'rejected') { setFailure(context); return; }
+        setSnapshot({ context, overview: overview.value, alerts: alerts.status === 'fulfilled' ? alerts.value : null,
+          mission: mission.status === 'fulfilled' ? mission.value : null });
       });
+    return () => controller.abort();
+  }, [astronautId, dataset, context]);
 
-    return () => {
-      isCancelled = true;
-      controller.abort();
-    };
-  }, [astronautId, dataset, refreshTrigger]);
+  const data = snapshot?.context === context ? snapshot : undefined;
+  const attention = data?.alerts?.inObservation ?? [];
+  const latestAlerts = [...attention].sort((a, b) => Number(b.level === 'risk') - Number(a.level === 'risk') ||
+    Date.parse(b.evaluatedAt ?? b.recordedAt ?? '') - Date.parse(a.evaluatedAt ?? a.recordedAt ?? ''));
+  const mission = data?.mission?.mission?.input;
 
-  // Compute overall status and score
-  const activeAlerts = alertsData?.alerts || [];
-  const riskCount = activeAlerts.filter((a) => a.level === 'risk').length;
-  const attentionCount = activeAlerts.filter((a) => a.level === 'attention').length;
+  return <div className="overview">
+    <div className="page-heading overview-heading">
+      <div><p className="section-kicker"><Radio size={15} /> Mission dashboard</p><h1>Mission health overview</h1>
+        <p>Review your records, see what needs attention and choose an area to explore.</p></div>
+      <button className="design-button primary" onClick={() => setIsNewLogModalOpen(true)}><ClipboardList size={19} /> Record an observation</button>
+    </div>
 
-  let computedLevel: StatusLevel = 'green';
-  let computedScore = 94;
-  let worstFactorText = 'Nenhum sinal crítico ativo';
+    <dl className="context-strip">
+      <div><dt>Crew member</dt><dd>{crewName(astronautId)}</dd></div>
+      <div><dt>Mission destination</dt><dd>{mission?.destination ?? (data ? data.mission ? 'No mission recorded' : 'Context unavailable' : '—')}</dd></div>
+      <div><dt>Data source</dt><dd><Database size={15} /> {dataset === 'simulated' ? 'Simulation' : 'Crew & sensor records'}</dd></div>
+      <div><dt>Under observation</dt><dd className={latestAlerts.length ? 'attention-text' : ''}>{latestAlerts.length ? <a href="#attention-heading">{latestAlerts.length} · Review</a> : data?.alerts ? 0 : '—'}</dd></div>
+    </dl>
 
-  if (riskCount > 0) {
-    computedLevel = 'red';
-    computedScore = Math.max(45, 94 - riskCount * 25 - attentionCount * 10);
-    worstFactorText = activeAlerts.find((a) => a.level === 'risk')?.message || 'Risco demonstrativo ativo';
-  } else if (attentionCount > 0) {
-    computedLevel = 'yellow';
-    computedScore = Math.max(68, 94 - attentionCount * 8);
-    worstFactorText = activeAlerts[0]?.message || 'Atenção demonstrativa em análise';
-  }
-
-  // Map 5 areas to HazardCard data
-  const areaRoutes: Record<string, string> = {
-    radiation: '/radiacao',
-    isolation_confinement: '/isolamento',
-    distance_from_earth: '/distancia',
-    gravity_fields: '/gravidade',
-    hostile_closed_environment: '/ambiente',
-  };
-
-  const hazards: AreaHazardData[] = (overview?.areas || []).map((a) => {
-    const areaAlerts = activeAlerts.filter((al) => al.areaId === a.areaId);
-    const hasRisk = areaAlerts.some((al) => al.level === 'risk');
-    const hasAttention = areaAlerts.some((al) => al.level === 'attention');
-    const level: StatusLevel = hasRisk ? 'red' : hasAttention ? 'yellow' : a.dataStatus === 'available' ? 'green' : 'gray';
-
-    return {
-      id: a.areaId,
-      areaId: a.areaId,
-      title: a.title,
-      subtitle: a.summary,
-      level,
-      route: areaRoutes[a.areaId] || '/',
-      dataStatus: a.dataStatus,
-      recordCount: a.recordCount,
-      lastRecordedAt: a.lastRecordedAt,
-      highlights: a.highlights,
-    };
-  });
-
-  // Extract vital tiles from highlights or overview
-  const allHighlights = overview?.areas?.flatMap((a) => a.highlights) || [];
-  const vitalTiles: VitalTileData[] = allHighlights.slice(0, 6).map((h) => {
-    const alert = activeAlerts.find((al) => al.indicator === h.indicator);
-    const level: StatusLevel = alert?.level === 'risk' ? 'red' : alert?.level === 'attention' ? 'yellow' : 'green';
-
-    return {
-      id: h.id,
-      name: h.indicator.replace(/_/g, ' ').toUpperCase(),
-      value: h.value,
-      unit: h.unit,
-      level,
-      recordedAt: h.recordedAt,
-      source: h.source,
-      statusText: alert ? alert.message : 'Dentro da referência',
-      ruleId: alert?.rule?.id,
-      ruleVersion: alert?.rule?.version,
-      ruleSource: alert?.rule?.source,
-      limitation: alert?.limitation,
-    };
-  });
-
-  if (error) {
-    return (
-      <div className="p-8 max-w-2xl mx-auto rounded-2xl bg-space-900 border border-rose-500/40 text-center space-y-4 shadow-2xl">
-        <div className="w-14 h-14 mx-auto rounded-full bg-rose-500/15 text-rose-400 flex items-center justify-center">
-          <WifiOff size={28} />
+    <div className="overview-layout">
+      <section className="design-panel navigation-panel" aria-labelledby="areas-heading">
+        <div className="panel-heading"><h2 id="areas-heading">Spaceflight hazards</h2><p>Select an area to see its latest records and actions.</p></div>
+        <div className="hazard-map">
+          <svg className="orbit-guides" viewBox="0 0 720 400" preserveAspectRatio="none" aria-hidden="true">
+            <g fill="none" stroke="currentColor"><ellipse cx="360" cy="200" rx="230" ry="146" strokeDasharray="3 8" />
+              <ellipse cx="360" cy="200" rx="154" ry="181" opacity=".45" /><path d="M360 16v360M52 200h616" opacity=".35" /></g>
+          </svg>
+          <CrewFigure />
+          {areas.map(({ id, path, title, icon: Icon }) => {
+            const summary = data?.overview.areas.find(area => area.areaId === id);
+            const observation = latestAlerts.find(alert => alert.areaId === id);
+            return <Link to={path} data-area={id} className="hazard-node" key={id}>
+              <span className="node-icon"><Icon size={22} aria-hidden="true" /></span>
+              <span className="node-copy"><strong>{title}</strong>
+                {observation ? <DesignStatus assessment={observation} /> : <small>{summary ? summary.dataStatus === 'available' ? 'Records available' : 'No records' : 'Open area'}</small>}
+              </span><ArrowRight className="node-arrow" size={16} aria-hidden="true" />
+            </Link>;
+          })}
         </div>
-        <div>
-          <h2 className="text-lg font-bold text-white tracking-wide">
-            Erro de Conexão com a API AstroVida
-          </h2>
-          <p className="text-xs text-space-300 mt-2 leading-relaxed">
-            {error}
-          </p>
-        </div>
-        <div className="p-3 rounded-xl bg-space-950 font-mono text-[11px] text-space-400 text-left">
-          <code>Back-end URL: http://127.0.0.1:3000/api/v1</code><br />
-          <code>Comando de inicialização: npm start</code>
-        </div>
-        <button
-          onClick={triggerRefresh}
-          className="flex items-center gap-2 mx-auto px-5 py-2.5 rounded-xl bg-astro-cyan text-space-950 font-bold text-xs hover:bg-sky-400 shadow-glow-cyan transition-all"
-        >
-          <RefreshCw size={14} />
-          <span>Tentar Novamente</span>
-        </button>
-      </div>
-    );
-  }
-
-  return (
-    <motion.div
-      initial={{ opacity: 0, y: 8 }}
-      animate={{ opacity: 1, y: 0 }}
-      exit={{ opacity: 0, y: -8 }}
-      transition={{ duration: 0.25 }}
-      className="space-y-6"
-    >
-      {/* 3-Column Responsive Grid */}
-      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
-        {/* Coluna Esquerda: Corpo Humano Interativo & Tarefas do Dia */}
-        <div className="lg:col-span-4 space-y-5">
-          <BodyMap />
-          <TaskList />
-        </div>
-
-        {/* Coluna Central: Score Ring & 5 Perigos da Missão */}
-        <div className="lg:col-span-4 space-y-5">
-          <ScoreRing
-            apiScore={computedScore}
-            apiWorstFactor={worstFactorText}
-            apiLevel={computedLevel}
-          />
-
-          <div className="space-y-3">
-            <div className="flex items-center justify-between px-1">
-              <h3 className="text-xs font-bold text-space-300 uppercase tracking-wider font-mono">
-                5 Perigos da Missão (NASA Biohazards)
-              </h3>
-              <span className="text-[10px] text-space-500 font-mono">
-                {overview?.areas?.length || 5} ÁREAS API
-              </span>
-            </div>
-            {hazards.map((hazard) => (
-              <HazardCard key={hazard.id} hazard={hazard} />
-            ))}
-          </div>
-        </div>
-
-        {/* Coluna Direita: Sinais Vitais & Alertas Priorizados */}
-        <div className="lg:col-span-4 space-y-5">
-          {/* Vital Tiles (2x3 grid) */}
-          <div className="space-y-2">
-            <div className="flex items-center justify-between px-1">
-              <h3 className="text-xs font-bold text-space-300 uppercase tracking-wider font-mono">
-                Destaques da Telemetria (API Overview)
-              </h3>
-              <span className="text-[10px] text-space-500 font-mono">
-                {vitalTiles.length} Indicadores
-              </span>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5">
-              {vitalTiles.map((vital) => (
-                <VitalTile key={vital.id} vital={vital} />
-              ))}
-            </div>
-          </div>
-
-          <AlertList
-            apiAlerts={alertsData?.alerts}
-            inObservation={alertsData?.inObservation}
-            loading={loading}
-          />
-        </div>
-      </div>
-    </motion.div>
-  );
-};
+      </section>
+      <aside className="design-panel attention-panel" aria-labelledby="attention-heading">
+        <div className="panel-heading"><h2 id="attention-heading">Attention & follow-up</h2><p>Observations from the selected data source.</p></div>
+        {failure === context ? <div className="empty-state" role="alert"><TriangleAlert size={22} /><strong>Connection unavailable</strong><p>We could not load the dashboard.</p><button className="design-button" onClick={triggerRefresh}>Try again</button></div>
+          : !data ? <div className="empty-state" role="status">Loading mission records…</div>
+          : !data.alerts ? <div className="empty-state" role="alert"><TriangleAlert size={22} /><p>Follow-up information is unavailable.</p><button className="design-button" onClick={triggerRefresh}>Try again</button></div>
+          : !latestAlerts.length ? <div className="empty-state"><CircleCheck size={23} /><strong>No open observations</strong><p>New observations appear here when the system flags a measurement for follow-up.</p></div>
+          : <ul className="attention-list">{latestAlerts.map((alert, index) => {
+            const area = areas.find(item => item.id === alert.areaId);
+            return <li key={index}><DesignStatus assessment={alert} /><strong>{labelFor(alert.indicator)}</strong>
+              <p>{alert.message}</p>{alert.recordedAt && <time dateTime={alert.recordedAt}>{timeLabel(alert.recordedAt)}</time>}
+              {area && <Link to={area.path}>Open {area.title} <ArrowRight size={14} /></Link>}</li>;
+          })}</ul>}
+        <div className="attention-note">Review observations in context. This prototype supports self-monitoring.</div>
+      </aside>
+    </div>
+  </div>;
+}

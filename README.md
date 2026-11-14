@@ -22,7 +22,7 @@ O projeto divide-se em:
 ### Instalação das dependências
 Na raiz do repositório:
 ```bash
-npm install
+npm ci
 ```
 
 ### Execução em Desenvolvimento (Terminais Separados)
@@ -90,24 +90,27 @@ As consultas exigem `astronautId` (padrão: `astro_demo_001`) e aceitam `dataset
 
 ## 5. Estrutura das 6 Telas do AstroVida
 
-1. **Visão Geral (`/`)**:
-   - Consome `GET /api/v1/overview` e `GET /api/v1/alerts`.
-   - Score cardiovascular e geral de prontidão, mapa corporal interativo SVG com hotspots diagnósticos, checklist diário de tarefas e 5 cartões de perigos de voo (Biohazards).
-2. **Radiação Espacial (`/radiacao`)**:
-   - Consome `GET /api/v1/areas/radiation` e `/history`.
-   - Doses cumulativas, taxa incremental diária, dosímetros, histórico com pico solar e banner com cronômetro de alerta solar SPE.
-3. **Isolamento e Confinamento (`/isolamento`)**:
-   - Consome `GET /api/v1/areas/isolation_confinement`, `/history` e `/sleep-episodes`.
-   - Check-in de 20s (humor, estresse, energia), cálculo server-side de sono, teste psicomotor PVT-B guiado com medição em milissegundos via `performance.now()`, rosca circadiana 24h e ferramentas de apoio (respiração 4-7-8, diário de voz).
-4. **Distância da Terra (`/distancia`)**:
-   - Consome `GET /api/v1/areas/distance_from_earth`, `/history` e `GET /api/v1/mission`.
-   - Diagrama animado de link de dados Terra ↔ Nave com atraso de propagação unidirecional, inventário do kit médico, fila assíncrona do cirurgião de voo e gerador de relatórios clínicos em estado `prepared` / `not_sent`.
-5. **Campos Gravitacionais (`/gravidade`)**:
-   - Consome `GET /api/v1/areas/gravity_fields` e `/history`.
-   - Projeção de densidade mineral óssea (DMO), massa corporal relativa à pré-missão, escore NEWS2 integrado, contramedidas resistivas ARED e testes rápidos de postura/ortostático com autorrelato de sintomas.
-6. **Ambientes Fechados Hostis (`/ambiente`)**:
-   - Consome `GET /api/v1/areas/hostile_closed_environment` e `/history`.
-   - Gauges de O2, CO2 (ppm e pressão parcial em mmHg), temperatura, umidade, ruído (dBA), checklist pós-EVA e mapa de sensores por módulo da cabine.
+1. **Overview (`/`)** — contexto, cinco áreas ao redor de uma figura vetorial e observações da API. Consulta `overview`, `alerts` e `mission`.
+2. **Space Radiation (`/radiacao`)** — dose, histórico, registro de exposição e avaliação de evento solar simulado.
+3. **Isolation & Confinement (`/isolamento`)** — check-in, registro de sono e teste de reação PVT-B, com resultados calculados no servidor.
+4. **Distance from Earth (`/distancia`)** — missão, atraso estimado, recursos, referências pré-missão e preparação local de relatório.
+5. **Gravity Fields (`/gravidade`)** — condicionamento, exercício, sintomas autorrelatados, NEWS2 e observações supervisionadas de postura.
+6. **Cabin Environment (`/ambiente`)** — atmosfera, temperatura, umidade, ruído e observações após caminhada espacial.
+
+As cinco áreas consultam detalhe e histórico. Fontes, limitações e medições adicionais ficam disponíveis na própria área. O menu global abre registros e cenários. Consulte [DESIGN.md](DESIGN.md) para decisões de interface, referências e limites do protótipo.
+
+Para uma prévia isolada, execute em terminais separados, na raiz do worktree:
+
+```bash
+npm ci
+PORT=31961 DATA_FILE=data/design-demo.json npm start
+```
+
+```bash
+VITE_API_BASE_URL=http://127.0.0.1:31961/api/v1 npm run dev -- --host 127.0.0.1 --port 31962 --strictPort
+```
+
+Abra [a prévia local](http://127.0.0.1:31962/). Caso as portas estejam ocupadas, altere as duas portas e ajuste `VITE_API_BASE_URL` para apontar ao Express. O relatório gerado pela API permanece preparado localmente.
 
 ---
 

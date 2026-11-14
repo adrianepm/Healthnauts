@@ -3,7 +3,7 @@ import { API_BASE_URL, DEFAULT_ASTRONAUT_ID, DEFAULT_DATASET, AreaId } from '../
 export interface ApiErrorData {
   code: string;
   message: string;
-  fields?: Record<string, string>;
+  fields?: Record<string, string> | { field: string; message: string }[];
 }
 
 export class ApiError extends Error {
@@ -16,7 +16,9 @@ export class ApiError extends Error {
     this.name = 'ApiError';
     this.status = status;
     this.code = errorData.code || 'UNKNOWN_ERROR';
-    this.fields = errorData.fields;
+    this.fields = Array.isArray(errorData.fields)
+      ? Object.fromEntries(errorData.fields.map(({ field, message }) => [field, message]))
+      : errorData.fields;
   }
 }
 
@@ -74,6 +76,9 @@ export interface ApiAssessment {
     | 'not_applicable'
     | 'no_demonstrative_signal'
     | 'baseline_collecting'
+    | 'awaiting_follow_up'
+    | 'in_observation'
+    | 'no_data'
     | 'baseline_insufficient';
   level: 'risk' | 'attention' | null;
   inObservation: boolean;
@@ -233,9 +238,10 @@ async function request<T>(path: string, options: RequestInit = {}): Promise<T> {
   try {
     res = await fetch(url, { ...options, headers });
   } catch (err: any) {
+    if (options.signal?.aborted) throw err;
     throw new ApiError(0, {
       code: 'NETWORK_ERROR',
-      message: `Falha ao conectar à API em ${API_BASE_URL}. Verifique se o back-end está em execução.`,
+      message: 'Connection unavailable. Please try again.',
     });
   }
 
