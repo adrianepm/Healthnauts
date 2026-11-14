@@ -48,6 +48,10 @@ registros de origem `manual` e `sensor`.
 | GET | `/api/v1/areas/:areaId` | Conteúdo, referências, catálogo e últimos registros |
 | GET | `/api/v1/areas/:areaId/history` | Histórico e tendências |
 | POST | `/api/v1/areas/:areaId/records` | Criação de lote; retorna HTTP 201 |
+| POST | `/api/v1/areas/isolation_confinement/sleep-episodes` | Calcula e salva sono com componentes |
+| GET | `/api/v1/areas/isolation_confinement/sleep-episodes/:id` | Consulta episódio e componentes |
+| POST | `/api/v1/areas/isolation_confinement/pvt-sessions` | Calcula e salva sessão PVT-B |
+| GET | `/api/v1/areas/isolation_confinement/pvt-sessions/:id` | Consulta sessão, eventos e resultados |
 
 Áreas: `radiation`, `isolation_confinement`, `distance_from_earth`,
 `gravity_fields` e `hostile_closed_environment`.
@@ -90,7 +94,8 @@ para os registros disponíveis.
 
 Erros retornam `{ "error": { "code": "...", "message": "...", "fields": [] } }`.
 Validação/JSON inválido retorna 400, área ou rota inexistente retorna 404,
-corpo acima do limite retorna 413 e falha interna retorna 500.
+reutilização conflitante de identificador retorna 409, corpo acima do limite
+retorna 413 e falha interna retorna 500.
 
 ### Persistência, testes e limites
 
@@ -136,9 +141,10 @@ validadas exatamente; `null` é JSON null, não a string `"null"`.
 | `pvt_false_starts` | `count` | Inteiro seguro não negativo |
 
 Precisão, intervalos numéricos de transporte e passos são escolhas de
-implementação da equipe, não limites clínicos. O front-end deve arredondar
-explicitamente antes de enviar; a API rejeita precisão excessiva e não
-arredonda silenciosamente. As contagens não podem exceder
+implementação da equipe, não limites clínicos. No endpoint legado `/records`, o front-end deve arredondar
+explicitamente antes de enviar; a API rejeita precisão excessiva. Nos novos
+endpoints, o servidor calcula e arredonda os resultados, preservando os
+componentes e valores anteriores ao arredondamento para conferência. As contagens não podem exceder
 `Number.MAX_SAFE_INTEGER`. `sleep_duration` preserva o ID e unidade antigos,
 mas passa a validar limites e precisão.
 
@@ -152,7 +158,8 @@ registros antigos não possuem. Clientes antigos continuam podendo usá-los;
 novos check-ins devem usar os substitutos. Indicadores legados não recebem
 as regras novas de acompanhamento.
 
-Para o sono, o front-end calcula:
+No endpoint específico, o servidor calcula (o cálculo local continua aceito
+pelo endpoint legado):
 
 ```text
 horas = (wakeAt - bedAt) / 3600000
@@ -161,8 +168,10 @@ horas = (wakeAt - bedAt) / 3600000
 
 Os horários devem incluir data e fuso, considerando a passagem da meia-noite.
 O catálogo descreve os quatro componentes em `calculation.components`.
-Somente o total é persistido em `sleep_duration`; os componentes não são
-armazenados nem enviados em `notes`. Não foram criados indicadores brutos.
+O total é persistido em `sleep_duration`. O endpoint `sleep-episodes`
+preserva os componentes em `operation.input`, separados dos indicadores e
+de `notes`. Registros antigos enviados por `/records` continuam sem
+componentes; não são inventados componentes retroativamente.
 
 ### Registrar check-in e execução PVT-B
 
@@ -191,8 +200,9 @@ entre testes (referência da pesquisa) e coleta antes de tarefas críticas
 `src/config/isolation.js`; não são agendamentos nem bloqueios de POST.
 
 O front-end executa o teste e usa `performance.now()` para medir os tempos.
-Envia somente os três agregados, no mesmo lote, com um `groupId` único por
-execução e a mesma origem/instante:
+A integração legada pode continuar enviando os três agregados a `/records`,
+no mesmo lote, com um `groupId` único por execução e a mesma origem/instante.
+Para centralizar o cálculo, use `pvt-sessions`, descrito abaixo. Exemplo legado:
 
 ```json
 {
@@ -209,13 +219,172 @@ Velocidade é a **média dos inversos** dos tempos em segundos, não o inverso
 da média nem tempo médio em ms. O catálogo descreve lapsos (≥355 ms), falsos
 inícios (<100 ms ou toque sem estímulo, excluídos da média) e timeout de 30 s.
 Essas definições se referem ao [protocolo PVT-B](https://www.med.upenn.edu/uep/assets/user-content/documents/Basner2011-ValidityandsensitivityofabriefPVT.pdf)
-e à especificação da equipe. Se não houver respostas válidas, não envie
-uma execução com velocidade inventada. O servidor não executa estímulos,
-cronômetros ou cálculo a partir dos tempos individuais; arrays de tempos e
-outros campos desconhecidos são rejeitados. A API verifica a estrutura do
-lote, mas não pode comprovar o protocolo ou recalcular agregados sem os
-dados brutos. Não há idempotência para POST: não reenviar uma execução já
-confirmada com HTTP 201. A idempotência descrita abaixo é da carga simulada.
+e à especificação da equipe. `/records` continua aceitando agregados sem
+recalculá-los e rejeitando arrays de tempos. Esse endpoint legado não oferece
+idempotência. Os novos endpoints abaixo calculam a partir das entradas
+originais e oferecem idempotência persistente.
+
+### Novos contratos para Samuel: cálculos no servidor
+
+Envie `Content-Type: application/json`. Os campos mostrados nas requisições
+são obrigatórios; campos desconhecidos são rejeitados. O limite HTTP continua
+1 MB. `source` aceita `manual`, `sensor` ou `simulated`. Os IDs de episódio e
+sessão aceitam 1–128 caracteres ASCII (`A-Z`, `a-z`, `0-9`, `.`, `_`, `:`, `-`),
+começando com letra ou número. Gere e guarde o ID **antes** de enviar.
+
+**Sono — `POST /api/v1/areas/isolation_confinement/sleep-episodes`:**
+
+```json
+{
+  "astronautId": "astro_demo_001",
+  "episodeId": "sleep-20261114-001",
+  "source": "manual",
+  "bedAt": "2026-11-13T23:00:00-03:00",
+  "wakeAt": "2026-11-14T07:00:00-03:00",
+  "sleepLatencyMinutes": 20,
+  "awakeMinutes": 25
+}
+```
+
+Esse exemplo resulta em **7,25 h**. `wakeAt` deve ser posterior a `bedAt`,
+com intervalo máximo de 24 h. Ambos exigem data, hora e fuso; a diferença é
+calculada entre instantes absolutos, inclusive quando os fusos diferem.
+Minutos aceitam números finitos, inclusive frações, não negativos; sua soma
+não pode exceder o intervalo na cama. Zero horas é aceito. O registro usa
+`recordedAt = wakeAt`, `periodStart = bedAt`, unidade `h` e duas casas decimais.
+
+A resposta 201 contém `apiVersion`, `astronautId`, `replayed: false`,
+`operation` e `records`. Trecho do cálculo retornado:
+
+```json
+{
+  "version": "sleep-v1",
+  "timeInBedMinutes": 480,
+  "unroundedHours": 7.25,
+  "durationHours": 7.25,
+  "precision": 2
+}
+```
+
+Esse objeto está em `operation.calculation`; `operation.input` contém os
+componentes completos da requisição. `records` contém o registro
+`sleep_duration` com ID e datas de criação gerados pelo servidor.
+
+**PVT-B — `POST /api/v1/areas/isolation_confinement/pvt-sessions`:**
+
+O navegador continua responsável pelos estímulos, espera aleatória de 1–4 s,
+feedback e relógio monotônico. Use `performance.now()` para `durationMs`,
+`atMs` e `rtMs`; não envie o valor absoluto desse relógio, mas as diferenças.
+`startedAt` e `endedAt` são datas ISO com fuso para localizar a sessão no
+histórico; não são usadas para medir tempos de reação.
+
+Exemplo fictício com respostas, falsos inícios e seis timeouts:
+
+```json
+{
+  "astronautId": "astro_demo_001",
+  "sessionId": "pvt-20261114-001",
+  "source": "manual",
+  "startedAt": "2026-11-14T11:00:00Z",
+  "endedAt": "2026-11-14T11:03:12Z",
+  "durationMs": 192000,
+  "completed": true,
+  "events": [
+    { "kind": "response", "atMs": 1500, "rtMs": 500 },
+    { "kind": "response", "atMs": 3750, "rtMs": 250 },
+    { "kind": "response", "atMs": 5099, "rtMs": 99 },
+    { "kind": "false_start", "atMs": 5500 },
+    { "kind": "timeout", "atMs": 37000 },
+    { "kind": "timeout", "atMs": 68000 },
+    { "kind": "timeout", "atMs": 99000 },
+    { "kind": "timeout", "atMs": 130000 },
+    { "kind": "timeout", "atMs": 161000 },
+    { "kind": "timeout", "atMs": 192000 }
+  ]
+}
+```
+
+`atMs` é o instante do toque ou timeout relativo ao início da sessão.
+`rtMs` é o tempo desde o estímulo até o toque, em milissegundos. Envie **todos**
+os eventos, em ordem estritamente crescente de `atMs`, sem duplicar eventos:
+
+| `kind` | Campos | Tratamento no servidor |
+| --- | --- | --- |
+| `response` | `atMs`, `rtMs` (0 ≤ RT < 30000) | RT <100 é falso início; RT ≥100 entra na média; RT ≥355 é lapso |
+| `false_start` | `atMs`, sem `rtMs` | Toque **sem estímulo**; incrementa falsos inícios, excluído da média |
+| `timeout` | `atMs`, sem `rtMs` | Ausência de resposta após 30000 ms; lapso com RT fixo de 30 s na média |
+
+Não envie o mesmo toque como `response` e `false_start`. O servidor deriva
+os limiares, não aceita `lapse: true` nem agregados fornecidos pelo cliente.
+A velocidade é `mean(1000 / rtMs)` das respostas válidas e timeouts, arredondada
+a quatro casas. O exemplo produz velocidade **0,775 1/s**, **7 lapsos** e
+**2 falsos inícios** (8 observações válidas, incluindo 6 timeouts).
+
+A resposta 201 tem o mesmo envelope de sono. `operation.calculation`
+contém `protocol`, `validResponses`, `timeouts`, `lapses`, `falseStarts`,
+`meanReciprocalSeconds` (antes de arredondar), `responseSpeed` e `precision`.
+`records` contém os três IDs existentes (`pvt_response_speed`, `pvt_lapses`,
+`pvt_false_starts`), com `groupId = sessionId` e `recordedAt = endedAt`.
+`operation.input.events` guarda os eventos que permitem refazer o cálculo.
+
+Validações e decisões de integração:
+
+- `completed` é booleano; sessão concluída exige eventos e duração de
+  180000 a 210000 ms. Não iniciar estímulos a partir de 180000 ms. A extensão
+  de até 30 s permite terminar o último estímulo já apresentado: decisão
+  explícita de integração da equipe. Nenhum cronômetro roda no servidor.
+- Eventos devem caber na duração; o início inferido do estímulo
+  (`atMs - rtMs`, ou `atMs - 30000`) não pode ser negativo, sobrepor evento
+  anterior nem ocorrer após a janela de estímulos. Limite técnico: 2000 eventos.
+- `endedAt` deve ser posterior a `startedAt`. Não se exige igualdade entre
+  a diferença de relógio civil e `durationMs`, pois o relógio civil pode ser
+  ajustado. O servidor não certifica a origem dos tempos, eventos omitidos,
+  aleatoriedade ou intervalo de estímulos; esses controles ficam no navegador.
+- Interrupção: envie `completed: false`, duração decorrida e somente eventos
+  já encerrados. Não converta um estímulo pendente em timeout antes de 30 s.
+  A operação fica `status: "interrupted"`, com cálculo parcial auditável,
+  mas `records: []`: não participa de tendências ou baseline. Pode ter zero eventos.
+- Conclusão com apenas falsos inícios fica `status: "no_valid_responses"`,
+  velocidade `null` e `records: []`. Não se fabrica velocidade zero.
+- A submissão é final: uma sessão interrompida não pode ser alterada para
+  concluída com o mesmo ID. Reinicie o teste com um novo ID; não reutilize
+  eventos parciais como uma sessão completa.
+
+**Reenvio e consulta:** a chave é `(tipo, astronautId, episodeId/sessionId)`.
+Primeiro envio retorna 201; repetir o conteúdo retorna 200,
+`replayed: true`, com os mesmos IDs, valores e datas salvos. A ordem das
+chaves JSON não importa; ordem dos eventos, valores, origem e strings de
+horário fazem parte do conteúdo. Conteúdo diferente com a mesma chave retorna
+409 `OPERATION_CONFLICT`, sem alteração. Identificador PVT já usado em
+agregados legados também retorna 409. Não use simultaneamente `/records` e
+`pvt-sessions` para salvar a mesma execução: o endpoint legado continua sem
+idempotência, e a proteção não é retroativa a envios futuros por ele.
+
+Consulta de auditoria, inclusive após reiniciar:
+
+```text
+GET /api/v1/areas/isolation_confinement/sleep-episodes/sleep-20261114-001?astronautId=astro_demo_001&dataset=real
+GET /api/v1/areas/isolation_confinement/pvt-sessions/pvt-20261114-001?astronautId=astro_demo_001&dataset=real
+```
+
+O padrão `dataset=simulated` só encontra operações simuladas; `real` reúne
+manual/sensor. Operação ausente nesse dataset retorna 404. O GET retorna o
+mesmo envelope com `replayed: false` (é consulta, não reenvio).
+
+[docs/examples.json](docs/examples.json) inclui requisições e respostas
+**completas**, obtidas pela API, em `sleepEpisode`, `sleepEpisodeReplay`,
+`pvtSession`, `pvtSessionReplay`, `pvtInterrupted` e `pvtConflict`.
+
+**Persistência:** arquivos antigos em formato array continuam legíveis.
+Na primeira operação nova, o mesmo arquivo passa atomicamente para
+`{ "schemaVersion": 2, "records": [...], "operations": [...] }`, preservando
+todos os registros. `operations` guarda entrada, cálculo versionado, estado,
+data de criação e IDs dos registros resultantes. As consultas existentes
+continuam retornando apenas indicadores; a auditoria é consultada nas rotas
+novas. Reenvios são serializados na mesma fila das gravações e funcionam
+após reinício. Falhas não deixam auditoria ou indicadores parcialmente salvos.
+Use **uma instância por arquivo**; não há trava entre processos. Versões
+antigas do servidor não leem o envelope v2 — faça backup antes de um rollback.
 
 ### Acompanhamento demonstrativo
 

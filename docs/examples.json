@@ -150,7 +150,7 @@
             "unit": "h",
             "displayUnit": "h",
             "recordKind": "self_report",
-            "description": "Total calculado no front-end: (levantar − deitar − latência para dormir − tempo acordado à noite), convertido em horas. Usar datas com fuso e tratar a passagem da meia-noite. Enviar apenas o total; não guardar componentes em notes.",
+            "description": "Total calculado no servidor por sleep-episodes (ou recebido pronto pelo endpoint legado records): (levantar − deitar − latência para dormir − tempo acordado à noite), convertido em horas. Usar datas com fuso e tratar a passagem da meia-noite. Componentes preservados em operation.input no endpoint específico; não usar notes.",
             "scale": {
               "min": 0,
               "max": 24,
@@ -230,7 +230,9 @@
             ],
             "allowsPeriodStart": true,
             "calculation": {
-              "performedBy": "frontend",
+              "performedBy": "server",
+              "endpoint": "/api/v1/areas/isolation_confinement/sleep-episodes",
+              "legacyPrecomputedAccepted": true,
               "formula": "(wakeAt - bedAt) / 3600000 - (sleepLatencyMinutes + awakeMinutes) / 60",
               "components": [
                 {
@@ -252,7 +254,8 @@
                   "description": "Total acordado durante a noite."
                 }
               ],
-              "storedComponents": false
+              "storedComponents": true,
+              "storage": "operation.input"
             }
           },
           {
@@ -631,7 +634,7 @@
             "unit": "1/s",
             "displayUnit": "1/s",
             "recordKind": "performance_aggregate",
-            "description": "Média de 1/RT, RT em segundos, calculada pelo front-end com performance.now(); não é 1/média(RT). Excluir falsos inícios (<100 ms ou toque sem estímulo); timeout de 30 s entra como RT de 30 s. Sem respostas válidas, não enviar execução.",
+            "description": "Média de 1/RT, RT em segundos, calculada pelo servidor em pvt-sessions a partir de tempos medidos no navegador com performance.now(); não é 1/média(RT). Excluir falsos inícios (<100 ms ou toque sem estímulo); timeout de 30 s entra como RT de 30 s. Sessões interrompidas ou sem respostas válidas ficam auditadas sem gerar indicadores; agregados legados continuam aceitos.",
             "scale": {
               "min": 0,
               "max": 10,
@@ -2397,6 +2400,679 @@
           "createdAt": "2026-11-14T17:46:45.377Z"
         }
       ]
+    }
+  },
+  "sleepEpisode": {
+    "request": "POST /api/v1/areas/isolation_confinement/sleep-episodes",
+    "body": {
+      "astronautId": "astro_demo_001",
+      "episodeId": "sleep-20261114-001",
+      "source": "manual",
+      "bedAt": "2026-11-13T23:00:00-03:00",
+      "wakeAt": "2026-11-14T07:00:00-03:00",
+      "sleepLatencyMinutes": 20,
+      "awakeMinutes": 25
+    },
+    "status": 201,
+    "response": {
+      "apiVersion": "v1",
+      "astronautId": "astro_demo_001",
+      "replayed": false,
+      "operation": {
+        "kind": "sleep",
+        "id": "sleep-20261114-001",
+        "astronautId": "astro_demo_001",
+        "source": "manual",
+        "input": {
+          "astronautId": "astro_demo_001",
+          "episodeId": "sleep-20261114-001",
+          "source": "manual",
+          "bedAt": "2026-11-13T23:00:00-03:00",
+          "wakeAt": "2026-11-14T07:00:00-03:00",
+          "sleepLatencyMinutes": 20,
+          "awakeMinutes": 25
+        },
+        "status": "completed",
+        "calculation": {
+          "version": "sleep-v1",
+          "timeInBedMinutes": 480,
+          "unroundedHours": 7.25,
+          "durationHours": 7.25,
+          "precision": 2
+        },
+        "createdAt": "2026-11-14T18:01:42.837Z",
+        "recordIds": [
+          "c42d48f5-ea24-4b15-9796-e0c099e2df64"
+        ]
+      },
+      "records": [
+        {
+          "indicator": "sleep_duration",
+          "value": 7.25,
+          "unit": "h",
+          "source": "manual",
+          "recordedAt": "2026-11-14T07:00:00-03:00",
+          "periodStart": "2026-11-13T23:00:00-03:00",
+          "id": "c42d48f5-ea24-4b15-9796-e0c099e2df64",
+          "astronautId": "astro_demo_001",
+          "areaId": "isolation_confinement",
+          "isSimulated": false,
+          "notes": null,
+          "createdAt": "2026-11-14T18:01:42.837Z"
+        }
+      ]
+    }
+  },
+  "sleepEpisodeReplay": {
+    "request": "POST /api/v1/areas/isolation_confinement/sleep-episodes",
+    "body": {
+      "astronautId": "astro_demo_001",
+      "episodeId": "sleep-20261114-001",
+      "source": "manual",
+      "bedAt": "2026-11-13T23:00:00-03:00",
+      "wakeAt": "2026-11-14T07:00:00-03:00",
+      "sleepLatencyMinutes": 20,
+      "awakeMinutes": 25
+    },
+    "status": 200,
+    "response": {
+      "apiVersion": "v1",
+      "astronautId": "astro_demo_001",
+      "replayed": true,
+      "operation": {
+        "kind": "sleep",
+        "id": "sleep-20261114-001",
+        "astronautId": "astro_demo_001",
+        "source": "manual",
+        "input": {
+          "astronautId": "astro_demo_001",
+          "episodeId": "sleep-20261114-001",
+          "source": "manual",
+          "bedAt": "2026-11-13T23:00:00-03:00",
+          "wakeAt": "2026-11-14T07:00:00-03:00",
+          "sleepLatencyMinutes": 20,
+          "awakeMinutes": 25
+        },
+        "status": "completed",
+        "calculation": {
+          "version": "sleep-v1",
+          "timeInBedMinutes": 480,
+          "unroundedHours": 7.25,
+          "durationHours": 7.25,
+          "precision": 2
+        },
+        "createdAt": "2026-11-14T18:01:42.837Z",
+        "recordIds": [
+          "c42d48f5-ea24-4b15-9796-e0c099e2df64"
+        ]
+      },
+      "records": [
+        {
+          "indicator": "sleep_duration",
+          "value": 7.25,
+          "unit": "h",
+          "source": "manual",
+          "recordedAt": "2026-11-14T07:00:00-03:00",
+          "periodStart": "2026-11-13T23:00:00-03:00",
+          "id": "c42d48f5-ea24-4b15-9796-e0c099e2df64",
+          "astronautId": "astro_demo_001",
+          "areaId": "isolation_confinement",
+          "isSimulated": false,
+          "notes": null,
+          "createdAt": "2026-11-14T18:01:42.837Z"
+        }
+      ]
+    }
+  },
+  "pvtSession": {
+    "request": "POST /api/v1/areas/isolation_confinement/pvt-sessions",
+    "body": {
+      "astronautId": "astro_demo_001",
+      "sessionId": "pvt-20261114-001",
+      "source": "manual",
+      "startedAt": "2026-11-14T11:00:00Z",
+      "endedAt": "2026-11-14T11:03:12Z",
+      "durationMs": 192000,
+      "completed": true,
+      "events": [
+        {
+          "kind": "response",
+          "atMs": 1500,
+          "rtMs": 500
+        },
+        {
+          "kind": "response",
+          "atMs": 3750,
+          "rtMs": 250
+        },
+        {
+          "kind": "response",
+          "atMs": 5099,
+          "rtMs": 99
+        },
+        {
+          "kind": "false_start",
+          "atMs": 5500
+        },
+        {
+          "kind": "timeout",
+          "atMs": 37000
+        },
+        {
+          "kind": "timeout",
+          "atMs": 68000
+        },
+        {
+          "kind": "timeout",
+          "atMs": 99000
+        },
+        {
+          "kind": "timeout",
+          "atMs": 130000
+        },
+        {
+          "kind": "timeout",
+          "atMs": 161000
+        },
+        {
+          "kind": "timeout",
+          "atMs": 192000
+        }
+      ]
+    },
+    "status": 201,
+    "response": {
+      "apiVersion": "v1",
+      "astronautId": "astro_demo_001",
+      "replayed": false,
+      "operation": {
+        "kind": "pvt",
+        "id": "pvt-20261114-001",
+        "astronautId": "astro_demo_001",
+        "source": "manual",
+        "input": {
+          "astronautId": "astro_demo_001",
+          "sessionId": "pvt-20261114-001",
+          "source": "manual",
+          "startedAt": "2026-11-14T11:00:00Z",
+          "endedAt": "2026-11-14T11:03:12Z",
+          "durationMs": 192000,
+          "completed": true,
+          "events": [
+            {
+              "kind": "response",
+              "atMs": 1500,
+              "rtMs": 500
+            },
+            {
+              "kind": "response",
+              "atMs": 3750,
+              "rtMs": 250
+            },
+            {
+              "kind": "response",
+              "atMs": 5099,
+              "rtMs": 99
+            },
+            {
+              "kind": "false_start",
+              "atMs": 5500
+            },
+            {
+              "kind": "timeout",
+              "atMs": 37000
+            },
+            {
+              "kind": "timeout",
+              "atMs": 68000
+            },
+            {
+              "kind": "timeout",
+              "atMs": 99000
+            },
+            {
+              "kind": "timeout",
+              "atMs": 130000
+            },
+            {
+              "kind": "timeout",
+              "atMs": 161000
+            },
+            {
+              "kind": "timeout",
+              "atMs": 192000
+            }
+          ]
+        },
+        "status": "completed",
+        "calculation": {
+          "protocol": {
+            "version": "pvt-b-v1",
+            "durationMs": 180000,
+            "timeoutMs": 30000,
+            "lapseMs": 355,
+            "falseStartBelowMs": 100,
+            "maxEvents": 2000
+          },
+          "validResponses": 8,
+          "timeouts": 6,
+          "lapses": 7,
+          "falseStarts": 2,
+          "meanReciprocalSeconds": 0.7749999999999999,
+          "responseSpeed": 0.775,
+          "precision": 4
+        },
+        "createdAt": "2026-11-14T18:01:42.882Z",
+        "recordIds": [
+          "5bed6093-b1a7-4329-a287-568762dbb356",
+          "3e126ec3-b445-4529-ae29-e1835a8f96e0",
+          "336ec959-dc3c-4f15-92d8-c4a73c96f940"
+        ]
+      },
+      "records": [
+        {
+          "indicator": "pvt_response_speed",
+          "value": 0.775,
+          "unit": "1/s",
+          "source": "manual",
+          "recordedAt": "2026-11-14T11:03:12Z",
+          "groupId": "pvt-20261114-001",
+          "id": "5bed6093-b1a7-4329-a287-568762dbb356",
+          "astronautId": "astro_demo_001",
+          "areaId": "isolation_confinement",
+          "isSimulated": false,
+          "notes": null,
+          "createdAt": "2026-11-14T18:01:42.882Z"
+        },
+        {
+          "indicator": "pvt_lapses",
+          "value": 7,
+          "unit": "count",
+          "source": "manual",
+          "recordedAt": "2026-11-14T11:03:12Z",
+          "groupId": "pvt-20261114-001",
+          "id": "3e126ec3-b445-4529-ae29-e1835a8f96e0",
+          "astronautId": "astro_demo_001",
+          "areaId": "isolation_confinement",
+          "isSimulated": false,
+          "notes": null,
+          "createdAt": "2026-11-14T18:01:42.882Z"
+        },
+        {
+          "indicator": "pvt_false_starts",
+          "value": 2,
+          "unit": "count",
+          "source": "manual",
+          "recordedAt": "2026-11-14T11:03:12Z",
+          "groupId": "pvt-20261114-001",
+          "id": "336ec959-dc3c-4f15-92d8-c4a73c96f940",
+          "astronautId": "astro_demo_001",
+          "areaId": "isolation_confinement",
+          "isSimulated": false,
+          "notes": null,
+          "createdAt": "2026-11-14T18:01:42.882Z"
+        }
+      ]
+    }
+  },
+  "pvtSessionReplay": {
+    "request": "POST /api/v1/areas/isolation_confinement/pvt-sessions",
+    "body": {
+      "astronautId": "astro_demo_001",
+      "sessionId": "pvt-20261114-001",
+      "source": "manual",
+      "startedAt": "2026-11-14T11:00:00Z",
+      "endedAt": "2026-11-14T11:03:12Z",
+      "durationMs": 192000,
+      "completed": true,
+      "events": [
+        {
+          "kind": "response",
+          "atMs": 1500,
+          "rtMs": 500
+        },
+        {
+          "kind": "response",
+          "atMs": 3750,
+          "rtMs": 250
+        },
+        {
+          "kind": "response",
+          "atMs": 5099,
+          "rtMs": 99
+        },
+        {
+          "kind": "false_start",
+          "atMs": 5500
+        },
+        {
+          "kind": "timeout",
+          "atMs": 37000
+        },
+        {
+          "kind": "timeout",
+          "atMs": 68000
+        },
+        {
+          "kind": "timeout",
+          "atMs": 99000
+        },
+        {
+          "kind": "timeout",
+          "atMs": 130000
+        },
+        {
+          "kind": "timeout",
+          "atMs": 161000
+        },
+        {
+          "kind": "timeout",
+          "atMs": 192000
+        }
+      ]
+    },
+    "status": 200,
+    "response": {
+      "apiVersion": "v1",
+      "astronautId": "astro_demo_001",
+      "replayed": true,
+      "operation": {
+        "kind": "pvt",
+        "id": "pvt-20261114-001",
+        "astronautId": "astro_demo_001",
+        "source": "manual",
+        "input": {
+          "astronautId": "astro_demo_001",
+          "sessionId": "pvt-20261114-001",
+          "source": "manual",
+          "startedAt": "2026-11-14T11:00:00Z",
+          "endedAt": "2026-11-14T11:03:12Z",
+          "durationMs": 192000,
+          "completed": true,
+          "events": [
+            {
+              "kind": "response",
+              "atMs": 1500,
+              "rtMs": 500
+            },
+            {
+              "kind": "response",
+              "atMs": 3750,
+              "rtMs": 250
+            },
+            {
+              "kind": "response",
+              "atMs": 5099,
+              "rtMs": 99
+            },
+            {
+              "kind": "false_start",
+              "atMs": 5500
+            },
+            {
+              "kind": "timeout",
+              "atMs": 37000
+            },
+            {
+              "kind": "timeout",
+              "atMs": 68000
+            },
+            {
+              "kind": "timeout",
+              "atMs": 99000
+            },
+            {
+              "kind": "timeout",
+              "atMs": 130000
+            },
+            {
+              "kind": "timeout",
+              "atMs": 161000
+            },
+            {
+              "kind": "timeout",
+              "atMs": 192000
+            }
+          ]
+        },
+        "status": "completed",
+        "calculation": {
+          "protocol": {
+            "version": "pvt-b-v1",
+            "durationMs": 180000,
+            "timeoutMs": 30000,
+            "lapseMs": 355,
+            "falseStartBelowMs": 100,
+            "maxEvents": 2000
+          },
+          "validResponses": 8,
+          "timeouts": 6,
+          "lapses": 7,
+          "falseStarts": 2,
+          "meanReciprocalSeconds": 0.7749999999999999,
+          "responseSpeed": 0.775,
+          "precision": 4
+        },
+        "createdAt": "2026-11-14T18:01:42.882Z",
+        "recordIds": [
+          "5bed6093-b1a7-4329-a287-568762dbb356",
+          "3e126ec3-b445-4529-ae29-e1835a8f96e0",
+          "336ec959-dc3c-4f15-92d8-c4a73c96f940"
+        ]
+      },
+      "records": [
+        {
+          "indicator": "pvt_response_speed",
+          "value": 0.775,
+          "unit": "1/s",
+          "source": "manual",
+          "recordedAt": "2026-11-14T11:03:12Z",
+          "groupId": "pvt-20261114-001",
+          "id": "5bed6093-b1a7-4329-a287-568762dbb356",
+          "astronautId": "astro_demo_001",
+          "areaId": "isolation_confinement",
+          "isSimulated": false,
+          "notes": null,
+          "createdAt": "2026-11-14T18:01:42.882Z"
+        },
+        {
+          "indicator": "pvt_lapses",
+          "value": 7,
+          "unit": "count",
+          "source": "manual",
+          "recordedAt": "2026-11-14T11:03:12Z",
+          "groupId": "pvt-20261114-001",
+          "id": "3e126ec3-b445-4529-ae29-e1835a8f96e0",
+          "astronautId": "astro_demo_001",
+          "areaId": "isolation_confinement",
+          "isSimulated": false,
+          "notes": null,
+          "createdAt": "2026-11-14T18:01:42.882Z"
+        },
+        {
+          "indicator": "pvt_false_starts",
+          "value": 2,
+          "unit": "count",
+          "source": "manual",
+          "recordedAt": "2026-11-14T11:03:12Z",
+          "groupId": "pvt-20261114-001",
+          "id": "336ec959-dc3c-4f15-92d8-c4a73c96f940",
+          "astronautId": "astro_demo_001",
+          "areaId": "isolation_confinement",
+          "isSimulated": false,
+          "notes": null,
+          "createdAt": "2026-11-14T18:01:42.882Z"
+        }
+      ]
+    }
+  },
+  "pvtInterrupted": {
+    "request": "POST /api/v1/areas/isolation_confinement/pvt-sessions",
+    "body": {
+      "astronautId": "astro_demo_001",
+      "sessionId": "pvt-interrupted-001",
+      "source": "manual",
+      "startedAt": "2026-11-14T11:00:00Z",
+      "endedAt": "2026-11-14T11:00:40Z",
+      "durationMs": 40000,
+      "completed": false,
+      "events": [
+        {
+          "kind": "response",
+          "atMs": 1500,
+          "rtMs": 500
+        },
+        {
+          "kind": "response",
+          "atMs": 3750,
+          "rtMs": 250
+        },
+        {
+          "kind": "response",
+          "atMs": 5099,
+          "rtMs": 99
+        },
+        {
+          "kind": "false_start",
+          "atMs": 5500
+        },
+        {
+          "kind": "timeout",
+          "atMs": 37000
+        }
+      ]
+    },
+    "status": 201,
+    "response": {
+      "apiVersion": "v1",
+      "astronautId": "astro_demo_001",
+      "replayed": false,
+      "operation": {
+        "kind": "pvt",
+        "id": "pvt-interrupted-001",
+        "astronautId": "astro_demo_001",
+        "source": "manual",
+        "input": {
+          "astronautId": "astro_demo_001",
+          "sessionId": "pvt-interrupted-001",
+          "source": "manual",
+          "startedAt": "2026-11-14T11:00:00Z",
+          "endedAt": "2026-11-14T11:00:40Z",
+          "durationMs": 40000,
+          "completed": false,
+          "events": [
+            {
+              "kind": "response",
+              "atMs": 1500,
+              "rtMs": 500
+            },
+            {
+              "kind": "response",
+              "atMs": 3750,
+              "rtMs": 250
+            },
+            {
+              "kind": "response",
+              "atMs": 5099,
+              "rtMs": 99
+            },
+            {
+              "kind": "false_start",
+              "atMs": 5500
+            },
+            {
+              "kind": "timeout",
+              "atMs": 37000
+            }
+          ]
+        },
+        "status": "interrupted",
+        "calculation": {
+          "protocol": {
+            "version": "pvt-b-v1",
+            "durationMs": 180000,
+            "timeoutMs": 30000,
+            "lapseMs": 355,
+            "falseStartBelowMs": 100,
+            "maxEvents": 2000
+          },
+          "validResponses": 3,
+          "timeouts": 1,
+          "lapses": 2,
+          "falseStarts": 2,
+          "meanReciprocalSeconds": 2.011111111111111,
+          "responseSpeed": 2.0111,
+          "precision": 4
+        },
+        "createdAt": "2026-11-14T18:01:42.908Z",
+        "recordIds": []
+      },
+      "records": []
+    }
+  },
+  "pvtConflict": {
+    "request": "POST /api/v1/areas/isolation_confinement/pvt-sessions",
+    "body": {
+      "astronautId": "astro_demo_001",
+      "sessionId": "pvt-20261114-001",
+      "source": "sensor",
+      "startedAt": "2026-11-14T11:00:00Z",
+      "endedAt": "2026-11-14T11:03:12Z",
+      "durationMs": 192000,
+      "completed": true,
+      "events": [
+        {
+          "kind": "response",
+          "atMs": 1500,
+          "rtMs": 500
+        },
+        {
+          "kind": "response",
+          "atMs": 3750,
+          "rtMs": 250
+        },
+        {
+          "kind": "response",
+          "atMs": 5099,
+          "rtMs": 99
+        },
+        {
+          "kind": "false_start",
+          "atMs": 5500
+        },
+        {
+          "kind": "timeout",
+          "atMs": 37000
+        },
+        {
+          "kind": "timeout",
+          "atMs": 68000
+        },
+        {
+          "kind": "timeout",
+          "atMs": 99000
+        },
+        {
+          "kind": "timeout",
+          "atMs": 130000
+        },
+        {
+          "kind": "timeout",
+          "atMs": 161000
+        },
+        {
+          "kind": "timeout",
+          "atMs": 192000
+        }
+      ]
+    },
+    "status": 409,
+    "response": {
+      "error": {
+        "code": "OPERATION_CONFLICT",
+        "message": "Identificador já utilizado com conteúdo diferente.",
+        "fields": []
+      }
     }
   }
 }

@@ -23,16 +23,16 @@ export const catalog = {
     indicator('accumulated_dose', 'Dose acumulada', 'uSv', 'environmental_exposure', 'Total entre periodStart e recordedAt; não somar totais sobrepostos.', { periodStartRequired: true }),
   ],
   isolation_confinement: [
-    mind('sleep_duration', 'Duração do sono', 'h', 'Total calculado no front-end: (levantar − deitar − latência para dormir − tempo acordado à noite), convertido em horas. Usar datas com fuso e tratar a passagem da meia-noite. Enviar apenas o total; não guardar componentes em notes.',
+    mind('sleep_duration', 'Duração do sono', 'h', 'Total calculado no servidor por sleep-episodes (ou recebido pronto pelo endpoint legado records): (levantar − deitar − latência para dormir − tempo acordado à noite), convertido em horas. Usar datas com fuso e tratar a passagem da meia-noite. Componentes preservados em operation.input no endpoint específico; não usar notes.',
       { min: 0, max: 24, numericType: 'number', precision: 2, step: 0.01 }, {
         valueType: 'number', allowsPeriodStart: true, references: [refs.rst, refs.planning],
-        calculation: { performedBy: 'frontend', formula: '(wakeAt - bedAt) / 3600000 - (sleepLatencyMinutes + awakeMinutes) / 60',
+        calculation: { performedBy: 'server', endpoint: '/api/v1/areas/isolation_confinement/sleep-episodes', legacyPrecomputedAccepted: true, formula: '(wakeAt - bedAt) / 3600000 - (sleepLatencyMinutes + awakeMinutes) / 60',
           components: [
             { name: 'bedAt', description: 'Data e horário de deitar com fuso.' },
             { name: 'wakeAt', description: 'Data e horário de levantar com fuso.' },
             { name: 'sleepLatencyMinutes', unit: 'min', description: 'Tempo até adormecer.' },
             { name: 'awakeMinutes', unit: 'min', description: 'Total acordado durante a noite.' },
-          ], storedComponents: false },
+          ], storedComponents: true, storage: 'operation.input' },
       }),
     mind('sleep_quality', 'Qualidade do sono', null, 'Avaliação pessoal 0–100; rótulos próprios: menor/maior qualidade percebida.', score),
     mind('sleepiness_kss', 'Sonolência — referência KSS', null, 'Valores 1–9 da escala referenciada; rótulos próprios resumidos, não o texto oficial.',
@@ -42,7 +42,7 @@ export const catalog = {
       { min: 1, max: 7, numericType: 'integer', precision: 0, step: 1, minLabel: 'Menor fadiga', maxLabel: 'Maior fadiga' }, { references: [refs.samn] }),
     mind('stress', 'Estresse', null, 'Intensidade percebida 0–100.', score, { references: [refs.rst, refs.behavioral], privacy: { intendedAudience: ['astronaut', 'crew_medical_officer'], enforced: false } }),
     mind('mood_score', 'Humor', null, 'Avaliação pessoal 0–100: de menos positivo a mais positivo.', score, { references: [refs.behavioral], privacy: { intendedAudience: ['astronaut', 'crew_medical_officer'], enforced: false } }),
-    pvt('pvt_response_speed', 'PVT-B — velocidade média', '1/s', 'Média de 1/RT, RT em segundos, calculada pelo front-end com performance.now(); não é 1/média(RT). Excluir falsos inícios (<100 ms ou toque sem estímulo); timeout de 30 s entra como RT de 30 s. Sem respostas válidas, não enviar execução.',
+    pvt('pvt_response_speed', 'PVT-B — velocidade média', '1/s', 'Média de 1/RT, RT em segundos, calculada pelo servidor em pvt-sessions a partir de tempos medidos no navegador com performance.now(); não é 1/média(RT). Excluir falsos inícios (<100 ms ou toque sem estímulo); timeout de 30 s entra como RT de 30 s. Sessões interrompidas ou sem respostas válidas ficam auditadas sem gerar indicadores; agregados legados continuam aceitos.',
       { min: 0, max: 10, numericType: 'number', precision: 4, step: 0.0001 }),
     pvt('pvt_lapses', 'PVT-B — lapsos', 'count', 'Contagem agregada de respostas ≥355 ms, incluindo ausência de resposta em 30 s.',
       { min: 0, numericType: 'integer', precision: 0, step: 1 }),

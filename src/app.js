@@ -1,4 +1,5 @@
 import express from 'express';
+import { calculateSleep, calculatePvt } from './calculations.js';
 import { monitoring } from './monitoring.js';
 import { areas } from './config/areas.js';
 import { catalog } from './config/catalog.js';
@@ -69,6 +70,22 @@ export function createApp(store, { now = () => new Date(), corsOrigins = [] } = 
     await store.append(records);
     res.status(201).json({ apiVersion: 'v1', astronautId: req.body.astronautId, records });
   });
+  for (const [path, kind, calculate] of [['sleep-episodes', 'sleep', calculateSleep], ['pvt-sessions', 'pvt', calculatePvt]]) {
+    const base = `/api/v1/areas/isolation_confinement/${path}`;
+    const response = result => ({ apiVersion: 'v1', astronautId: result.operation.astronautId,
+      replayed: result.replayed, operation: result.operation, records: result.records });
+    app.post(base, async (req, res) => {
+      const { operation, records } = calculate(req.body);
+      const result = await store.saveOperation(operation, records);
+      res.status(result.replayed ? 200 : 201).json(response(result));
+    });
+    app.get(`${base}/:operationId`, (req, res) => {
+      const ctx = queryContext(req.query);
+      const result = store.findOperation(kind, ctx.astronautId, req.params.operationId);
+      if (!result || (result.operation.source === 'simulated') !== ctx.isSimulated) throw new ApiError(404, 'OPERATION_NOT_FOUND', 'Operação não encontrada neste dataset.');
+      res.json(response(result));
+    });
+  }
   app.use((req, res, next) => next(new ApiError(404, 'NOT_FOUND', 'Rota não encontrada.')));
   app.use((error, req, res, next) => {
     if (error.type === 'entity.parse.failed') error = new ApiError(400, 'INVALID_JSON', 'JSON inválido.');
