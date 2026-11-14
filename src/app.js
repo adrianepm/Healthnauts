@@ -1,4 +1,5 @@
 import express from 'express';
+import { monitoring } from './monitoring.js';
 import { areas } from './config/areas.js';
 import { catalog } from './config/catalog.js';
 import { ApiError, invalid, timestamp, queryContext, validateBatch } from './validation.js';
@@ -40,7 +41,8 @@ export function createApp(store, { now = () => new Date(), corsOrigins = [] } = 
     const ctx = queryContext(req.query);
     const { highlightIndicators, content, references, ...area } = req.area;
     res.json({ ...ctx, area, content, references, indicatorDefinitions: catalog[area.id],
-      latestRecords: latest(filtered(ctx).filter(r => r.areaId === area.id), catalog[area.id]) });
+      latestRecords: latest(filtered(ctx).filter(r => r.areaId === area.id), catalog[area.id]),
+      ...(area.id === 'isolation_confinement' ? { monitoring: monitoring(filtered(ctx).filter(r => r.areaId === area.id), catalog[area.id], ctx.dataset, now()) } : {}) });
   });
   app.get('/api/v1/areas/:areaId/history', (req, res) => {
     const ctx = queryContext(req.query);
@@ -59,7 +61,8 @@ export function createApp(store, { now = () => new Date(), corsOrigins = [] } = 
       && Date.parse(r.recordedAt) >= start && Date.parse(r.recordedAt) < end).sort(chronological);
     if (records.length > 10000) throw new ApiError(400, 'HISTORY_TOO_LARGE', 'Consulte um intervalo menor; limite de 10000 registros por resposta.');
     res.json({ ...ctx, areaId: req.area.id, period: { from: new Date(start).toISOString(), to: new Date(end).toISOString() }, records,
-      trends: trends(records, definitions, ctx.dataset) });
+      trends: trends(records, definitions, ctx.dataset),
+      ...(req.area.id === 'isolation_confinement' ? { monitoring: monitoring(filtered(ctx).filter(r => r.areaId === req.area.id), definitions, ctx.dataset, new Date(end)) } : {}) });
   });
   app.post('/api/v1/areas/:areaId/records', async (req, res) => {
     const records = validateBatch(req.body, req.area.id, catalog[req.area.id]);

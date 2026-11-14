@@ -1,7 +1,7 @@
 import { mkdir, readFile, writeFile, rename, unlink } from 'node:fs/promises';
 import { dirname } from 'node:path';
 import { randomUUID } from 'node:crypto';
-import { createDemo } from './demo.js';
+import { createDemo, isolationDemoAdditions } from './demo.js';
 export async function openStore(file, now = new Date()) {
   await mkdir(dirname(file), { recursive: true });
   let records;
@@ -12,6 +12,16 @@ export async function openStore(file, now = new Date()) {
     if (error.code !== 'ENOENT') throw error;
     records = createDemo(now);
     await writeFile(file, JSON.stringify(records, null, 2), { flag: 'wx' });
+  }
+  const additions = isolationDemoAdditions(records, now);
+  if (additions.length) {
+    const next = [...records, ...additions];
+    const temporary = `${file}.${randomUUID()}.tmp`;
+    try {
+      await writeFile(temporary, JSON.stringify(next, null, 2));
+      await rename(temporary, file);
+      records = next;
+    } finally { await unlink(temporary).catch(error => { if (error.code !== 'ENOENT') throw error; }); }
   }
   let queue = Promise.resolve();
   return {

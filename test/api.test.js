@@ -35,7 +35,7 @@ test('demo cobre todas as áreas e indicadores; real começa vazio', async t => 
     assert.equal(detail.latestRecords.length, definitions.length);
     assert.deepEqual(detail.indicatorDefinitions, definitions);
     const history = (await get(`/areas/${area}/history?astronautId=${astronautId}`)).body;
-    assert.equal(history.records.length, definitions.length * 7);
+    assert.equal(history.records.length, definitions.reduce((count, d) => count + (d.aggregateGroup === 'pvt_b' ? 2 : 7), 0));
     assert.ok(history.records.every(r => r.isSimulated && r.source === 'simulated'));
     assert.ok(history.trends.every(r => r.status === (definitions.find(d => d.id === r.indicator).valueType === 'text' ? 'not_applicable' : 'available')));
   }

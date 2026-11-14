@@ -1,5 +1,5 @@
 {
-  "description": "Exemplos fictícios gerados com o mesmo catálogo e gerador da API.",
+  "description": "Exemples fictícios; IDs/datas variam. Pesquisa Mind & Sleep com acompanhamento demonstrativo.",
   "generatedAt": "2026-11-14T16:20:25.133Z",
   "detail": [
     {
@@ -61,7 +61,7 @@
         ],
         "latestRecords": [
           {
-            "id": "84ae0fdc-7ec8-4762-bb64-238cba62928e",
+            "id": "631d8e37-36e4-4850-860b-9984f5478245",
             "astronautId": "astro_demo_001",
             "areaId": "radiation",
             "indicator": "dose_rate",
@@ -74,7 +74,7 @@
             "createdAt": "2026-11-14T16:20:25.133Z"
           },
           {
-            "id": "3dde78fd-8691-48fc-b877-6bca097f523a",
+            "id": "cf677b16-9e5b-4b24-81a5-55c4f925f565",
             "astronautId": "astro_demo_001",
             "areaId": "radiation",
             "indicator": "accumulated_dose",
@@ -100,13 +100,13 @@
         "area": {
           "id": "isolation_confinement",
           "title": "Isolamento e confinamento",
-          "summary": "Histórico pessoal de sono, fadiga e humor."
+          "summary": "Sono, sonolência, fadiga, estresse, humor e agregados PVT-B."
         },
         "content": [
           {
             "id": "introduction",
             "title": "Sobre esta demonstração",
-            "body": "Os autorrelatos permitem visualizar mudanças pessoais. As escalas apresentadas são demonstrativas e não validadas clinicamente."
+            "body": "Esta ferramenta apoia o automonitoramento e não faz diagnóstico. Regras, faixas pessoais e níveis são demonstrativos; não são critérios médicos. Escalas de aviação/direção não são validadas aqui para microgravidade. KSS usa rótulos próprios; confirmar permissão para o texto completo. Humor e estresse destinam-se ao astronauta e Crew Medical Officer; esta API local ainda não implementa controle de acesso."
           },
           {
             "id": "procedures",
@@ -116,62 +116,765 @@
         ],
         "references": [
           {
-            "title": "NASA — 5 Hazards of Human Spaceflight",
-            "url": "https://www.nasa.gov/hrp/hazards/"
+            "title": "Jones et al. 2022 — Sleep deficiency on the ISS",
+            "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8919197/"
           },
           {
-            "title": "Canadian Space Agency — Careers in space: Health science experts",
-            "url": "https://www.asc-csa.gc.ca/eng/jobs/careers-in-space/health-sciences.asp"
+            "title": "NASA — Medical operations and sleep planning",
+            "url": "https://www.nasa.gov/reference/6-0-medical-operations/"
+          },
+          {
+            "title": "Arsintescu et al. 2019 — referência KSS citada na pesquisa",
+            "url": "https://hsi.arc.nasa.gov/publications/Arsintescu_etal_2019_JoVE.pdf",
+            "note": "Link redireciona; confirmar publicação e autorização do texto completo antes de uso real."
+          },
+          {
+            "title": "Samn–Perelli — SAM-TR-82-21 (1982)",
+            "url": "https://apps.dtic.mil/sti/pdfs/ADA125319.pdf",
+            "note": "Referência fornecida pela pesquisa; documento não recuperado na revisão."
+          },
+          {
+            "title": "NASA — Behavioral Health & Performance Standard Measures",
+            "url": "https://ntrs.nasa.gov/api/citations/20170005421/downloads/20170005421.pdf"
+          },
+          {
+            "title": "Basner, Mollicone & Dinges 2011 — PVT-B",
+            "url": "https://www.med.upenn.edu/uep/assets/user-content/documents/Basner2011-ValidityandsensitivityofabriefPVT.pdf"
           }
         ],
         "indicatorDefinitions": [
           {
             "id": "sleep_duration",
-            "label": "Sono",
+            "label": "Duração do sono",
             "valueType": "number",
             "unit": "h",
             "displayUnit": "h",
             "recordKind": "self_report",
-            "description": "Duração do último episódio de sono.",
-            "scale": null,
-            "allowsPeriodStart": true
+            "description": "Total calculado no front-end: (levantar − deitar − latência para dormir − tempo acordado à noite), convertido em horas. Usar datas com fuso e tratar a passagem da meia-noite. Enviar apenas o total; não guardar componentes em notes.",
+            "scale": {
+              "min": 0,
+              "max": 24,
+              "numericType": "number",
+              "precision": 2,
+              "step": 0.01
+            },
+            "collection": {
+              "schedule": [
+                {
+                  "kind": "interval",
+                  "days": 1,
+                  "context": "morning_check_in",
+                  "basis": "fonte",
+                  "references": [
+                    {
+                      "title": "Jones et al. 2022 — Sleep deficiency on the ISS",
+                      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8919197/"
+                    }
+                  ],
+                  "note": "Frequência adotada como proposta de demonstração com base na pesquisa."
+                }
+              ]
+            },
+            "monitoring": {
+              "rules": [
+                {
+                  "id": "sleep_four_hours",
+                  "kind": "threshold",
+                  "operator": "lte",
+                  "value": 4,
+                  "level": "risk",
+                  "consecutive": 1,
+                  "basis": "proposta da equipe",
+                  "note": "Corte de 4 h e nível demonstrativo escolhidos pela equipe; associação descrita em [1].",
+                  "message": "Sono registrado de até 4 h; classificação demonstrativa de maior acompanhamento."
+                },
+                {
+                  "id": "sleep_three_nights",
+                  "kind": "threshold",
+                  "operator": "lte",
+                  "value": 6,
+                  "level": "attention",
+                  "consecutive": 3,
+                  "basis": "proposta da equipe",
+                  "note": "Três noites consecutivas de até 6 h: decisão da equipe.",
+                  "message": "Três noites registradas com até 6 h de sono; em observação."
+                },
+                {
+                  "id": "sleep_six_hours",
+                  "kind": "threshold",
+                  "operator": "lte",
+                  "value": 6,
+                  "level": "attention",
+                  "consecutive": 1,
+                  "basis": "fonte",
+                  "references": [
+                    {
+                      "title": "Jones et al. 2022 — Sleep deficiency on the ISS",
+                      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8919197/"
+                    }
+                  ],
+                  "note": "Associação com sono curto na pesquisa; nível de acompanhamento é demonstrativo, não corte médico.",
+                  "message": "Sono registrado de até 6 h; em observação."
+                }
+              ]
+            },
+            "references": [
+              {
+                "title": "Jones et al. 2022 — Sleep deficiency on the ISS",
+                "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8919197/"
+              },
+              {
+                "title": "NASA — Medical operations and sleep planning",
+                "url": "https://www.nasa.gov/reference/6-0-medical-operations/"
+              }
+            ],
+            "allowsPeriodStart": true,
+            "calculation": {
+              "performedBy": "frontend",
+              "formula": "(wakeAt - bedAt) / 3600000 - (sleepLatencyMinutes + awakeMinutes) / 60",
+              "components": [
+                {
+                  "name": "bedAt",
+                  "description": "Data e horário de deitar com fuso."
+                },
+                {
+                  "name": "wakeAt",
+                  "description": "Data e horário de levantar com fuso."
+                },
+                {
+                  "name": "sleepLatencyMinutes",
+                  "unit": "min",
+                  "description": "Tempo até adormecer."
+                },
+                {
+                  "name": "awakeMinutes",
+                  "unit": "min",
+                  "description": "Total acordado durante a noite."
+                }
+              ],
+              "storedComponents": false
+            }
           },
           {
-            "id": "fatigue",
-            "label": "Fadiga",
+            "id": "sleep_quality",
+            "label": "Qualidade do sono",
             "valueType": "scale",
             "unit": null,
             "displayUnit": null,
             "recordKind": "self_report",
-            "description": "Escala demonstrativa, não é instrumento clínico validado.",
+            "description": "Avaliação pessoal 0–100; rótulos próprios: menor/maior qualidade percebida.",
+            "scale": {
+              "min": 0,
+              "max": 100,
+              "numericType": "number",
+              "precision": 2,
+              "step": 0.01
+            },
+            "collection": {
+              "schedule": [
+                {
+                  "kind": "interval",
+                  "days": 1,
+                  "context": "morning_check_in",
+                  "basis": "fonte",
+                  "references": [
+                    {
+                      "title": "Jones et al. 2022 — Sleep deficiency on the ISS",
+                      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8919197/"
+                    }
+                  ],
+                  "note": "Frequência adotada como proposta de demonstração com base na pesquisa."
+                }
+              ]
+            },
+            "monitoring": {
+              "baseline": {
+                "days": 7,
+                "timeZone": "UTC",
+                "dailyAggregation": "latest",
+                "standardDeviation": "sample",
+                "multiplier": 2,
+                "basis": "proposta da equipe",
+                "note": "Primeiros sete dias de calendário UTC; média ± 2 desvios padrão amostrais. Não é faixa validada pela NASA. Uma observação por dia; não estender a janela para preencher dias ausentes.",
+                "minSamples": 7
+              },
+              "rules": [
+                {
+                  "id": "personal_range",
+                  "kind": "personal_range",
+                  "direction": "outside",
+                  "consecutive": 3,
+                  "level": "attention",
+                  "basis": "proposta da equipe",
+                  "note": "Comparação com faixa pessoal por 3 dias consecutivos. Amostra mínima de 7 dias é escolha da equipe.",
+                  "message": "Mudança em relação à faixa pessoal demonstrativa. Registro em observação; não é diagnóstico."
+                }
+              ]
+            },
+            "references": [
+              {
+                "title": "Jones et al. 2022 — Sleep deficiency on the ISS",
+                "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8919197/"
+              }
+            ]
+          },
+          {
+            "id": "sleepiness_kss",
+            "label": "Sonolência — referência KSS",
+            "valueType": "scale",
+            "unit": null,
+            "displayUnit": null,
+            "recordKind": "self_report",
+            "description": "Valores 1–9 da escala referenciada; rótulos próprios resumidos, não o texto oficial.",
             "scale": {
               "min": 1,
-              "max": 5,
+              "max": 9,
+              "numericType": "integer",
+              "precision": 0,
               "step": 1,
-              "minLabel": "Pouca fadiga percebida",
-              "maxLabel": "Muita fadiga percebida"
+              "minLabel": "Menor sonolência",
+              "maxLabel": "Maior sonolência"
+            },
+            "collection": {
+              "schedule": [
+                {
+                  "kind": "interval",
+                  "days": 1,
+                  "context": "morning_check_in",
+                  "basis": "fonte",
+                  "references": [
+                    {
+                      "title": "Jones et al. 2022 — Sleep deficiency on the ISS",
+                      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8919197/"
+                    }
+                  ],
+                  "note": "Frequência adotada como proposta de demonstração com base na pesquisa."
+                }
+              ]
+            },
+            "monitoring": {
+              "rules": [
+                {
+                  "id": "kss_eight",
+                  "kind": "threshold",
+                  "operator": "gte",
+                  "value": 8,
+                  "level": "risk",
+                  "consecutive": 1,
+                  "basis": "fonte",
+                  "references": [
+                    {
+                      "title": "Arsintescu et al. 2019 — referência KSS citada na pesquisa",
+                      "url": "https://hsi.arc.nasa.gov/publications/Arsintescu_etal_2019_JoVE.pdf",
+                      "note": "Link redireciona; confirmar publicação e autorização do texto completo antes de uso real."
+                    }
+                  ],
+                  "note": "Limiar citado no documento de pesquisa, em contexto de aviação/direção; não validado para esta aplicação espacial.",
+                  "message": "Sonolência autorrelatada na faixa superior da escala referenciada; acompanhamento demonstrativo."
+                },
+                {
+                  "id": "kss_seven",
+                  "kind": "threshold",
+                  "operator": "gte",
+                  "value": 7,
+                  "level": "attention",
+                  "consecutive": 1,
+                  "basis": "proposta da equipe",
+                  "note": "KSS 7 como nível de observação é decisão da equipe.",
+                  "message": "Sonolência autorrelatada em observação."
+                }
+              ]
+            },
+            "references": [
+              {
+                "title": "Arsintescu et al. 2019 — referência KSS citada na pesquisa",
+                "url": "https://hsi.arc.nasa.gov/publications/Arsintescu_etal_2019_JoVE.pdf",
+                "note": "Link redireciona; confirmar publicação e autorização do texto completo antes de uso real."
+              }
+            ],
+            "usage": {
+              "fullTextIncluded": false,
+              "permissionStatus": "confirmation_required",
+              "note": "Confirmar autorização de uso com os autores antes de incorporar o texto completo KSS."
             }
           },
           {
-            "id": "mood",
+            "id": "fatigue_samn_perelli",
+            "label": "Fadiga — referência Samn–Perelli",
+            "valueType": "scale",
+            "unit": null,
+            "displayUnit": null,
+            "recordKind": "self_report",
+            "description": "Autorrelato 1–7; rótulos próprios resumidos.",
+            "scale": {
+              "min": 1,
+              "max": 7,
+              "numericType": "integer",
+              "precision": 0,
+              "step": 1,
+              "minLabel": "Menor fadiga",
+              "maxLabel": "Maior fadiga"
+            },
+            "collection": {
+              "schedule": [
+                {
+                  "kind": "interval",
+                  "days": 1,
+                  "context": "morning_check_in",
+                  "basis": "fonte",
+                  "references": [
+                    {
+                      "title": "Jones et al. 2022 — Sleep deficiency on the ISS",
+                      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8919197/"
+                    }
+                  ],
+                  "note": "Frequência adotada como proposta de demonstração com base na pesquisa."
+                }
+              ]
+            },
+            "monitoring": {
+              "rules": [
+                {
+                  "id": "samn_five",
+                  "kind": "threshold",
+                  "operator": "gte",
+                  "value": 5,
+                  "level": "risk",
+                  "consecutive": 1,
+                  "basis": "fonte",
+                  "references": [
+                    {
+                      "title": "Samn–Perelli — SAM-TR-82-21 (1982)",
+                      "url": "https://apps.dtic.mil/sti/pdfs/ADA125319.pdf",
+                      "note": "Referência fornecida pela pesquisa; documento não recuperado na revisão."
+                    }
+                  ],
+                  "note": "Agrupamento 5–7 conforme pesquisa; nível demonstrativo, extrapolação de aviação.",
+                  "message": "Fadiga autorrelatada na faixa superior da escala referenciada; acompanhamento demonstrativo."
+                },
+                {
+                  "id": "samn_four",
+                  "kind": "threshold",
+                  "operator": "gte",
+                  "value": 4,
+                  "level": "attention",
+                  "consecutive": 1,
+                  "basis": "fonte",
+                  "references": [
+                    {
+                      "title": "Samn–Perelli — SAM-TR-82-21 (1982)",
+                      "url": "https://apps.dtic.mil/sti/pdfs/ADA125319.pdf",
+                      "note": "Referência fornecida pela pesquisa; documento não recuperado na revisão."
+                    }
+                  ],
+                  "note": "Valor 4 conforme pesquisa; classificação apenas demonstrativa.",
+                  "message": "Fadiga autorrelatada em observação."
+                }
+              ]
+            },
+            "references": [
+              {
+                "title": "Samn–Perelli — SAM-TR-82-21 (1982)",
+                "url": "https://apps.dtic.mil/sti/pdfs/ADA125319.pdf",
+                "note": "Referência fornecida pela pesquisa; documento não recuperado na revisão."
+              }
+            ]
+          },
+          {
+            "id": "stress",
+            "label": "Estresse",
+            "valueType": "scale",
+            "unit": null,
+            "displayUnit": null,
+            "recordKind": "self_report",
+            "description": "Intensidade percebida 0–100.",
+            "scale": {
+              "min": 0,
+              "max": 100,
+              "numericType": "number",
+              "precision": 2,
+              "step": 0.01
+            },
+            "collection": {
+              "schedule": [
+                {
+                  "kind": "interval",
+                  "days": 1,
+                  "context": "morning_check_in",
+                  "basis": "fonte",
+                  "references": [
+                    {
+                      "title": "Jones et al. 2022 — Sleep deficiency on the ISS",
+                      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8919197/"
+                    }
+                  ],
+                  "note": "Frequência adotada como proposta de demonstração com base na pesquisa."
+                }
+              ]
+            },
+            "monitoring": {
+              "baseline": {
+                "days": 7,
+                "timeZone": "UTC",
+                "dailyAggregation": "latest",
+                "standardDeviation": "sample",
+                "multiplier": 2,
+                "basis": "proposta da equipe",
+                "note": "Primeiros sete dias de calendário UTC; média ± 2 desvios padrão amostrais. Não é faixa validada pela NASA. Uma observação por dia; não estender a janela para preencher dias ausentes.",
+                "minSamples": 7
+              },
+              "rules": [
+                {
+                  "id": "personal_range",
+                  "kind": "personal_range",
+                  "direction": "above",
+                  "consecutive": 3,
+                  "level": "attention",
+                  "basis": "proposta da equipe",
+                  "note": "Comparação com faixa pessoal por 3 dias consecutivos. Amostra mínima de 7 dias é escolha da equipe.",
+                  "message": "Mudança em relação à faixa pessoal demonstrativa. Registro em observação; não é diagnóstico."
+                }
+              ]
+            },
+            "references": [
+              {
+                "title": "Jones et al. 2022 — Sleep deficiency on the ISS",
+                "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8919197/"
+              },
+              {
+                "title": "NASA — Behavioral Health & Performance Standard Measures",
+                "url": "https://ntrs.nasa.gov/api/citations/20170005421/downloads/20170005421.pdf"
+              }
+            ],
+            "privacy": {
+              "intendedAudience": [
+                "astronaut",
+                "crew_medical_officer"
+              ],
+              "enforced": false
+            }
+          },
+          {
+            "id": "mood_score",
             "label": "Humor",
             "valueType": "scale",
             "unit": null,
             "displayUnit": null,
             "recordKind": "self_report",
-            "description": "Escala demonstrativa, não é instrumento clínico validado.",
+            "description": "Avaliação pessoal 0–100: de menos positivo a mais positivo.",
+            "scale": {
+              "min": 0,
+              "max": 100,
+              "numericType": "number",
+              "precision": 2,
+              "step": 0.01
+            },
+            "collection": {
+              "schedule": [
+                {
+                  "kind": "interval",
+                  "days": 1,
+                  "context": "morning_check_in",
+                  "basis": "fonte",
+                  "references": [
+                    {
+                      "title": "Jones et al. 2022 — Sleep deficiency on the ISS",
+                      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8919197/"
+                    }
+                  ],
+                  "note": "Frequência adotada como proposta de demonstração com base na pesquisa."
+                }
+              ]
+            },
+            "monitoring": {
+              "baseline": {
+                "days": 7,
+                "timeZone": "UTC",
+                "dailyAggregation": "latest",
+                "standardDeviation": "sample",
+                "multiplier": 2,
+                "basis": "proposta da equipe",
+                "note": "Primeiros sete dias de calendário UTC; média ± 2 desvios padrão amostrais. Não é faixa validada pela NASA. Uma observação por dia; não estender a janela para preencher dias ausentes.",
+                "minSamples": 7
+              },
+              "rules": [
+                {
+                  "id": "personal_range",
+                  "kind": "personal_range",
+                  "direction": "below",
+                  "consecutive": 3,
+                  "level": "attention",
+                  "basis": "proposta da equipe",
+                  "note": "Comparação com faixa pessoal por 3 dias consecutivos. Amostra mínima de 7 dias é escolha da equipe.",
+                  "message": "Mudança em relação à faixa pessoal demonstrativa. Registro em observação; não é diagnóstico."
+                }
+              ]
+            },
+            "references": [
+              {
+                "title": "NASA — Behavioral Health & Performance Standard Measures",
+                "url": "https://ntrs.nasa.gov/api/citations/20170005421/downloads/20170005421.pdf"
+              }
+            ],
+            "privacy": {
+              "intendedAudience": [
+                "astronaut",
+                "crew_medical_officer"
+              ],
+              "enforced": false
+            }
+          },
+          {
+            "id": "pvt_response_speed",
+            "label": "PVT-B — velocidade média",
+            "valueType": "number",
+            "unit": "1/s",
+            "displayUnit": "1/s",
+            "recordKind": "performance_aggregate",
+            "description": "Média de 1/RT, RT em segundos, calculada pelo front-end com performance.now(); não é 1/média(RT). Excluir falsos inícios (<100 ms ou toque sem estímulo); timeout de 30 s entra como RT de 30 s. Sem respostas válidas, não enviar execução.",
+            "scale": {
+              "min": 0,
+              "max": 10,
+              "numericType": "number",
+              "precision": 4,
+              "step": 0.0001
+            },
+            "collection": {
+              "schedule": [
+                {
+                  "kind": "interval",
+                  "days": 4,
+                  "basis": "fonte",
+                  "references": [
+                    {
+                      "title": "Jones et al. 2022 — Sleep deficiency on the ISS",
+                      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8919197/"
+                    }
+                  ],
+                  "note": "Periodicidade proposta para a demonstração."
+                },
+                {
+                  "kind": "event",
+                  "event": "before_critical_task",
+                  "basis": "proposta da equipe",
+                  "note": "Coleta antes de tarefa crítica, proposta da equipe."
+                }
+              ]
+            },
+            "monitoring": {
+              "baseline": {
+                "days": 7,
+                "timeZone": "UTC",
+                "dailyAggregation": "latest",
+                "standardDeviation": "sample",
+                "multiplier": 2,
+                "basis": "proposta da equipe",
+                "note": "Primeiros sete dias de calendário UTC; média ± 2 desvios padrão amostrais. Não é faixa validada pela NASA. Uma observação por dia; não estender a janela para preencher dias ausentes.",
+                "minSamples": 2
+              },
+              "rules": [
+                {
+                  "id": "personal_range",
+                  "kind": "personal_range",
+                  "direction": "below",
+                  "consecutive": 1,
+                  "level": "attention",
+                  "basis": "proposta da equipe",
+                  "note": "Comparação com faixa pessoal por 1 teste. Amostra mínima de 2 dias é escolha da equipe.",
+                  "message": "Mudança em relação à faixa pessoal demonstrativa. Registro em observação; não é diagnóstico."
+                }
+              ]
+            },
+            "references": [
+              {
+                "title": "Basner, Mollicone & Dinges 2011 — PVT-B",
+                "url": "https://www.med.upenn.edu/uep/assets/user-content/documents/Basner2011-ValidityandsensitivityofabriefPVT.pdf"
+              },
+              {
+                "title": "Jones et al. 2022 — Sleep deficiency on the ISS",
+                "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8919197/"
+              }
+            ],
+            "groupRequired": true,
+            "aggregateGroup": "pvt_b"
+          },
+          {
+            "id": "pvt_lapses",
+            "label": "PVT-B — lapsos",
+            "valueType": "number",
+            "unit": "count",
+            "displayUnit": "count",
+            "recordKind": "performance_aggregate",
+            "description": "Contagem agregada de respostas ≥355 ms, incluindo ausência de resposta em 30 s.",
+            "scale": {
+              "min": 0,
+              "numericType": "integer",
+              "precision": 0,
+              "step": 1
+            },
+            "collection": {
+              "schedule": [
+                {
+                  "kind": "interval",
+                  "days": 4,
+                  "basis": "fonte",
+                  "references": [
+                    {
+                      "title": "Jones et al. 2022 — Sleep deficiency on the ISS",
+                      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8919197/"
+                    }
+                  ],
+                  "note": "Periodicidade proposta para a demonstração."
+                },
+                {
+                  "kind": "event",
+                  "event": "before_critical_task",
+                  "basis": "proposta da equipe",
+                  "note": "Coleta antes de tarefa crítica, proposta da equipe."
+                }
+              ]
+            },
+            "monitoring": {
+              "baseline": {
+                "days": 7,
+                "timeZone": "UTC",
+                "dailyAggregation": "latest",
+                "standardDeviation": "sample",
+                "multiplier": 2,
+                "basis": "proposta da equipe",
+                "note": "Primeiros sete dias de calendário UTC; média ± 2 desvios padrão amostrais. Não é faixa validada pela NASA. Uma observação por dia; não estender a janela para preencher dias ausentes.",
+                "minSamples": 2
+              },
+              "rules": [
+                {
+                  "id": "personal_range",
+                  "kind": "personal_range",
+                  "direction": "above",
+                  "consecutive": 1,
+                  "level": "attention",
+                  "basis": "proposta da equipe",
+                  "note": "Comparação com faixa pessoal por 1 teste. Amostra mínima de 2 dias é escolha da equipe.",
+                  "message": "Mudança em relação à faixa pessoal demonstrativa. Registro em observação; não é diagnóstico."
+                }
+              ]
+            },
+            "references": [
+              {
+                "title": "Basner, Mollicone & Dinges 2011 — PVT-B",
+                "url": "https://www.med.upenn.edu/uep/assets/user-content/documents/Basner2011-ValidityandsensitivityofabriefPVT.pdf"
+              },
+              {
+                "title": "Jones et al. 2022 — Sleep deficiency on the ISS",
+                "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8919197/"
+              }
+            ],
+            "groupRequired": true,
+            "aggregateGroup": "pvt_b"
+          },
+          {
+            "id": "pvt_false_starts",
+            "label": "PVT-B — falsos inícios",
+            "valueType": "number",
+            "unit": "count",
+            "displayUnit": "count",
+            "recordKind": "performance_aggregate",
+            "description": "Contagem agregada de respostas <100 ms ou toques sem estímulo; excluídos da velocidade média.",
+            "scale": {
+              "min": 0,
+              "numericType": "integer",
+              "precision": 0,
+              "step": 1
+            },
+            "collection": {
+              "schedule": [
+                {
+                  "kind": "interval",
+                  "days": 4,
+                  "basis": "fonte",
+                  "references": [
+                    {
+                      "title": "Jones et al. 2022 — Sleep deficiency on the ISS",
+                      "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8919197/"
+                    }
+                  ],
+                  "note": "Periodicidade proposta para a demonstração."
+                },
+                {
+                  "kind": "event",
+                  "event": "before_critical_task",
+                  "basis": "proposta da equipe",
+                  "note": "Coleta antes de tarefa crítica, proposta da equipe."
+                }
+              ]
+            },
+            "monitoring": {
+              "rules": [],
+              "note": "Sem corte de acompanhamento proposto na pesquisa; apresentar contagem."
+            },
+            "references": [
+              {
+                "title": "Basner, Mollicone & Dinges 2011 — PVT-B",
+                "url": "https://www.med.upenn.edu/uep/assets/user-content/documents/Basner2011-ValidityandsensitivityofabriefPVT.pdf"
+              },
+              {
+                "title": "Jones et al. 2022 — Sleep deficiency on the ISS",
+                "url": "https://pmc.ncbi.nlm.nih.gov/articles/PMC8919197/"
+              }
+            ],
+            "groupRequired": true,
+            "aggregateGroup": "pvt_b"
+          },
+          {
+            "id": "fatigue",
+            "label": "Fadiga (legado)",
+            "valueType": "scale",
+            "unit": null,
+            "displayUnit": null,
+            "recordKind": "self_report",
+            "description": "Escala demonstrativa antiga 1–5, preservada sem conversão; não é Samn–Perelli.",
             "scale": {
               "min": 1,
               "max": 5,
               "step": 1,
+              "numericType": "integer",
+              "precision": 0,
+              "minLabel": "Pouca fadiga percebida",
+              "maxLabel": "Muita fadiga percebida"
+            },
+            "deprecated": true,
+            "replacedBy": "fatigue_samn_perelli"
+          },
+          {
+            "id": "mood",
+            "label": "Humor (legado)",
+            "valueType": "scale",
+            "unit": null,
+            "displayUnit": null,
+            "recordKind": "self_report",
+            "description": "Escala demonstrativa antiga 1–5, preservada sem conversão; não comparar com humor 0–100.",
+            "scale": {
+              "min": 1,
+              "max": 5,
+              "step": 1,
+              "numericType": "integer",
+              "precision": 0,
               "minLabel": "Muito negativo",
               "maxLabel": "Muito positivo"
+            },
+            "deprecated": true,
+            "replacedBy": "mood_score",
+            "privacy": {
+              "intendedAudience": [
+                "astronaut",
+                "crew_medical_officer"
+              ],
+              "enforced": false
             }
           }
         ],
         "latestRecords": [
           {
-            "id": "ad255058-17e7-4cc6-94d1-ef88bd439f16",
+            "id": "fd3110a1-c7ef-464d-9db5-d29587c62b82",
             "astronautId": "astro_demo_001",
             "areaId": "isolation_confinement",
             "indicator": "sleep_duration",
@@ -184,7 +887,114 @@
             "createdAt": "2026-11-14T16:20:25.133Z"
           },
           {
-            "id": "97b654cf-7511-4ca5-882f-70c9fd202466",
+            "id": "7341275b-b223-498c-8bdc-6d0e7be54764",
+            "astronautId": "astro_demo_001",
+            "areaId": "isolation_confinement",
+            "indicator": "sleep_quality",
+            "value": 72,
+            "unit": null,
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z"
+          },
+          {
+            "id": "4f41fddb-1b81-4048-b6fb-e01de392fe30",
+            "astronautId": "astro_demo_001",
+            "areaId": "isolation_confinement",
+            "indicator": "sleepiness_kss",
+            "value": 3,
+            "unit": null,
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z"
+          },
+          {
+            "id": "045d7831-ddcb-4dae-8530-46a893004c49",
+            "astronautId": "astro_demo_001",
+            "areaId": "isolation_confinement",
+            "indicator": "fatigue_samn_perelli",
+            "value": 2,
+            "unit": null,
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z"
+          },
+          {
+            "id": "6cf8f4b4-38f8-4fe7-b826-93d9fe6de34d",
+            "astronautId": "astro_demo_001",
+            "areaId": "isolation_confinement",
+            "indicator": "stress",
+            "value": 25,
+            "unit": null,
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z"
+          },
+          {
+            "id": "bf255e1c-c89f-4e2d-928e-c2f4c9c2e48f",
+            "astronautId": "astro_demo_001",
+            "areaId": "isolation_confinement",
+            "indicator": "mood_score",
+            "value": 70,
+            "unit": null,
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z"
+          },
+          {
+            "id": "0ed92de5-0329-46a0-84f4-33cfdb5b5817",
+            "astronautId": "astro_demo_001",
+            "areaId": "isolation_confinement",
+            "indicator": "pvt_response_speed",
+            "value": 4,
+            "unit": "1/s",
+            "recordedAt": "2026-11-12T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z",
+            "groupId": "demo-pvt-2026-11-12T16:19:25.133Z"
+          },
+          {
+            "id": "3d9716d5-3989-47a9-bfc5-77ce4d7b4ba6",
+            "astronautId": "astro_demo_001",
+            "areaId": "isolation_confinement",
+            "indicator": "pvt_lapses",
+            "value": 1,
+            "unit": "count",
+            "recordedAt": "2026-11-12T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z",
+            "groupId": "demo-pvt-2026-11-12T16:19:25.133Z"
+          },
+          {
+            "id": "26af9807-0358-43b5-bae3-6331b46bc87a",
+            "astronautId": "astro_demo_001",
+            "areaId": "isolation_confinement",
+            "indicator": "pvt_false_starts",
+            "value": 0,
+            "unit": "count",
+            "recordedAt": "2026-11-12T16:19:25.133Z",
+            "source": "simulated",
+            "isSimulated": true,
+            "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+            "createdAt": "2026-11-14T16:20:25.133Z",
+            "groupId": "demo-pvt-2026-11-12T16:19:25.133Z"
+          },
+          {
+            "id": "1cb74675-a2b7-4f63-a777-fccd44de4627",
             "astronautId": "astro_demo_001",
             "areaId": "isolation_confinement",
             "indicator": "fatigue",
@@ -197,7 +1007,7 @@
             "createdAt": "2026-11-14T16:20:25.133Z"
           },
           {
-            "id": "d9b94f51-f538-4448-9bbf-c4a47105ce7f",
+            "id": "6ecdc092-4726-4b18-a6f8-daee695217f8",
             "astronautId": "astro_demo_001",
             "areaId": "isolation_confinement",
             "indicator": "mood",
@@ -208,6 +1018,232 @@
             "isSimulated": true,
             "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
             "createdAt": "2026-11-14T16:20:25.133Z"
+          }
+        ],
+        "monitoring": [
+          {
+            "indicator": "sleep_duration",
+            "source": "simulated",
+            "isSimulated": true,
+            "unit": "h",
+            "asOf": "2026-11-14T16:20:25.133Z",
+            "evaluatedRecordId": "fd3110a1-c7ef-464d-9db5-d29587c62b82",
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "isDemonstrative": true,
+            "status": "no_demonstrative_signal",
+            "level": null,
+            "inObservation": false,
+            "matchedRules": [],
+            "message": "Nenhuma regra demonstrativa acionada; isso não é uma conclusão clínica.",
+            "baseline": null
+          },
+          {
+            "indicator": "sleep_quality",
+            "source": "simulated",
+            "isSimulated": true,
+            "unit": null,
+            "asOf": "2026-11-14T16:20:25.133Z",
+            "evaluatedRecordId": "7341275b-b223-498c-8bdc-6d0e7be54764",
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "isDemonstrative": true,
+            "status": "baseline_collecting",
+            "level": null,
+            "inObservation": false,
+            "matchedRules": [],
+            "message": "Faixa pessoal ainda indisponível: coleta incompleta ou variabilidade insuficiente. Não é diagnóstico.",
+            "baseline": {
+              "config": {
+                "days": 7,
+                "timeZone": "UTC",
+                "dailyAggregation": "latest",
+                "standardDeviation": "sample",
+                "multiplier": 2,
+                "basis": "proposta da equipe",
+                "note": "Primeiros sete dias de calendário UTC; média ± 2 desvios padrão amostrais. Não é faixa validada pela NASA. Uma observação por dia; não estender a janela para preencher dias ausentes.",
+                "minSamples": 7
+              },
+              "from": "2026-11-08T00:00:00.000Z",
+              "to": "2026-11-15T00:00:00.000Z",
+              "sampleCount": 7,
+              "status": "collecting",
+              "reason": "first_seven_days"
+            }
+          },
+          {
+            "indicator": "sleepiness_kss",
+            "source": "simulated",
+            "isSimulated": true,
+            "unit": null,
+            "asOf": "2026-11-14T16:20:25.133Z",
+            "evaluatedRecordId": "4f41fddb-1b81-4048-b6fb-e01de392fe30",
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "isDemonstrative": true,
+            "status": "no_demonstrative_signal",
+            "level": null,
+            "inObservation": false,
+            "matchedRules": [],
+            "message": "Nenhuma regra demonstrativa acionada; isso não é uma conclusão clínica.",
+            "baseline": null
+          },
+          {
+            "indicator": "fatigue_samn_perelli",
+            "source": "simulated",
+            "isSimulated": true,
+            "unit": null,
+            "asOf": "2026-11-14T16:20:25.133Z",
+            "evaluatedRecordId": "045d7831-ddcb-4dae-8530-46a893004c49",
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "isDemonstrative": true,
+            "status": "no_demonstrative_signal",
+            "level": null,
+            "inObservation": false,
+            "matchedRules": [],
+            "message": "Nenhuma regra demonstrativa acionada; isso não é uma conclusão clínica.",
+            "baseline": null
+          },
+          {
+            "indicator": "stress",
+            "source": "simulated",
+            "isSimulated": true,
+            "unit": null,
+            "asOf": "2026-11-14T16:20:25.133Z",
+            "evaluatedRecordId": "6cf8f4b4-38f8-4fe7-b826-93d9fe6de34d",
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "isDemonstrative": true,
+            "status": "baseline_collecting",
+            "level": null,
+            "inObservation": false,
+            "matchedRules": [],
+            "message": "Faixa pessoal ainda indisponível: coleta incompleta ou variabilidade insuficiente. Não é diagnóstico.",
+            "baseline": {
+              "config": {
+                "days": 7,
+                "timeZone": "UTC",
+                "dailyAggregation": "latest",
+                "standardDeviation": "sample",
+                "multiplier": 2,
+                "basis": "proposta da equipe",
+                "note": "Primeiros sete dias de calendário UTC; média ± 2 desvios padrão amostrais. Não é faixa validada pela NASA. Uma observação por dia; não estender a janela para preencher dias ausentes.",
+                "minSamples": 7
+              },
+              "from": "2026-11-08T00:00:00.000Z",
+              "to": "2026-11-15T00:00:00.000Z",
+              "sampleCount": 7,
+              "status": "collecting",
+              "reason": "first_seven_days"
+            }
+          },
+          {
+            "indicator": "mood_score",
+            "source": "simulated",
+            "isSimulated": true,
+            "unit": null,
+            "asOf": "2026-11-14T16:20:25.133Z",
+            "evaluatedRecordId": "bf255e1c-c89f-4e2d-928e-c2f4c9c2e48f",
+            "recordedAt": "2026-11-14T16:19:25.133Z",
+            "isDemonstrative": true,
+            "status": "baseline_collecting",
+            "level": null,
+            "inObservation": false,
+            "matchedRules": [],
+            "message": "Faixa pessoal ainda indisponível: coleta incompleta ou variabilidade insuficiente. Não é diagnóstico.",
+            "baseline": {
+              "config": {
+                "days": 7,
+                "timeZone": "UTC",
+                "dailyAggregation": "latest",
+                "standardDeviation": "sample",
+                "multiplier": 2,
+                "basis": "proposta da equipe",
+                "note": "Primeiros sete dias de calendário UTC; média ± 2 desvios padrão amostrais. Não é faixa validada pela NASA. Uma observação por dia; não estender a janela para preencher dias ausentes.",
+                "minSamples": 7
+              },
+              "from": "2026-11-08T00:00:00.000Z",
+              "to": "2026-11-15T00:00:00.000Z",
+              "sampleCount": 7,
+              "status": "collecting",
+              "reason": "first_seven_days"
+            }
+          },
+          {
+            "indicator": "pvt_response_speed",
+            "source": "simulated",
+            "isSimulated": true,
+            "unit": "1/s",
+            "asOf": "2026-11-14T16:20:25.133Z",
+            "evaluatedRecordId": "0ed92de5-0329-46a0-84f4-33cfdb5b5817",
+            "recordedAt": "2026-11-12T16:19:25.133Z",
+            "isDemonstrative": true,
+            "status": "baseline_collecting",
+            "level": null,
+            "inObservation": false,
+            "matchedRules": [],
+            "message": "Faixa pessoal ainda indisponível: coleta incompleta ou variabilidade insuficiente. Não é diagnóstico.",
+            "baseline": {
+              "config": {
+                "days": 7,
+                "timeZone": "UTC",
+                "dailyAggregation": "latest",
+                "standardDeviation": "sample",
+                "multiplier": 2,
+                "basis": "proposta da equipe",
+                "note": "Primeiros sete dias de calendário UTC; média ± 2 desvios padrão amostrais. Não é faixa validada pela NASA. Uma observação por dia; não estender a janela para preencher dias ausentes.",
+                "minSamples": 2
+              },
+              "from": "2026-11-08T00:00:00.000Z",
+              "to": "2026-11-15T00:00:00.000Z",
+              "sampleCount": 2,
+              "status": "collecting",
+              "reason": "first_seven_days"
+            }
+          },
+          {
+            "indicator": "pvt_lapses",
+            "source": "simulated",
+            "isSimulated": true,
+            "unit": "count",
+            "asOf": "2026-11-14T16:20:25.133Z",
+            "evaluatedRecordId": "3d9716d5-3989-47a9-bfc5-77ce4d7b4ba6",
+            "recordedAt": "2026-11-12T16:19:25.133Z",
+            "isDemonstrative": true,
+            "status": "baseline_collecting",
+            "level": null,
+            "inObservation": false,
+            "matchedRules": [],
+            "message": "Faixa pessoal ainda indisponível: coleta incompleta ou variabilidade insuficiente. Não é diagnóstico.",
+            "baseline": {
+              "config": {
+                "days": 7,
+                "timeZone": "UTC",
+                "dailyAggregation": "latest",
+                "standardDeviation": "sample",
+                "multiplier": 2,
+                "basis": "proposta da equipe",
+                "note": "Primeiros sete dias de calendário UTC; média ± 2 desvios padrão amostrais. Não é faixa validada pela NASA. Uma observação por dia; não estender a janela para preencher dias ausentes.",
+                "minSamples": 2
+              },
+              "from": "2026-11-08T00:00:00.000Z",
+              "to": "2026-11-15T00:00:00.000Z",
+              "sampleCount": 2,
+              "status": "collecting",
+              "reason": "first_seven_days"
+            }
+          },
+          {
+            "indicator": "pvt_false_starts",
+            "source": "simulated",
+            "isSimulated": true,
+            "unit": "count",
+            "asOf": "2026-11-14T16:20:25.133Z",
+            "evaluatedRecordId": "26af9807-0358-43b5-bae3-6331b46bc87a",
+            "recordedAt": "2026-11-12T16:19:25.133Z",
+            "isDemonstrative": true,
+            "status": "not_applicable",
+            "level": null,
+            "inObservation": false,
+            "matchedRules": [],
+            "message": "Nenhuma regra demonstrativa acionada; isso não é uma conclusão clínica.",
+            "baseline": null
           }
         ]
       }
@@ -270,7 +1306,7 @@
         ],
         "latestRecords": [
           {
-            "id": "a5e502d3-f16f-4548-a116-90d73079e2cd",
+            "id": "b4d41dd1-3b28-49ed-af17-dd081afae9fe",
             "astronautId": "astro_demo_001",
             "areaId": "distance_from_earth",
             "indicator": "communication_delay",
@@ -283,7 +1319,7 @@
             "createdAt": "2026-11-14T16:20:25.133Z"
           },
           {
-            "id": "654d219a-f2c2-4915-a680-916706201e79",
+            "id": "97ddd544-279a-401f-93b6-5ad5f212b31b",
             "astronautId": "astro_demo_001",
             "areaId": "distance_from_earth",
             "indicator": "onboard_medical_resources",
@@ -387,7 +1423,7 @@
         ],
         "latestRecords": [
           {
-            "id": "36e1544a-72d0-4726-a63d-9f2c4985d558",
+            "id": "54dce82e-78ad-4138-8210-9dd729d4e680",
             "astronautId": "astro_demo_001",
             "areaId": "gravity_fields",
             "indicator": "heart_rate",
@@ -400,7 +1436,7 @@
             "createdAt": "2026-11-14T16:20:25.133Z"
           },
           {
-            "id": "771aac6f-c7cf-491d-951f-2c67331723c1",
+            "id": "ce1fabb3-0816-4344-a939-3fa13c463401",
             "astronautId": "astro_demo_001",
             "areaId": "gravity_fields",
             "indicator": "blood_pressure_systolic",
@@ -414,7 +1450,7 @@
             "groupId": "demo-bp-6"
           },
           {
-            "id": "1c3657dc-53aa-42f2-a027-a7b4ea928c6c",
+            "id": "7a3dc204-7680-4855-a6e3-dd0b6dcf1993",
             "astronautId": "astro_demo_001",
             "areaId": "gravity_fields",
             "indicator": "blood_pressure_diastolic",
@@ -428,7 +1464,7 @@
             "groupId": "demo-bp-6"
           },
           {
-            "id": "389a66b0-5766-4937-a975-fe49dd77ca19",
+            "id": "8c42e446-e207-48a5-be14-11548d98af2d",
             "astronautId": "astro_demo_001",
             "areaId": "gravity_fields",
             "indicator": "exercise_duration",
@@ -441,7 +1477,7 @@
             "createdAt": "2026-11-14T16:20:25.133Z"
           },
           {
-            "id": "80a1dadb-1a84-4ca0-a290-8be17df6a0b1",
+            "id": "446ec982-c1b7-4bf2-8648-f8f7a6417c61",
             "astronautId": "astro_demo_001",
             "areaId": "gravity_fields",
             "indicator": "balance_vision_symptoms",
@@ -534,7 +1570,7 @@
         ],
         "latestRecords": [
           {
-            "id": "4216d9dc-7000-472e-8ba5-8c5ab7853376",
+            "id": "8b34ef37-6b8f-4d41-99a5-6ab8677d0814",
             "astronautId": "astro_demo_001",
             "areaId": "hostile_closed_environment",
             "indicator": "co2_concentration",
@@ -547,7 +1583,7 @@
             "createdAt": "2026-11-14T16:20:25.133Z"
           },
           {
-            "id": "7111c3c2-e54a-4fb5-946a-a874ade1467c",
+            "id": "c4ae1373-b868-44b6-bec5-bcc7fb964363",
             "astronautId": "astro_demo_001",
             "areaId": "hostile_closed_environment",
             "indicator": "temperature",
@@ -560,7 +1596,7 @@
             "createdAt": "2026-11-14T16:20:25.133Z"
           },
           {
-            "id": "f21c34c2-ae59-4999-8942-236a0c405e25",
+            "id": "311e3b4d-e83a-4d29-8e05-790de683eea4",
             "astronautId": "astro_demo_001",
             "areaId": "hostile_closed_environment",
             "indicator": "relative_humidity",
@@ -573,7 +1609,7 @@
             "createdAt": "2026-11-14T16:20:25.133Z"
           },
           {
-            "id": "8fde87e5-a927-479b-af33-aa16fe5bf3e8",
+            "id": "5ca9db44-5253-4c97-8c37-d103ef5207a4",
             "astronautId": "astro_demo_001",
             "areaId": "hostile_closed_environment",
             "indicator": "reported_symptoms",
@@ -606,21 +1642,22 @@
           "recordCount": 14,
           "lastRecordedAt": "2026-11-14T16:19:25.133Z",
           "latestRecord": {
-            "id": "84ae0fdc-7ec8-4762-bb64-238cba62928e",
+            "id": "cf677b16-9e5b-4b24-81a5-55c4f925f565",
             "astronautId": "astro_demo_001",
             "areaId": "radiation",
-            "indicator": "dose_rate",
-            "value": 12,
-            "unit": "uSv/h",
+            "indicator": "accumulated_dose",
+            "value": 980,
+            "unit": "uSv",
             "recordedAt": "2026-11-14T16:19:25.133Z",
             "source": "simulated",
             "isSimulated": true,
             "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
-            "createdAt": "2026-11-14T16:20:25.133Z"
+            "createdAt": "2026-11-14T16:20:25.133Z",
+            "periodStart": "2026-11-07T16:20:25.133Z"
           },
           "highlights": [
             {
-              "id": "84ae0fdc-7ec8-4762-bb64-238cba62928e",
+              "id": "631d8e37-36e4-4850-860b-9984f5478245",
               "astronautId": "astro_demo_001",
               "areaId": "radiation",
               "indicator": "dose_rate",
@@ -633,7 +1670,7 @@
               "createdAt": "2026-11-14T16:20:25.133Z"
             },
             {
-              "id": "3dde78fd-8691-48fc-b877-6bca097f523a",
+              "id": "cf677b16-9e5b-4b24-81a5-55c4f925f565",
               "astronautId": "astro_demo_001",
               "areaId": "radiation",
               "indicator": "accumulated_dose",
@@ -651,18 +1688,18 @@
         {
           "areaId": "isolation_confinement",
           "title": "Isolamento e confinamento",
-          "summary": "Histórico pessoal de sono, fadiga e humor.",
+          "summary": "Sono, sonolência, fadiga, estresse, humor e agregados PVT-B.",
           "isSimulated": true,
           "dataStatus": "available",
-          "recordCount": 21,
+          "recordCount": 62,
           "lastRecordedAt": "2026-11-14T16:19:25.133Z",
           "latestRecord": {
-            "id": "d9b94f51-f538-4448-9bbf-c4a47105ce7f",
+            "id": "fd3110a1-c7ef-464d-9db5-d29587c62b82",
             "astronautId": "astro_demo_001",
             "areaId": "isolation_confinement",
-            "indicator": "mood",
-            "value": 3,
-            "unit": null,
+            "indicator": "sleep_duration",
+            "value": 7,
+            "unit": "h",
             "recordedAt": "2026-11-14T16:19:25.133Z",
             "source": "simulated",
             "isSimulated": true,
@@ -671,7 +1708,7 @@
           },
           "highlights": [
             {
-              "id": "ad255058-17e7-4cc6-94d1-ef88bd439f16",
+              "id": "fd3110a1-c7ef-464d-9db5-d29587c62b82",
               "astronautId": "astro_demo_001",
               "areaId": "isolation_confinement",
               "indicator": "sleep_duration",
@@ -684,10 +1721,10 @@
               "createdAt": "2026-11-14T16:20:25.133Z"
             },
             {
-              "id": "97b654cf-7511-4ca5-882f-70c9fd202466",
+              "id": "045d7831-ddcb-4dae-8530-46a893004c49",
               "astronautId": "astro_demo_001",
               "areaId": "isolation_confinement",
-              "indicator": "fatigue",
+              "indicator": "fatigue_samn_perelli",
               "value": 2,
               "unit": null,
               "recordedAt": "2026-11-14T16:19:25.133Z",
@@ -697,11 +1734,11 @@
               "createdAt": "2026-11-14T16:20:25.133Z"
             },
             {
-              "id": "d9b94f51-f538-4448-9bbf-c4a47105ce7f",
+              "id": "bf255e1c-c89f-4e2d-928e-c2f4c9c2e48f",
               "astronautId": "astro_demo_001",
               "areaId": "isolation_confinement",
-              "indicator": "mood",
-              "value": 3,
+              "indicator": "mood_score",
+              "value": 70,
               "unit": null,
               "recordedAt": "2026-11-14T16:19:25.133Z",
               "source": "simulated",
@@ -720,7 +1757,7 @@
           "recordCount": 14,
           "lastRecordedAt": "2026-11-14T16:19:25.133Z",
           "latestRecord": {
-            "id": "a5e502d3-f16f-4548-a116-90d73079e2cd",
+            "id": "b4d41dd1-3b28-49ed-af17-dd081afae9fe",
             "astronautId": "astro_demo_001",
             "areaId": "distance_from_earth",
             "indicator": "communication_delay",
@@ -734,7 +1771,7 @@
           },
           "highlights": [
             {
-              "id": "a5e502d3-f16f-4548-a116-90d73079e2cd",
+              "id": "b4d41dd1-3b28-49ed-af17-dd081afae9fe",
               "astronautId": "astro_demo_001",
               "areaId": "distance_from_earth",
               "indicator": "communication_delay",
@@ -747,7 +1784,7 @@
               "createdAt": "2026-11-14T16:20:25.133Z"
             },
             {
-              "id": "654d219a-f2c2-4915-a680-916706201e79",
+              "id": "97ddd544-279a-401f-93b6-5ad5f212b31b",
               "astronautId": "astro_demo_001",
               "areaId": "distance_from_earth",
               "indicator": "onboard_medical_resources",
@@ -770,21 +1807,22 @@
           "recordCount": 35,
           "lastRecordedAt": "2026-11-14T16:19:25.133Z",
           "latestRecord": {
-            "id": "80a1dadb-1a84-4ca0-a290-8be17df6a0b1",
+            "id": "ce1fabb3-0816-4344-a939-3fa13c463401",
             "astronautId": "astro_demo_001",
             "areaId": "gravity_fields",
-            "indicator": "balance_vision_symptoms",
-            "value": "Relato fictício: sensação de desequilíbrio ao mudar de posição.",
-            "unit": null,
+            "indicator": "blood_pressure_systolic",
+            "value": 118,
+            "unit": "mmHg",
             "recordedAt": "2026-11-14T16:19:25.133Z",
             "source": "simulated",
             "isSimulated": true,
             "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
-            "createdAt": "2026-11-14T16:20:25.133Z"
+            "createdAt": "2026-11-14T16:20:25.133Z",
+            "groupId": "demo-bp-6"
           },
           "highlights": [
             {
-              "id": "36e1544a-72d0-4726-a63d-9f2c4985d558",
+              "id": "54dce82e-78ad-4138-8210-9dd729d4e680",
               "astronautId": "astro_demo_001",
               "areaId": "gravity_fields",
               "indicator": "heart_rate",
@@ -797,7 +1835,7 @@
               "createdAt": "2026-11-14T16:20:25.133Z"
             },
             {
-              "id": "389a66b0-5766-4937-a975-fe49dd77ca19",
+              "id": "8c42e446-e207-48a5-be14-11548d98af2d",
               "astronautId": "astro_demo_001",
               "areaId": "gravity_fields",
               "indicator": "exercise_duration",
@@ -820,12 +1858,12 @@
           "recordCount": 28,
           "lastRecordedAt": "2026-11-14T16:19:25.133Z",
           "latestRecord": {
-            "id": "f21c34c2-ae59-4999-8942-236a0c405e25",
+            "id": "c4ae1373-b868-44b6-bec5-bcc7fb964363",
             "astronautId": "astro_demo_001",
             "areaId": "hostile_closed_environment",
-            "indicator": "relative_humidity",
-            "value": 45,
-            "unit": "%",
+            "indicator": "temperature",
+            "value": 23,
+            "unit": "Cel",
             "recordedAt": "2026-11-14T16:19:25.133Z",
             "source": "simulated",
             "isSimulated": true,
@@ -834,7 +1872,7 @@
           },
           "highlights": [
             {
-              "id": "4216d9dc-7000-472e-8ba5-8c5ab7853376",
+              "id": "8b34ef37-6b8f-4d41-99a5-6ab8677d0814",
               "astronautId": "astro_demo_001",
               "areaId": "hostile_closed_environment",
               "indicator": "co2_concentration",
@@ -847,7 +1885,7 @@
               "createdAt": "2026-11-14T16:20:25.133Z"
             },
             {
-              "id": "7111c3c2-e54a-4fb5-946a-a874ade1467c",
+              "id": "c4ae1373-b868-44b6-bec5-bcc7fb964363",
               "astronautId": "astro_demo_001",
               "areaId": "hostile_closed_environment",
               "indicator": "temperature",
@@ -860,7 +1898,7 @@
               "createdAt": "2026-11-14T16:20:25.133Z"
             },
             {
-              "id": "f21c34c2-ae59-4999-8942-236a0c405e25",
+              "id": "311e3b4d-e83a-4d29-8e05-790de683eea4",
               "astronautId": "astro_demo_001",
               "areaId": "hostile_closed_environment",
               "indicator": "relative_humidity",
@@ -891,20 +1929,7 @@
       },
       "records": [
         {
-          "id": "6c36d485-98e1-449b-9f45-c49b25ee8172",
-          "astronautId": "astro_demo_001",
-          "areaId": "radiation",
-          "indicator": "dose_rate",
-          "value": 12,
-          "unit": "uSv/h",
-          "recordedAt": "2026-11-08T16:19:25.133Z",
-          "source": "simulated",
-          "isSimulated": true,
-          "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
-          "createdAt": "2026-11-14T16:20:25.133Z"
-        },
-        {
-          "id": "814bae67-4ac5-444d-9896-2cea524196f5",
+          "id": "67c27482-8a3b-4ed6-a9aa-631f4ceda059",
           "astronautId": "astro_demo_001",
           "areaId": "radiation",
           "indicator": "accumulated_dose",
@@ -918,7 +1943,20 @@
           "periodStart": "2026-11-07T16:20:25.133Z"
         },
         {
-          "id": "109886b4-08d4-4c9b-ab5b-9962adff8063",
+          "id": "d3d6bbc9-ca72-4012-b57c-61d1582e48a4",
+          "astronautId": "astro_demo_001",
+          "areaId": "radiation",
+          "indicator": "dose_rate",
+          "value": 12,
+          "unit": "uSv/h",
+          "recordedAt": "2026-11-08T16:19:25.133Z",
+          "source": "simulated",
+          "isSimulated": true,
+          "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+          "createdAt": "2026-11-14T16:20:25.133Z"
+        },
+        {
+          "id": "4dbbd275-0ce6-4d3c-b44d-ae76fe04d655",
           "astronautId": "astro_demo_001",
           "areaId": "radiation",
           "indicator": "dose_rate",
@@ -931,7 +1969,7 @@
           "createdAt": "2026-11-14T16:20:25.133Z"
         },
         {
-          "id": "59c83a7f-2c71-43d3-bec3-cbe7833b278c",
+          "id": "f6c45961-8dda-470b-b863-8e3ede51bbfc",
           "astronautId": "astro_demo_001",
           "areaId": "radiation",
           "indicator": "accumulated_dose",
@@ -945,7 +1983,7 @@
           "periodStart": "2026-11-07T16:20:25.133Z"
         },
         {
-          "id": "16a892de-7d60-4c6a-8dc0-c60b72d9436b",
+          "id": "43860600-87d4-43d4-8373-ac5572b6dfe5",
           "astronautId": "astro_demo_001",
           "areaId": "radiation",
           "indicator": "accumulated_dose",
@@ -959,7 +1997,7 @@
           "periodStart": "2026-11-07T16:20:25.133Z"
         },
         {
-          "id": "f3f3f6be-777e-4e30-9641-5d8bc5d9bd3c",
+          "id": "7e2a4a87-daba-4504-adb6-13f0cd2591f8",
           "astronautId": "astro_demo_001",
           "areaId": "radiation",
           "indicator": "dose_rate",
@@ -972,7 +2010,7 @@
           "createdAt": "2026-11-14T16:20:25.133Z"
         },
         {
-          "id": "07647b4a-601d-4001-9a53-c8e98b351268",
+          "id": "1662475c-ec5b-4d1a-9464-0af1a4a41a47",
           "astronautId": "astro_demo_001",
           "areaId": "radiation",
           "indicator": "dose_rate",
@@ -985,7 +2023,7 @@
           "createdAt": "2026-11-14T16:20:25.133Z"
         },
         {
-          "id": "89bf8c11-63eb-4dc5-afd3-65c8a77e314e",
+          "id": "4d97a10c-88cf-4c79-88f5-21111b9bfd14",
           "astronautId": "astro_demo_001",
           "areaId": "radiation",
           "indicator": "accumulated_dose",
@@ -999,7 +2037,7 @@
           "periodStart": "2026-11-07T16:20:25.133Z"
         },
         {
-          "id": "213816f2-e971-4d2e-a139-ea2400977c94",
+          "id": "59a48c08-70d3-4ecd-92ad-eb4bbc2212d0",
           "astronautId": "astro_demo_001",
           "areaId": "radiation",
           "indicator": "dose_rate",
@@ -1012,7 +2050,7 @@
           "createdAt": "2026-11-14T16:20:25.133Z"
         },
         {
-          "id": "8c5ec10c-d58f-403b-99b7-0392c47b93bf",
+          "id": "cb0f6ee3-a8d4-4ca9-b3cd-f9855dddac36",
           "astronautId": "astro_demo_001",
           "areaId": "radiation",
           "indicator": "accumulated_dose",
@@ -1026,7 +2064,7 @@
           "periodStart": "2026-11-07T16:20:25.133Z"
         },
         {
-          "id": "3974ec96-e266-4db2-aa1d-b42e899dbd27",
+          "id": "4f6ebf14-5130-43f6-990b-c32bd55bb393",
           "astronautId": "astro_demo_001",
           "areaId": "radiation",
           "indicator": "accumulated_dose",
@@ -1040,7 +2078,7 @@
           "periodStart": "2026-11-07T16:20:25.133Z"
         },
         {
-          "id": "b38918a7-1fc1-4ad0-9f91-ca406a7fbf27",
+          "id": "9ad8bcbb-db96-41ad-8453-11619128302b",
           "astronautId": "astro_demo_001",
           "areaId": "radiation",
           "indicator": "dose_rate",
@@ -1053,7 +2091,20 @@
           "createdAt": "2026-11-14T16:20:25.133Z"
         },
         {
-          "id": "3dde78fd-8691-48fc-b877-6bca097f523a",
+          "id": "631d8e37-36e4-4850-860b-9984f5478245",
+          "astronautId": "astro_demo_001",
+          "areaId": "radiation",
+          "indicator": "dose_rate",
+          "value": 12,
+          "unit": "uSv/h",
+          "recordedAt": "2026-11-14T16:19:25.133Z",
+          "source": "simulated",
+          "isSimulated": true,
+          "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
+          "createdAt": "2026-11-14T16:20:25.133Z"
+        },
+        {
+          "id": "cf677b16-9e5b-4b24-81a5-55c4f925f565",
           "astronautId": "astro_demo_001",
           "areaId": "radiation",
           "indicator": "accumulated_dose",
@@ -1065,19 +2116,6 @@
           "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
           "createdAt": "2026-11-14T16:20:25.133Z",
           "periodStart": "2026-11-07T16:20:25.133Z"
-        },
-        {
-          "id": "84ae0fdc-7ec8-4762-bb64-238cba62928e",
-          "astronautId": "astro_demo_001",
-          "areaId": "radiation",
-          "indicator": "dose_rate",
-          "value": 12,
-          "unit": "uSv/h",
-          "recordedAt": "2026-11-14T16:19:25.133Z",
-          "source": "simulated",
-          "isSimulated": true,
-          "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
-          "createdAt": "2026-11-14T16:20:25.133Z"
         }
       ],
       "trends": [
@@ -1087,8 +2125,8 @@
           "isSimulated": true,
           "unit": "uSv/h",
           "method": "latest_pair_difference",
-          "latestRecordId": "84ae0fdc-7ec8-4762-bb64-238cba62928e",
-          "previousRecordId": "b38918a7-1fc1-4ad0-9f91-ca406a7fbf27",
+          "latestRecordId": "631d8e37-36e4-4850-860b-9984f5478245",
+          "previousRecordId": "9ad8bcbb-db96-41ad-8453-11619128302b",
           "delta": -1,
           "direction": "decrease",
           "status": "available",
@@ -1100,8 +2138,8 @@
           "isSimulated": true,
           "unit": "uSv",
           "method": "latest_pair_difference",
-          "latestRecordId": "3dde78fd-8691-48fc-b877-6bca097f523a",
-          "previousRecordId": "3974ec96-e266-4db2-aa1d-b42e899dbd27",
+          "latestRecordId": "cf677b16-9e5b-4b24-81a5-55c4f925f565",
+          "previousRecordId": "4f6ebf14-5130-43f6-990b-c32bd55bb393",
           "delta": 140,
           "direction": "increase",
           "status": "available",
@@ -1119,9 +2157,8 @@
           "indicator": "dose_rate",
           "value": 12,
           "unit": "uSv/h",
-          "recordedAt": "2026-11-14T16:19:25.133Z",
-          "source": "simulated",
-          "notes": "Dado fictício de demonstração; não representa uma pessoa real."
+          "recordedAt": "2026-11-14T11:00:00Z",
+          "source": "simulated"
         }
       ]
     },
@@ -1131,17 +2168,233 @@
       "astronautId": "astro_demo_001",
       "records": [
         {
-          "id": "84ae0fdc-7ec8-4762-bb64-238cba62928e",
-          "astronautId": "astro_demo_001",
-          "areaId": "radiation",
           "indicator": "dose_rate",
           "value": 12,
           "unit": "uSv/h",
-          "recordedAt": "2026-11-14T16:19:25.133Z",
+          "recordedAt": "2026-11-14T11:00:00Z",
           "source": "simulated",
+          "id": "8c3dcffa-c2b5-43ae-b176-02eaaafd9f6b",
+          "astronautId": "astro_demo_001",
+          "areaId": "radiation",
           "isSimulated": true,
-          "notes": "Dado fictício de demonstração; não representa uma pessoa real.",
-          "createdAt": "2026-11-14T16:20:25.133Z"
+          "notes": null,
+          "createdAt": "2026-11-14T17:46:45.348Z"
+        }
+      ]
+    }
+  },
+  "isolationCheckIn": {
+    "request": "POST /api/v1/areas/isolation_confinement/records",
+    "body": {
+      "astronautId": "astro_demo_001",
+      "records": [
+        {
+          "indicator": "sleep_duration",
+          "value": 7.25,
+          "unit": "h",
+          "recordedAt": "2026-11-14T11:00:00Z",
+          "source": "simulated"
+        },
+        {
+          "indicator": "sleep_quality",
+          "value": 75.5,
+          "unit": null,
+          "recordedAt": "2026-11-14T11:00:00Z",
+          "source": "simulated"
+        },
+        {
+          "indicator": "sleepiness_kss",
+          "value": 3,
+          "unit": null,
+          "recordedAt": "2026-11-14T11:00:00Z",
+          "source": "simulated"
+        },
+        {
+          "indicator": "fatigue_samn_perelli",
+          "value": 2,
+          "unit": null,
+          "recordedAt": "2026-11-14T11:00:00Z",
+          "source": "simulated"
+        },
+        {
+          "indicator": "stress",
+          "value": 25,
+          "unit": null,
+          "recordedAt": "2026-11-14T11:00:00Z",
+          "source": "simulated"
+        },
+        {
+          "indicator": "mood_score",
+          "value": 70,
+          "unit": null,
+          "recordedAt": "2026-11-14T11:00:00Z",
+          "source": "simulated"
+        }
+      ]
+    },
+    "status": 201,
+    "response": {
+      "apiVersion": "v1",
+      "astronautId": "astro_demo_001",
+      "records": [
+        {
+          "indicator": "sleep_duration",
+          "value": 7.25,
+          "unit": "h",
+          "recordedAt": "2026-11-14T11:00:00Z",
+          "source": "simulated",
+          "id": "48848522-c2a8-42e8-8457-2b2d04254a22",
+          "astronautId": "astro_demo_001",
+          "areaId": "isolation_confinement",
+          "isSimulated": true,
+          "notes": null,
+          "createdAt": "2026-11-14T17:46:45.368Z"
+        },
+        {
+          "indicator": "sleep_quality",
+          "value": 75.5,
+          "unit": null,
+          "recordedAt": "2026-11-14T11:00:00Z",
+          "source": "simulated",
+          "id": "6efeaea9-7944-44f6-ac96-908c1ef2eb39",
+          "astronautId": "astro_demo_001",
+          "areaId": "isolation_confinement",
+          "isSimulated": true,
+          "notes": null,
+          "createdAt": "2026-11-14T17:46:45.368Z"
+        },
+        {
+          "indicator": "sleepiness_kss",
+          "value": 3,
+          "unit": null,
+          "recordedAt": "2026-11-14T11:00:00Z",
+          "source": "simulated",
+          "id": "88f2c388-5dd9-4f17-bc3b-b613330a0002",
+          "astronautId": "astro_demo_001",
+          "areaId": "isolation_confinement",
+          "isSimulated": true,
+          "notes": null,
+          "createdAt": "2026-11-14T17:46:45.368Z"
+        },
+        {
+          "indicator": "fatigue_samn_perelli",
+          "value": 2,
+          "unit": null,
+          "recordedAt": "2026-11-14T11:00:00Z",
+          "source": "simulated",
+          "id": "00328e67-381f-4a13-ab2f-1c93432c4322",
+          "astronautId": "astro_demo_001",
+          "areaId": "isolation_confinement",
+          "isSimulated": true,
+          "notes": null,
+          "createdAt": "2026-11-14T17:46:45.368Z"
+        },
+        {
+          "indicator": "stress",
+          "value": 25,
+          "unit": null,
+          "recordedAt": "2026-11-14T11:00:00Z",
+          "source": "simulated",
+          "id": "c81f69b9-c2bb-4dfa-aa76-d6063a9c782e",
+          "astronautId": "astro_demo_001",
+          "areaId": "isolation_confinement",
+          "isSimulated": true,
+          "notes": null,
+          "createdAt": "2026-11-14T17:46:45.368Z"
+        },
+        {
+          "indicator": "mood_score",
+          "value": 70,
+          "unit": null,
+          "recordedAt": "2026-11-14T11:00:00Z",
+          "source": "simulated",
+          "id": "6db2852c-ee7c-4204-911a-e9885adf955d",
+          "astronautId": "astro_demo_001",
+          "areaId": "isolation_confinement",
+          "isSimulated": true,
+          "notes": null,
+          "createdAt": "2026-11-14T17:46:45.368Z"
+        }
+      ]
+    }
+  },
+  "isolationPvt": {
+    "request": "POST /api/v1/areas/isolation_confinement/records",
+    "body": {
+      "astronautId": "astro_demo_001",
+      "records": [
+        {
+          "indicator": "pvt_response_speed",
+          "value": 3.4567,
+          "unit": "1/s",
+          "recordedAt": "2026-11-14T11:00:00Z",
+          "source": "simulated",
+          "groupId": "pvt-example-001"
+        },
+        {
+          "indicator": "pvt_lapses",
+          "value": 2,
+          "unit": "count",
+          "recordedAt": "2026-11-14T11:00:00Z",
+          "source": "simulated",
+          "groupId": "pvt-example-001"
+        },
+        {
+          "indicator": "pvt_false_starts",
+          "value": 0,
+          "unit": "count",
+          "recordedAt": "2026-11-14T11:00:00Z",
+          "source": "simulated",
+          "groupId": "pvt-example-001"
+        }
+      ]
+    },
+    "status": 201,
+    "response": {
+      "apiVersion": "v1",
+      "astronautId": "astro_demo_001",
+      "records": [
+        {
+          "indicator": "pvt_response_speed",
+          "value": 3.4567,
+          "unit": "1/s",
+          "recordedAt": "2026-11-14T11:00:00Z",
+          "source": "simulated",
+          "groupId": "pvt-example-001",
+          "id": "cf974b03-d047-4bb2-8d3b-e2deb6dfb353",
+          "astronautId": "astro_demo_001",
+          "areaId": "isolation_confinement",
+          "isSimulated": true,
+          "notes": null,
+          "createdAt": "2026-11-14T17:46:45.377Z"
+        },
+        {
+          "indicator": "pvt_lapses",
+          "value": 2,
+          "unit": "count",
+          "recordedAt": "2026-11-14T11:00:00Z",
+          "source": "simulated",
+          "groupId": "pvt-example-001",
+          "id": "051168f1-6d0e-4aeb-91c3-cf37edeb894d",
+          "astronautId": "astro_demo_001",
+          "areaId": "isolation_confinement",
+          "isSimulated": true,
+          "notes": null,
+          "createdAt": "2026-11-14T17:46:45.377Z"
+        },
+        {
+          "indicator": "pvt_false_starts",
+          "value": 0,
+          "unit": "count",
+          "recordedAt": "2026-11-14T11:00:00Z",
+          "source": "simulated",
+          "groupId": "pvt-example-001",
+          "id": "50058ebf-483d-41cc-93eb-dbf9bc65abcc",
+          "astronautId": "astro_demo_001",
+          "areaId": "isolation_confinement",
+          "isSimulated": true,
+          "notes": null,
+          "createdAt": "2026-11-14T17:46:45.377Z"
         }
       ]
     }
