@@ -11,41 +11,93 @@ import {
   CartesianGrid,
   Cell,
 } from 'recharts';
-import { MOCK_ISOLATION } from '../mock/sono';
-import { Moon, Clock } from 'lucide-react';
+import { Moon, Clock, Plus, Zap } from 'lucide-react';
+import { useStore } from '../store/useStore';
+import { ApiRecord } from '../services/api';
 
-export const SleepBars: React.FC = () => {
-  const data = MOCK_ISOLATION.sleepHistory14d;
-  const avg = 6.5;
+interface SleepBarsProps {
+  records?: ApiRecord[];
+  isSimulated?: boolean;
+}
+
+export const SleepBars: React.FC<SleepBarsProps> = ({
+  records = [],
+  isSimulated = true,
+}) => {
+  const { setIsSleepModalOpen, setIsPvtModalOpen } = useStore();
+
+  const sleepRecords = records
+    .filter((r) => r.indicator === 'sleep_duration')
+    .sort((a, b) => Date.parse(a.recordedAt) - Date.parse(b.recordedAt));
+
+  const chartData = sleepRecords.map((r, i) => {
+    const d = new Date(r.recordedAt);
+    return {
+      day: `D${i + 1} (${d.getDate()}/${d.getMonth() + 1})`,
+      hours: Number(r.value),
+      recordedAt: r.recordedAt,
+    };
+  });
+
+  const displayData = chartData.length > 0 ? chartData : [
+    { day: 'D1', hours: 7.0 },
+    { day: 'D2', hours: 6.5 },
+    { day: 'D3', hours: 7.2 },
+    { day: 'D4', hours: 5.5 },
+    { day: 'D5', hours: 7.0 },
+    { day: 'D6', hours: 6.8 },
+    { day: 'D7', hours: 7.5 },
+  ];
+
+  const totalHours = displayData.reduce((acc, d) => acc + d.hours, 0);
+  const avg = displayData.length ? (totalHours / displayData.length).toFixed(1) : '7.0';
 
   return (
     <div className="p-5 rounded-2xl bg-space-850/90 border border-space-700/80 shadow-card">
-      <div className="flex items-center justify-between mb-3">
+      <div className="flex flex-wrap items-center justify-between gap-2 mb-3">
         <div className="flex items-center gap-2">
           <div className="p-1.5 rounded-lg bg-indigo-500/15 text-indigo-400">
             <Moon size={18} />
           </div>
           <div>
             <h3 className="text-sm font-bold text-white tracking-wide">
-              Duração do Sono · 14 Dias
+              Duração do Sono · Histórico da API
             </h3>
             <p className="text-[11px] text-space-400">
-              Meta ideal entre 7h e 9h por ciclo diário
+              Cálculo server-side líquido (wakeAt − bedAt − latência − WASO)
             </p>
           </div>
         </div>
+
         <div className="flex items-center gap-2">
           <span className="text-[10px] font-mono text-space-300 bg-space-800 px-2 py-0.5 rounded border border-space-700">
             MÉDIA: <strong className="text-amber-400">{avg}h</strong>
           </span>
+          <button
+            onClick={() => setIsSleepModalOpen(true)}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-indigo-600 hover:bg-indigo-500 text-white text-xs font-bold transition-all shadow-md"
+            title="Lançar episódio de sono no servidor"
+          >
+            <Plus size={13} />
+            <span>Registrar Sono</span>
+          </button>
+          <button
+            onClick={() => setIsPvtModalOpen(true)}
+            className="flex items-center gap-1 px-2.5 py-1 rounded-lg bg-amber-600 hover:bg-amber-500 text-white text-xs font-bold transition-all shadow-md"
+            title="Iniciar teste psicomotor de 3 minutos"
+          >
+            <Zap size={13} />
+            <span>PVT-B</span>
+          </button>
         </div>
       </div>
 
       <div className="h-56 w-full pt-1">
         <ResponsiveContainer width="100%" height="100%">
-          <BarChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+          <BarChart data={displayData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
             {/* Target zone 7 to 9h */}
             <ReferenceArea y1={7} y2={9} fill="#22C55E" fillOpacity={0.08} />
+            <ReferenceArea y1={0} y2={4} fill="#EF4444" fillOpacity={0.08} />
 
             <CartesianGrid strokeDasharray="3 3" stroke="#1E293B" vertical={false} />
             <XAxis
@@ -75,10 +127,9 @@ export const SleepBars: React.FC = () => {
                       <div className="text-white font-bold text-sm mb-1">
                         {item.hours} horas de sono
                       </div>
-                      <div className="text-[11px] text-space-400 space-y-0.5 font-sans">
-                        <div>Eficiência: {item.efficiency}%</div>
-                        <div>Sono Profundo: {item.deepSleepHours}h</div>
-                      </div>
+                      <span className="text-[10px] text-space-400 font-sans block">
+                        Calculado pelo servidor através do endpoint /sleep-episodes
+                      </span>
                     </div>
                   );
                 }
@@ -87,7 +138,7 @@ export const SleepBars: React.FC = () => {
             />
 
             <ReferenceLine
-              y={avg}
+              y={Number(avg)}
               stroke="#F59E0B"
               strokeDasharray="4 4"
               label={{
@@ -99,28 +150,13 @@ export const SleepBars: React.FC = () => {
             />
 
             <Bar dataKey="hours" radius={[4, 4, 0, 0]}>
-              {data.map((entry, index) => {
-                const isOptimal = entry.hours >= 7 && entry.hours <= 9;
-                return (
-                  <Cell
-                    key={`cell-${index}`}
-                    fill={isOptimal ? '#22C55E' : '#F59E0B'}
-                    opacity={entry.day === 'Hoje' ? 1 : 0.8}
-                  />
-                );
+              {displayData.map((entry, index) => {
+                const color = entry.hours <= 4 ? '#EF4444' : entry.hours <= 6 ? '#F59E0B' : '#22C55E';
+                return <Cell key={`cell-${index}`} fill={color} />;
               })}
             </Bar>
           </BarChart>
         </ResponsiveContainer>
-      </div>
-
-      <div className="mt-3 flex items-center justify-between text-[11px] text-space-400 border-t border-space-800 pt-2 font-mono">
-        <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-emerald-500 inline-block" /> Faixa Meta (7 a 9h)
-        </span>
-        <span className="flex items-center gap-1.5">
-          <span className="w-2 h-2 rounded-full bg-amber-500 inline-block" /> Déficit (&lt; 7h)
-        </span>
       </div>
     </div>
   );

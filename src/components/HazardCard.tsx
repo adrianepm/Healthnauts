@@ -1,12 +1,27 @@
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
-import { MissionHazard } from '../types';
+import { StatusLevel } from '../types';
 import { StatusPill } from './StatusPill';
-import { ChevronRight, Info } from 'lucide-react';
+import { ChevronRight, Info, Database } from 'lucide-react';
 import { useStore } from '../store/useStore';
 
+export interface AreaHazardData {
+  id: string;
+  areaId: string;
+  title: string;
+  subtitle: string;
+  level: StatusLevel;
+  route: string;
+  dataStatus: 'available' | 'no_data';
+  recordCount: number;
+  lastRecordedAt: string | null;
+  highlights?: any[];
+  whyMeasure?: string;
+  whatToDo?: string;
+}
+
 interface HazardCardProps {
-  hazard: MissionHazard;
+  hazard: AreaHazardData;
 }
 
 export const HazardCard: React.FC<HazardCardProps> = ({ hazard }) => {
@@ -17,11 +32,12 @@ export const HazardCard: React.FC<HazardCardProps> = ({ hazard }) => {
     e.stopPropagation();
     openMetricDetailModal({
       title: hazard.title,
-      subtitle: hazard.subtitle,
-      value: `${hazard.progress}%`,
+      subtitle: `${hazard.subtitle} · Status dos dados: ${hazard.dataStatus === 'available' ? 'Disponível' : 'Sem dados'}`,
+      value: `${hazard.recordCount} registros`,
       level: hazard.level,
-      whyMeasure: hazard.whyMeasure,
-      whatToDo: hazard.whatToDo,
+      whyMeasure: hazard.whyMeasure || 'Monitoramento prioritário dos 5 perigos de voo espacial humano da NASA.',
+      whatToDo: hazard.whatToDo || 'Acesse a tela dedicada para visualizar séries temporais, referências e lançar operações.',
+      recordedAt: hazard.lastRecordedAt || undefined,
     });
   };
 
@@ -38,57 +54,44 @@ export const HazardCard: React.FC<HazardCardProps> = ({ hazard }) => {
     }
   };
 
-  const getProgressColor = () => {
-    switch (hazard.level) {
-      case 'red':
-        return 'bg-rose-500';
-      case 'yellow':
-        return 'bg-amber-500';
-      case 'green':
-        return 'bg-emerald-500';
-      default:
-        return 'bg-slate-500';
-    }
-  };
-
   return (
     <div
       onClick={() => navigate(hazard.route)}
-      className={`group relative p-4 rounded-xl bg-space-850/90 border border-space-700/80 border-l-4 ${getBorderColor()} hover:bg-space-800 transition-all cursor-pointer shadow-card`}
+      className={`group relative p-3.5 rounded-xl bg-space-850/90 border border-space-700/80 border-l-4 ${getBorderColor()} hover:bg-space-800 transition-all cursor-pointer shadow-card`}
     >
-      <div className="flex items-center justify-between gap-2 mb-2">
+      <div className="flex items-center justify-between gap-2 mb-1.5">
         <div className="flex items-center gap-2">
-          <h3 className="font-bold text-sm text-white group-hover:text-astro-cyan transition-colors">
+          <h3 className="font-bold text-xs lg:text-sm text-white group-hover:text-astro-cyan transition-colors">
             {hazard.title}
           </h3>
           <button
             onClick={handleOpenInfo}
             className="p-1 rounded-md text-space-400 hover:text-white hover:bg-space-700 transition-colors"
-            title="Por que medir isso? / O que fazer"
+            title="Detalhes do perigo aeroespacial"
           >
-            <Info size={14} />
+            <Info size={13} />
           </button>
         </div>
         <StatusPill level={hazard.level} size="sm" />
       </div>
 
-      <p className="text-xs text-space-300 mb-3">{hazard.subtitle}</p>
+      <p className="text-[11px] text-space-300 mb-2.5 leading-snug">{hazard.subtitle}</p>
 
-      {/* Progress Bar & Arrow */}
-      <div className="flex items-center gap-3">
-        <div className="flex-1 h-1.5 bg-space-800 rounded-full overflow-hidden border border-space-700">
-          <div
-            className={`h-full ${getProgressColor()} transition-all duration-500`}
-            style={{ width: `${hazard.progress}%` }}
-          />
+      {/* Telemetry info & arrow */}
+      <div className="flex items-center justify-between pt-1 border-t border-space-800/80 text-[10px] text-space-400 font-mono">
+        <div className="flex items-center gap-2">
+          <Database size={11} className="text-space-500" />
+          <span>{hazard.recordCount} registros</span>
+          {hazard.lastRecordedAt && (
+            <span className="hidden sm:inline">
+              · {new Date(hazard.lastRecordedAt).toLocaleDateString()}
+            </span>
+          )}
         </div>
-        <span className="text-[11px] font-mono text-space-400">
-          {hazard.progress}%
-        </span>
-        <ChevronRight
-          size={16}
-          className="text-space-400 group-hover:text-astro-cyan group-hover:translate-x-1 transition-all"
-        />
+        <div className="flex items-center gap-1 text-space-400 group-hover:text-astro-cyan transition-colors">
+          <span className="font-sans font-semibold text-[11px]">Abrir área</span>
+          <ChevronRight size={14} className="group-hover:translate-x-0.5 transition-transform" />
+        </div>
       </div>
     </div>
   );

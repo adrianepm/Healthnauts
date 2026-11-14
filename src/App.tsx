@@ -16,6 +16,15 @@ import { NewSurgeonMessageModal } from './components/NewSurgeonMessageModal';
 import { GuidedBreathingModal } from './components/GuidedBreathingModal';
 import { MealLogModal } from './components/MealLogModal';
 import { QuickTestModal } from './components/QuickTestModal';
+import { DemoScenariosModal } from './components/DemoScenariosModal';
+import { SleepEpisodeModal } from './components/SleepEpisodeModal';
+import { PvtSessionModal } from './components/PvtSessionModal';
+import { PostureModal } from './components/PostureModal';
+import { VitalsModal } from './components/VitalsModal';
+import { AtmosphereModal } from './components/AtmosphereModal';
+import { PostEvaModal } from './components/PostEvaModal';
+import { ReportModal } from './components/ReportModal';
+import { NoiseModal } from './components/NoiseModal';
 
 export const App: React.FC = () => {
   return (
@@ -45,6 +54,15 @@ export const App: React.FC = () => {
         <GuidedBreathingModal />
         <MealLogModal />
         <QuickTestModal />
+        <DemoScenariosModal />
+        <SleepEpisodeModal />
+        <PvtSessionModal />
+        <PostureModal />
+        <VitalsModal />
+        <AtmosphereModal />
+        <PostEvaModal />
+        <ReportModal />
+        <NoiseModal />
       </div>
     </BrowserRouter>
   );

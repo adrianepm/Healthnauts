@@ -113,11 +113,16 @@ As consultas exigem `astronautId` (padrão: `astro_demo_001`) e aceitam `dataset
 
 ## 6. Testes
 
-### Back-end
+### Testes Automatizados (Back-end & Integração Front-end)
 ```bash
 npm test
 ```
-Executa a suíte oficial de testes do back-end (`test/api.test.js`, `test/research.test.js`, `test/isolation.test.js`, `test/calculations.test.js`).
+Executa a suíte completa de testes (38 testes no total), cobrindo:
+- API REST, validação e concorrência (`test/api.test.js`)
+- Operações de pesquisa, catálogos e baselines (`test/research.test.js`)
+- Sono e vigilância psicomotora PVT-B (`test/isolation.test.js`)
+- Cálculos ambientais, NEWS2, dosimetria e cenários (`test/calculations.test.js`)
+- Integração ponta-a-ponta do front-end com os endpoints reais (`test/frontend-integration.test.js`)
 
 ### Front-end
 ```bash

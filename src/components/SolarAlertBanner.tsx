@@ -1,9 +1,15 @@
 import React, { useEffect } from 'react';
 import { useStore } from '../store/useStore';
-import { SOLAR_ALERT_DETAILS } from '../mock/radiacao';
-import { AlertTriangle, Clock, Shield, VolumeX, CheckCircle, ChevronRight, Zap } from 'lucide-react';
+import { AlertTriangle, Clock, Shield, VolumeX, CheckCircle, ChevronRight, Zap, Play } from 'lucide-react';
+import { ApiAssessment } from '../services/api';
 
-export const SolarAlertBanner: React.FC = () => {
+interface SolarAlertBannerProps {
+  solarAssessment?: ApiAssessment | null;
+}
+
+export const SolarAlertBanner: React.FC<SolarAlertBannerProps> = ({
+  solarAssessment,
+}) => {
   const {
     solarCountdownSeconds,
     tickSolarCountdown,
@@ -13,7 +19,11 @@ export const SolarAlertBanner: React.FC = () => {
     advanceShelterStep,
     silenceSolarAlert,
     isSolarSilenced,
+    setIsScenarioModalOpen,
   } = useStore();
+
+  const isServerActive = Boolean(solarAssessment && solarAssessment.level === 'attention');
+  const isSimulation = true;
 
   // Active countdown timer effect
   useEffect(() => {
@@ -27,7 +37,7 @@ export const SolarAlertBanner: React.FC = () => {
     return (
       <div className="p-3.5 rounded-2xl bg-space-850/80 border border-space-700 flex items-center justify-between text-xs text-space-300">
         <span className="flex items-center gap-2 text-amber-400 font-semibold">
-          <VolumeX size={16} /> Alerta solar silenciado por 5 minutos
+          <VolumeX size={16} /> Alerta solar simulado silenciado por 5 minutos
         </span>
         <span className="font-mono text-space-400">
           Pico em {Math.floor(solarCountdownSeconds / 60)}m {solarCountdownSeconds % 60}s
@@ -39,7 +49,6 @@ export const SolarAlertBanner: React.FC = () => {
   const hours = Math.floor(solarCountdownSeconds / 3600);
   const minutes = Math.floor((solarCountdownSeconds % 3600) / 60);
   const seconds = solarCountdownSeconds % 60;
-
   const formattedTime = `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
 
   return (
@@ -56,14 +65,19 @@ export const SolarAlertBanner: React.FC = () => {
           <div>
             <div className="flex items-center gap-2">
               <h2 className="text-sm lg:text-base font-extrabold text-white tracking-wide uppercase">
-                {SOLAR_ALERT_DETAILS.title}
+                Evento Solar Simulado (SPE / Tempestade de Prótons)
               </h2>
-              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-black bg-rose-500 text-white animate-pulse">
-                CRÍTICO
+              <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-black bg-purple-600 text-white">
+                SIMULADO
               </span>
+              {isServerActive && (
+                <span className="px-2 py-0.5 rounded-full text-[10px] font-mono font-black bg-rose-500 text-white animate-pulse">
+                  ATIVO NO SERVIDOR
+                </span>
+              )}
             </div>
             <p className="text-xs text-rose-200/80 mt-0.5 font-medium">
-              Fonte: {SOLAR_ALERT_DETAILS.source} · {SOLAR_ALERT_DETAILS.flareClass}
+              Fonte: GOES Simulado · Radiação de Alta Energia · Exercício de Contingência
             </p>
           </div>
         </div>
@@ -82,78 +96,94 @@ export const SolarAlertBanner: React.FC = () => {
         </div>
       </div>
 
-      {/* 4 Protocol Steps */}
-      <div className="my-4">
-        <span className="text-xs font-bold uppercase tracking-wider text-space-300 block mb-2">
-          Protocolo Obrigatório de Abrigo ({isShelterProtocolActive ? `Etapa ${solarProtocolStep} de 4 em andamento` : 'Pendente de Início'}):
-        </span>
-        <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-xs">
-          {SOLAR_ALERT_DETAILS.protocolSteps.map((s) => {
-            const isCompleted = isShelterProtocolActive && solarProtocolStep > s.step;
+      {/* Action / Shelter Protocol Stepper */}
+      <div className="mt-4 space-y-3">
+        <div className="flex flex-wrap items-center justify-between gap-2">
+          <div className="flex items-center gap-2 text-xs text-rose-200">
+            <Shield size={16} className="text-rose-400" />
+            <span className="font-semibold">
+              Protocolo de Proteção Radiológica: Abrigo no Módulo B (Storm Shelter)
+            </span>
+          </div>
+
+          <div className="flex items-center gap-2">
+            <button
+              onClick={silenceSolarAlert}
+              className="text-xs text-rose-300 hover:text-white flex items-center gap-1 font-mono px-2 py-1 rounded bg-rose-900/40 hover:bg-rose-900/70 border border-rose-700/50"
+            >
+              <VolumeX size={13} /> Silenciar (5m)
+            </button>
+            <button
+              onClick={() => setIsScenarioModalOpen(true)}
+              className="text-xs text-purple-300 hover:text-white flex items-center gap-1 font-mono px-2.5 py-1 rounded bg-purple-900/40 hover:bg-purple-900/70 border border-purple-700/50"
+            >
+              <Play size={11} className="fill-purple-300" /> Acionar via Cenário
+            </button>
+          </div>
+        </div>
+
+        {/* 4 Protocol Steps */}
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-2 text-xs">
+          {[
+            { step: 1, title: '1. Suspender EVA', desc: 'Recolher tripulação externa imediatamente.' },
+            { step: 2, title: '2. Deslocamento', desc: 'Mover ao Módulo B (tanques de água no entorno).' },
+            { step: 3, title: '3. Dosimetria', desc: 'Fixar dosímetros e registrar contadores pessoais.' },
+            { step: 4, title: '4. Concluído', desc: 'Aguardar liberação do cirurgião de voo.' },
+          ].map((s) => {
+            const isDone = isShelterProtocolActive && solarProtocolStep > s.step;
             const isCurrent = isShelterProtocolActive && solarProtocolStep === s.step;
 
             return (
               <div
                 key={s.step}
-                className={`p-2.5 rounded-xl border transition-all flex items-start gap-2.5 ${
-                  isCompleted
-                    ? 'bg-emerald-950/30 border-emerald-500/40 text-emerald-200'
+                className={`p-2.5 rounded-xl border transition-all ${
+                  isDone
+                    ? 'bg-emerald-950/40 border-emerald-500/40 text-emerald-200'
                     : isCurrent
-                    ? 'bg-rose-950/40 border-rose-500/60 text-white shadow-glow-red'
-                    : 'bg-space-900/60 border-space-700/60 text-space-300'
+                    ? 'bg-rose-900/60 border-rose-400 text-white shadow-glow-red'
+                    : 'bg-space-900/60 border-space-750 text-space-400'
                 }`}
               >
-                <span
-                  className={`w-5 h-5 rounded-full flex items-center justify-center text-[10px] font-bold shrink-0 mt-0.5 ${
-                    isCompleted
-                      ? 'bg-emerald-500 text-space-950'
-                      : isCurrent
-                      ? 'bg-rose-500 text-white'
-                      : 'bg-space-800 text-space-400'
-                  }`}
-                >
-                  {isCompleted ? <CheckCircle size={12} /> : s.step}
-                </span>
-                <div>
-                  <h4 className="font-semibold text-xs leading-tight">{s.title}</h4>
-                  <p className="text-[11px] text-space-400 mt-0.5 leading-snug">{s.desc}</p>
+                <div className="flex items-center justify-between font-bold mb-1">
+                  <span>{s.title}</span>
+                  {isDone && <CheckCircle size={14} className="text-emerald-400" />}
                 </div>
+                <p className="text-[11px] leading-tight opacity-90">{s.desc}</p>
               </div>
             );
           })}
         </div>
-      </div>
 
-      {/* Action Buttons */}
-      <div className="flex flex-wrap items-center justify-between gap-3 pt-3 border-t border-rose-500/30">
-        <button
-          onClick={silenceSolarAlert}
-          className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-space-800 hover:bg-space-700 text-space-300 hover:text-white text-xs font-semibold transition-colors border border-space-700"
-        >
-          <VolumeX size={14} />
-          <span>Silenciar 5 min</span>
-        </button>
+        {/* Stepper Buttons */}
+        <div className="flex items-center justify-between pt-2">
+          <span className="text-[11px] text-space-400 font-mono">
+            {isShelterProtocolActive
+              ? `Passo ${solarProtocolStep} de 4 em execução (+20 XP por avanço)`
+              : 'Protocolo de abrigo em espera preventiva'}
+          </span>
 
-        {!isShelterProtocolActive ? (
-          <button
-            onClick={startShelterProtocol}
-            className="flex items-center gap-2 px-5 py-2 rounded-xl bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white font-bold text-xs lg:text-sm shadow-glow-red transition-all transform active:scale-95"
-          >
-            <Shield size={16} />
-            <span>Iniciar Protocolo de Abrigo</span>
-          </button>
-        ) : (
-          <button
-            onClick={advanceShelterStep}
-            disabled={solarProtocolStep >= 4}
-            className="flex items-center gap-2 px-5 py-2 rounded-xl bg-emerald-600 hover:bg-emerald-500 disabled:opacity-50 text-white font-bold text-xs lg:text-sm shadow-glow-green transition-all"
-          >
-            <span>
-              {solarProtocolStep >= 4 ? 'Protocolo Concluído no Abrigo' : `Concluir Etapa ${solarProtocolStep} & Avançar`}
+          {!isShelterProtocolActive ? (
+            <button
+              onClick={startShelterProtocol}
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-rose-600 hover:bg-rose-500 text-white text-xs font-bold shadow-lg transition-all"
+            >
+              <span>Iniciar Protocolo de Abrigo</span>
+              <ChevronRight size={14} />
+            </button>
+          ) : solarProtocolStep < 4 ? (
+            <button
+              onClick={advanceShelterStep}
+              className="flex items-center gap-1.5 px-4 py-1.5 rounded-xl bg-emerald-600 hover:bg-emerald-500 text-white text-xs font-bold shadow-lg transition-all"
+            >
+              <span>Confirmar Passo {solarProtocolStep} Concluído</span>
+              <ChevronRight size={14} />
+            </button>
+          ) : (
+            <span className="text-xs font-bold text-emerald-400 flex items-center gap-1 bg-emerald-500/10 px-3 py-1 rounded-lg border border-emerald-500/30">
+              <CheckCircle size={14} /> Protocolo Integralmente Cumprido (+60 XP)
             </span>
-            <ChevronRight size={16} />
-          </button>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

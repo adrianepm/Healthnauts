@@ -16,6 +16,7 @@ import { MOCK_ISOLATION } from '../mock/sono';
 import { MOCK_KIT_INVENTORY, MOCK_SURGEON_QUEUE, MEDICAL_PROTOCOLS, MOCK_COMMS_INFO } from '../mock/kit';
 import { MOCK_GRAVITY_DATA } from '../mock/gravidade';
 import { MOCK_ATMOSPHERE } from '../mock/ambiente';
+import { DEFAULT_ASTRONAUT_ID, DEFAULT_DATASET } from '../config/api';
 
 export interface MetricDetailModalData {
   title: string;
@@ -25,9 +26,28 @@ export interface MetricDetailModalData {
   level: StatusLevel;
   whyMeasure: string;
   whatToDo: string;
+  ruleId?: string;
+  ruleVersion?: number;
+  ruleSource?: any;
+  limitation?: string;
+  scientificCategory?: string;
+  status?: string;
+  quality?: string;
+  recordedAt?: string;
+  source?: string;
 }
 
 interface AstroVidaState {
+  // Astronaut & Dataset Selection
+  astronautId: string;
+  setAstronautId: (id: string) => void;
+  dataset: 'simulated' | 'real';
+  setDataset: (ds: 'simulated' | 'real') => void;
+
+  // Global Refresh Trigger
+  refreshTrigger: number;
+  triggerRefresh: () => void;
+
   // Mission & Environment Context
   environment: EnvironmentMode;
   missionDay: number;
@@ -105,7 +125,7 @@ interface AstroVidaState {
   toggleHygieneTask: (id: string) => void;
   logMeal: (calories: number, waterMl: number) => void;
 
-  // Modals
+  // Modals & Panels
   metricDetailModal: MetricDetailModalData | null;
   openMetricDetailModal: (data: MetricDetailModalData) => void;
   closeMetricDetailModal: () => void;
@@ -121,19 +141,63 @@ interface AstroVidaState {
 
   isMealLogModalOpen: boolean;
   setIsMealLogModalOpen: (open: boolean) => void;
+
+  isScenarioModalOpen: boolean;
+  setIsScenarioModalOpen: (open: boolean) => void;
+
+  isSleepModalOpen: boolean;
+  setIsSleepModalOpen: (open: boolean) => void;
+
+  isPvtModalOpen: boolean;
+  setIsPvtModalOpen: (open: boolean) => void;
+
+  isPostureModalOpen: boolean;
+  setIsPostureModalOpen: (open: boolean) => void;
+
+  isAtmosphereModalOpen: boolean;
+  setIsAtmosphereModalOpen: (open: boolean) => void;
+
+  isPostEvaModalOpen: boolean;
+  setIsPostEvaModalOpen: (open: boolean) => void;
+
+  isReportModalOpen: boolean;
+  setIsReportModalOpen: (open: boolean) => void;
+
+  isVitalsModalOpen: boolean;
+  setIsVitalsModalOpen: (open: boolean) => void;
+
+  isNoiseModalOpen: boolean;
+  setIsNoiseModalOpen: (open: boolean) => void;
 }
 
 export const useStore = create<AstroVidaState>((set, get) => ({
+  // Astronaut & Dataset Selection
+  astronautId: DEFAULT_ASTRONAUT_ID,
+  setAstronautId: (id) => {
+    set({ astronautId: id });
+    get().triggerRefresh();
+  },
+  dataset: DEFAULT_DATASET,
+  setDataset: (ds) => {
+    set({ dataset: ds });
+    get().triggerRefresh();
+  },
+
+  // Global Refresh Trigger
+  refreshTrigger: 0,
+  triggerRefresh: () => {
+    set((state) => ({ refreshTrigger: state.refreshTrigger + 1 }));
+  },
+
   // Mission & Environment Context
   environment: 'Nave',
   missionDay: 187,
   totalMissionDays: 540,
   earthDelayMinutes: 8,
   setEnvironment: (env) => {
-    // When environment changes, adjust contextual parameters
     let delay = 8;
-    if (env === 'Estação') delay = 0.05; // ~3 seconds
-    if (env === 'Rover' || env === 'Base') delay = 14; // Surface ops
+    if (env === 'Estação') delay = 0.05;
+    if (env === 'Rover' || env === 'Base') delay = 14;
     set({ environment: env, earthDelayMinutes: delay });
   },
 
@@ -147,7 +211,6 @@ export const useStore = create<AstroVidaState>((set, get) => ({
     const state = get();
     const newXpToday = state.xpToday + amount;
     const newTotalXp = state.xp + amount;
-    // Level up calculation: every 600 xp is a new level
     const newLevel = Math.floor(newTotalXp / 600) + 1;
     set({
       xp: newTotalXp,
@@ -175,7 +238,7 @@ export const useStore = create<AstroVidaState>((set, get) => ({
     const task = state.tasks.find((t) => t.id === id);
     if (!task) return;
     const isNowCompleted = !task.completed;
-    
+
     set({
       tasks: state.tasks.map((t) =>
         t.id === id ? { ...t, completed: isNowCompleted } : t
@@ -202,7 +265,7 @@ export const useStore = create<AstroVidaState>((set, get) => ({
 
   // Body Map
   bodyHotspots: BODY_HOTSPOTS,
-  selectedHotspot: BODY_HOTSPOTS[3], // Start with bones (worst factor)
+  selectedHotspot: BODY_HOTSPOTS[3],
   setSelectedHotspot: (hotspot) => set({ selectedHotspot: hotspot }),
 
   // Radiation
@@ -234,7 +297,7 @@ export const useStore = create<AstroVidaState>((set, get) => ({
     set({ isSolarSilenced: true });
     setTimeout(() => {
       set({ isSolarSilenced: false });
-    }, 5 * 60 * 1000); // 5 min
+    }, 5 * 60 * 1000);
   },
   updateRadiationSymptom: (id, selected) => {
     set((state) => ({
@@ -294,7 +357,7 @@ export const useStore = create<AstroVidaState>((set, get) => ({
     const task = state.atmosphereData.hygieneTasks.find((t) => t.id === id);
     if (!task) return;
     const isNowCompleted = !task.completed;
-    
+
     set({
       atmosphereData: {
         ...state.atmosphereData,
@@ -339,4 +402,31 @@ export const useStore = create<AstroVidaState>((set, get) => ({
 
   isMealLogModalOpen: false,
   setIsMealLogModalOpen: (open) => set({ isMealLogModalOpen: open }),
+
+  isScenarioModalOpen: false,
+  setIsScenarioModalOpen: (open) => set({ isScenarioModalOpen: open }),
+
+  isSleepModalOpen: false,
+  setIsSleepModalOpen: (open) => set({ isSleepModalOpen: open }),
+
+  isPvtModalOpen: false,
+  setIsPvtModalOpen: (open) => set({ isPvtModalOpen: open }),
+
+  isPostureModalOpen: false,
+  setIsPostureModalOpen: (open) => set({ isPostureModalOpen: open }),
+
+  isAtmosphereModalOpen: false,
+  setIsAtmosphereModalOpen: (open) => set({ isAtmosphereModalOpen: open }),
+
+  isPostEvaModalOpen: false,
+  setIsPostEvaModalOpen: (open) => set({ isPostEvaModalOpen: open }),
+
+  isReportModalOpen: false,
+  setIsReportModalOpen: (open) => set({ isReportModalOpen: open }),
+
+  isVitalsModalOpen: false,
+  setIsVitalsModalOpen: (open) => set({ isVitalsModalOpen: open }),
+
+  isNoiseModalOpen: false,
+  setIsNoiseModalOpen: (open) => set({ isNoiseModalOpen: open }),
 }));
