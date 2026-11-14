@@ -24,27 +24,27 @@ export const personalBaseline = {
 };
 const personal = (direction, consecutive, minSamples = 7) => ({
   baseline: { ...personalBaseline, minSamples },
-  rules: [{ id: 'personal_range', kind: 'personal_range', direction, consecutive, level: 'attention',
+  rules: [{ id: 'personal_range', version: 1, kind: 'personal_range', direction, consecutive, level: 'attention',
     ...team(`Comparação com faixa pessoal por ${consecutive} ${consecutive === 1 ? 'teste' : 'dias consecutivos'}. Amostra mínima de ${minSamples} dias é escolha da equipe.`),
-    message: 'Mudança em relação à faixa pessoal demonstrativa. Registro em observação; não é diagnóstico.' }],
+    message: 'This result differs from the demonstration personal range. Review the trend with the crew.' }],
 });
 const threshold = (id, operator, value, level, provenance, message, consecutive = 1) => ({
-  id, kind: 'threshold', operator, value, level, consecutive, ...provenance, message,
+  id, version: 1, kind: 'threshold', operator, value, level, consecutive, ...provenance, message,
 });
 export const isolationMonitoring = {
   sleep_duration: { rules: [
-    threshold('sleep_four_hours', 'lte', 4, 'risk', team('Corte de 4 h e nível demonstrativo escolhidos pela equipe; associação descrita em [1].'), 'Sono registrado de até 4 h; classificação demonstrativa de maior acompanhamento.'),
-    threshold('sleep_three_nights', 'lte', 6, 'attention', team('Três noites consecutivas de até 6 h: decisão da equipe.'), 'Três noites registradas com até 6 h de sono; em observação.', 3),
-    threshold('sleep_six_hours', 'lte', 6, 'attention', source('rst', 'Associação com sono curto na pesquisa; nível de acompanhamento é demonstrativo, não corte médico.'), 'Sono registrado de até 6 h; em observação.'),
+    threshold('sleep_four_hours', 'lte', 4, 'risk', team('Corte de 4 h e nível demonstrativo escolhidos pela equipe; associação descrita em [1].'), 'Recorded sleep was four hours or less. Review the sleep log with the crew.'),
+    threshold('sleep_three_nights', 'lte', 6, 'attention', team('Três noites consecutivas de até 6 h: decisão da equipe.'), 'Three consecutive sleep records were six hours or less. Review the sleep trend.', 3),
+    threshold('sleep_six_hours', 'lte', 6, 'attention', source('rst', 'Associação com sono curto na pesquisa; nível de acompanhamento é demonstrativo, não corte médico.'), 'Recorded sleep was six hours or less. Review the sleep log.'),
   ] },
   sleep_quality: personal('outside', 3),
   sleepiness_kss: { rules: [
-    threshold('kss_eight', 'gte', 8, 'risk', source('kss', 'Limiar citado no documento de pesquisa, em contexto de aviação/direção; não validado para esta aplicação espacial.'), 'Sonolência autorrelatada na faixa superior da escala referenciada; acompanhamento demonstrativo.'),
-    threshold('kss_seven', 'gte', 7, 'attention', team('KSS 7 como nível de observação é decisão da equipe.'), 'Sonolência autorrelatada em observação.'),
+    threshold('kss_eight', 'gte', 8, 'risk', source('kss', 'Limiar citado no documento de pesquisa, em contexto de aviação/direção; não validado para esta aplicação espacial.'), 'The reported sleepiness score is in the upper demonstration band.'),
+    threshold('kss_seven', 'gte', 7, 'attention', team('KSS 7 como nível de observação é decisão da equipe.'), 'The reported sleepiness score triggered demonstration follow-up.'),
   ] },
   fatigue_samn_perelli: { rules: [
-    threshold('samn_five', 'gte', 5, 'risk', source('samn', 'Agrupamento 5–7 conforme pesquisa; nível demonstrativo, extrapolação de aviação.'), 'Fadiga autorrelatada na faixa superior da escala referenciada; acompanhamento demonstrativo.'),
-    threshold('samn_four', 'gte', 4, 'attention', source('samn', 'Valor 4 conforme pesquisa; classificação apenas demonstrativa.'), 'Fadiga autorrelatada em observação.'),
+    threshold('samn_five', 'gte', 5, 'risk', source('samn', 'Agrupamento 5–7 conforme pesquisa; nível demonstrativo, extrapolação de aviação.'), 'The reported fatigue score is in the upper demonstration band.'),
+    threshold('samn_four', 'gte', 4, 'attention', source('samn', 'Valor 4 conforme pesquisa; classificação apenas demonstrativa.'), 'The reported fatigue score triggered demonstration follow-up.'),
   ] },
   stress: personal('above', 3),
   mood_score: personal('below', 3),

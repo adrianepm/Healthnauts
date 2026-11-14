@@ -23,7 +23,7 @@ function baselineFor(records, config, asOf) {
   const firstDay = dayNumber(records[0].recordedAt);
   const endDay = firstDay + config.days;
   const sample = records.filter(r => dayNumber(r.recordedAt) < endDay);
-  const base = { config, from: new Date(firstDay * DAY).toISOString(), to: new Date(endDay * DAY).toISOString(), sampleCount: sample.length };
+  const base = { config, from: new Date(firstDay * DAY).toISOString(), to: new Date(endDay * DAY).toISOString(), sampleCount: sample.length, recordIds: sample.map(r => r.id) };
   if (asOf < endDay * DAY) return { ...base, status: 'collecting', reason: 'first_seven_days' };
   if (sample.length < config.minSamples) return { ...base, status: 'insufficient', reason: 'missing_days' };
   const mean = sample.reduce((sum, r) => sum + r.value, 0) / sample.length;
@@ -41,23 +41,29 @@ export function monitoring(records, definitions, dataset, asOf = new Date()) {
     const result = { indicator: def.id, source, isSimulated: source === 'simulated', unit: def.unit,
       asOf: new Date(end).toISOString(), evaluatedRecordId: latest?.id ?? null, recordedAt: latest?.recordedAt ?? null,
       isDemonstrative: true, status: 'no_data', level: null, inObservation: false, matchedRules: [],
-      message: 'Sem dados comparáveis. Esta ferramenta não faz diagnóstico.', baseline: null };
+      message: 'No comparable data are available.', baseline: null, recordIds: latest ? [latest.id] : [] };
     const config = def.monitoring;
     if (config.baseline) result.baseline = baselineFor(daily, config.baseline, end);
     if (!latest) return result;
     if (result.baseline && result.baseline.status !== 'ready') return { ...result,
       status: result.baseline.status === 'collecting' ? 'baseline_collecting' : 'baseline_insufficient',
-      message: 'Faixa pessoal ainda indisponível: coleta incompleta ou variabilidade insuficiente. Não é diagnóstico.' };
+      recordIds: result.baseline.recordIds ?? [], message: 'The personal range is unavailable while data are being collected or there is insufficient variation.' };
+    const matchingIds = new Set(result.baseline?.recordIds ?? []);
+    if (latest) matchingIds.add(latest.id);
     const matches = config.rules.filter(rule => {
-      if (rule.kind === 'threshold') return streak(daily, rule.consecutive, value => thresholdMatch(value, rule));
+      if (rule.kind === 'threshold') {
+        daily.slice(-rule.consecutive).forEach(r => matchingIds.add(r.id));
+        return streak(daily, rule.consecutive, value => thresholdMatch(value, rule));
+      }
       const postBaseline = daily.filter(r => Date.parse(r.recordedAt) >= Date.parse(result.baseline.to));
+      postBaseline.slice(-rule.consecutive).forEach(r => matchingIds.add(r.id));
       return streak(postBaseline, rule.consecutive, value => outside(value, result.baseline, rule.direction));
     });
-    if (result.baseline && Date.parse(latest.recordedAt) < Date.parse(result.baseline.to)) return { ...result, status: 'awaiting_follow_up', message: 'Baseline coletado; aguardando observação posterior. Não é diagnóstico.' };
+    if (result.baseline && Date.parse(latest.recordedAt) < Date.parse(result.baseline.to)) return { ...result, status: 'awaiting_follow_up', recordIds: result.baseline.recordIds, message: 'The baseline is ready. A subsequent observation is needed.' };
     const level = matches.some(r => r.level === 'risk') ? 'risk' : matches.length ? 'attention' : null;
-    return { ...result, status: !config.rules.length ? 'not_applicable' : matches.length ? 'in_observation' : 'no_demonstrative_signal',
+    return { ...result, recordIds: [...matchingIds], status: !config.rules.length ? 'not_applicable' : matches.length ? 'in_observation' : 'no_demonstrative_signal',
       level, inObservation: matches.length > 0, matchedRules: matches,
-      message: matches.length ? `${matches.find(r => r.level === level).message} Não é diagnóstico.`
-        : 'Nenhuma regra demonstrativa acionada; isso não é uma conclusão clínica.' };
+      message: matches.length ? `${matches.find(r => r.level === level).message} This tool does not diagnose any condition.`
+        : 'No demonstration rule was triggered.' };
   }));
 }

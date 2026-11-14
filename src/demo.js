@@ -14,6 +14,7 @@ export function createDemo(now = new Date()) {
   for (let day = 0; day < 7; day++) {
     const time = now.getTime() - (6 - day) * 86400000 - 60000;
     for (const [areaId, definitions] of Object.entries(catalog)) for (const d of definitions) {
+      if (d.seeded === false) continue;
       if (pvtIndicators.includes(d.id) && day % 4 !== 0) continue;
       const value = d.valueType === 'text' ? base[d.id] : d.id === 'accumulated_dose' ? 140 * (day + 1)
         : d.scale?.numericType === 'integer' || d.valueType === 'scale' ? base[d.id] + day % 2 : Number((base[d.id] + (day % 3) * 0.5).toFixed(2));

@@ -1,6 +1,5 @@
-import { ASTRONAUT } from './demo.js';
 import { catalog } from './config/catalog.js';
-import { invalid, timestamp, validateBatch } from './validation.js';
+import { invalid, timestamp, validateBatch, validAstronaut } from './validation.js';
 
 export const pvtProtocol = Object.freeze({ version: 'pvt-b-v1', durationMs: 180000, timeoutMs: 30000, lapseMs: 355, falseStartBelowMs: 100, maxEvents: 2000 });
 function object(value, allowed, field) {
@@ -16,7 +15,7 @@ function date(value, field) {
 }
 function common(body, idField, fields) {
   object(body, ['astronautId', idField, 'source', ...fields], 'body');
-  if (body.astronautId !== ASTRONAUT) invalid('astronautId', `Use ${ASTRONAUT}.`);
+  if (!validAstronaut(body.astronautId)) invalid('astronautId', 'Use um identificador astro_ válido.');
   if (typeof body[idField] !== 'string' || !/^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(body[idField])) invalid(idField, 'Use 1–128 caracteres: letras ASCII, números, ponto, hífen, sublinhado ou dois-pontos.');
   if (!['manual', 'sensor', 'simulated'].includes(body.source)) invalid('source', 'Use manual, sensor ou simulated.');
 }

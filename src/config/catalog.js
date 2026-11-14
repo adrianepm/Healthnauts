@@ -1,3 +1,4 @@
+import { additions } from './research.js';
 import { dailyCollection, pvtCollection, isolationMonitoring, isolationReferences as refs } from './isolation.js';
 const indicator = (id, label, unit, recordKind, description, extra = {}) => ({
   id, label, valueType: unit === null ? 'text' : 'number', unit,
@@ -19,8 +20,8 @@ const pvt = (id, label, unit, description, constraints) => mind(id, label, unit,
 export const pvtIndicators = ['pvt_response_speed', 'pvt_lapses', 'pvt_false_starts'];
 export const catalog = {
   radiation: [
-    indicator('dose_rate', 'Taxa de dose', 'uSv/h', 'environmental_exposure', 'Taxa no instante observado; não representa dose acumulada.'),
-    indicator('accumulated_dose', 'Dose acumulada', 'uSv', 'environmental_exposure', 'Total entre periodStart e recordedAt; não somar totais sobrepostos.', { periodStartRequired: true }),
+    indicator('dose_rate', 'Taxa de dose', 'uSv/h', 'environmental_exposure', 'Taxa indicada pelo instrumento em uSv/h. Grandeza dosimétrica não especificada no legado; não integrar automaticamente nem comparar com limites de órgão.'),
+    indicator('accumulated_dose', 'Dose acumulada', 'uSv', 'environmental_exposure', 'Leitura de contador em uSv entre periodStart e recordedAt; grandeza dosimétrica não especificada no legado. Não somar leituras acumuladas.', { periodStartRequired: true }),
   ],
   isolation_confinement: [
     mind('sleep_duration', 'Duração do sono', 'h', 'Total calculado no servidor por sleep-episodes (ou recebido pronto pelo endpoint legado records): (levantar − deitar − latência para dormir − tempo acordado à noite), convertido em horas. Usar datas com fuso e tratar a passagem da meia-noite. Componentes preservados em operation.input no endpoint específico; não usar notes.',
@@ -69,3 +70,5 @@ export const catalog = {
     indicator('reported_symptoms', 'Sintomas relatados', null, 'self_report', 'Relato textual, sem associar causa às condições ambientais.'),
   ],
 };
+
+for (const [area, definitions] of Object.entries(additions)) catalog[area].push(...definitions);

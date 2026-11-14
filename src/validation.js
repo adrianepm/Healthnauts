@@ -1,5 +1,7 @@
 import { randomUUID } from 'node:crypto';
-import { ASTRONAUT } from './demo.js';
+import { activities } from './config/research.js';
+export const validAstronaut = value => typeof value === 'string' && /^astro_[A-Za-z0-9_-]{1,64}$/.test(value);
+export const validId = value => typeof value === 'string' && /^[A-Za-z0-9][A-Za-z0-9._:-]{0,127}$/.test(value);
 export class ApiError extends Error {
   constructor(status, code, message, fields = []) { super(message); Object.assign(this, { status, code, fields }); }
 }
@@ -14,13 +16,13 @@ export function timestamp(value) {
     && (zone === 'Z' || (+zone.slice(1, 3) <= 23 && +zone.slice(4) <= 59));
 }
 export function queryContext(query) {
-  if (query.astronautId !== ASTRONAUT) invalid('astronautId', `Use ${ASTRONAUT}.`);
+  if (!validAstronaut(query.astronautId)) invalid('astronautId', 'Use um identificador astro_ válido.');
   const dataset = query.dataset ?? 'simulated';
   if (!['simulated', 'real'].includes(dataset)) invalid('dataset', 'Use simulated ou real.');
-  return { apiVersion: 'v1', astronautId: ASTRONAUT, dataset, isSimulated: dataset === 'simulated' };
+  return { apiVersion: 'v1', astronautId: query.astronautId, dataset, isSimulated: dataset === 'simulated' };
 }
 export function validateBatch(body, areaId, definitions) {
-  if (!body || body.astronautId !== ASTRONAUT) invalid('astronautId', `Use ${ASTRONAUT}.`);
+  if (!validAstronaut(body?.astronautId)) invalid('astronautId', 'Use um identificador astro_ válido.');
   if (!Array.isArray(body.records) || !body.records.length) invalid('records', 'Envie um array não vazio.');
   if (body.records.length > 100) invalid('records', 'Envie no máximo 100 registros por lote.');
   const createdAt = new Date().toISOString();
@@ -28,9 +30,18 @@ export function validateBatch(body, areaId, definitions) {
     const fail = (field, message) => invalid(`records[${index}].${field}`, message);
     if (!r || typeof r !== 'object' || Array.isArray(r)) fail('record', 'Envie um objeto.');
     const allowed = ['indicator', 'value', 'unit', 'recordedAt', 'source', 'notes', 'periodStart', 'groupId'];
-    for (const key of Object.keys(r)) if (!allowed.includes(key)) fail(key, 'Campo desconhecido ou gerado pelo servidor.');
     const def = definitions.find(d => d.id === r.indicator);
-    if (!def) fail('indicator', 'Indicador não pertence à área.');
+    if (!def || def.operationOnly) fail('indicator', 'Indicador indisponível nesta rota; use a operação específica.');
+    if (def.contextFields) allowed.push('context');
+    for (const key of Object.keys(r)) if (!allowed.includes(key)) fail(key, 'Campo desconhecido ou gerado pelo servidor.');
+    if (r.context !== undefined) {
+      const c = r.context;
+      if (!c || typeof c !== 'object' || Array.isArray(c) || Object.keys(c).some(key => !def.contextFields.includes(key))) fail('context', 'Contexto inválido.');
+      if (c.method !== undefined && !validId(c.method)) fail('context.method', 'Método inválido.');
+      if (c.missionId !== undefined && !validId(c.missionId)) fail('context.missionId', 'Missão inválida.');
+      if (c.activity !== undefined && !activities.includes(c.activity)) fail('context.activity', 'Atividade inválida.');
+      if (c.evaEnvironment !== undefined && !['microgravity','surface'].includes(c.evaEnvironment)) fail('context.evaEnvironment', 'Ambiente EVA inválido.');
+    }
     if (def.valueType === 'text') {
       if (typeof r.value !== 'string' || !r.value.trim() || r.value.length > 10000) fail('value', 'Envie texto não vazio, até 10000 caracteres.');
     } else {
@@ -49,7 +60,7 @@ export function validateBatch(body, areaId, definitions) {
     }
     if (r.groupId !== undefined && (typeof r.groupId !== 'string' || !r.groupId.trim() || r.groupId.length > 200)) fail('groupId', 'Envie identificador textual de até 200 caracteres.');
     if (def.groupRequired && !r.groupId) fail('groupId', 'Identificador de execução obrigatório.');
-    return { ...r, id: randomUUID(), astronautId: ASTRONAUT, areaId, isSimulated: r.source === 'simulated', notes: r.notes ?? null, createdAt };
+    return { ...r, id: randomUUID(), astronautId: body.astronautId, areaId, isSimulated: r.source === 'simulated', notes: r.notes ?? null, createdAt };
   });
   const grouped = new Map();
   for (const record of batch) {

@@ -4,7 +4,8 @@ Black Belt's Team
 ## Back-end
 
 API de demonstração em Node.js e Express para registros dos cinco riscos de
-voos espaciais. O único astronauta aceito é `astro_demo_001`. Os dados iniciais
+voos espaciais. O astronauta inicial é `astro_demo_001`. IDs válidos no formato
+`astro_<identificador>` também podem registrar dados isoladamente. Os dados iniciais
 são fictícios; as tendências descrevem diferenças entre observações, sem
 inferência clínica ou estatística.
 
@@ -38,7 +39,7 @@ em localhost, 127.0.0.1 e ::1 já são permitidas pelo CORS.
 
 ### Rotas
 
-Todas as consultas GET exigem `astronautId=astro_demo_001` e aceitam
+As consultas de dados exigem `astronautId` e aceitam
 `dataset=simulated` (padrão) ou `dataset=real`. O conjunto `real` reúne
 registros de origem `manual` e `sensor`.
 
@@ -61,6 +62,40 @@ O histórico aceita `indicator`, `from` e `to`. As datas devem estar em ISO
 e exclui `to`. Por padrão, `to` é o instante da consulta e `from` fica sete
 dias antes de `to`. O limite é 10.000 registros por resposta; reduza o
 intervalo se a consulta exceder esse limite.
+
+### Integração das cinco áreas
+
+O [guia para Samuel](docs/integracao-samuel.md) traz os campos por tela e os
+payloads das operações. A [matriz de pesquisa](docs/matriz-implementacao.md)
+registra cada regra, edição, contexto e pendência. No detalhe, `groups`
+organiza indicadores nas telas existentes e `assessments` expõe a regra,
+versão, insumos, qualidade e resultado demonstrativo.
+
+| Rota adicional em `/api/v1` | Função |
+| --- | --- |
+| POST `/areas/:areaId/operations/:kind` | Atmosfera, ruído, pós-EVA, sinais vitais, postura, radiação, evento solar, missão, referência e relatório |
+| GET `/areas/:areaId/operations/:kind/:id` | Consulta auditoria e dados calculados de uma operação |
+| GET `/mission` | Contexto de missão e referências do astronauta |
+| GET `/alerts` | Histórico persistido e lista em observação |
+| GET `/scenarios` | Lista cinco cenários simulados |
+| POST `/scenarios/:scenario` | Gera dados simulados uma vez por ID de execução |
+
+```bash
+npm start
+# Em outro terminal:
+curl 'http://127.0.0.1:3000/api/v1/overview?astronautId=astro_demo_001'
+curl -X POST 'http://127.0.0.1:3000/api/v1/scenarios/high-co2' \
+  -H 'Content-Type: application/json' \
+  -d '{"astronautId":"astro_demo_001","id":"demo-co2-1"}'
+curl 'http://127.0.0.1:3000/api/v1/alerts?astronautId=astro_demo_001'
+```
+
+O arquivo JSON aceita arrays legados e o envelope v2. O histórico
+`assessments` é um campo opcional do v2, criado na primeira escrita avaliada.
+Consultas são somente leitura. Avaliações persistidas não são retroativas.
+Relatórios ficam preparados localmente. O front-end estático pode ser
+publicado separadamente e o Express exige hospedagem própria para uma demo
+pública. Configure `CORS_ORIGINS` e um arquivo persistente nessa hospedagem.
 
 ### Exemplos
 
@@ -100,7 +135,7 @@ retorna 413 e falha interna retorna 500.
 ### Persistência, testes e limites
 
 Na ausência do arquivo configurado, o servidor cria 153 registros simulados
-(24 indicadores: 21 diários durante sete dias e três agregados PVT em duas
+(24 indicadores iniciais: 21 diários durante sete dias e três agregados PVT em duas
 execuções separadas por quatro dias). Um arquivo existente é preservado e
 recebe a carga incremental dos novos indicadores de isolamento, conforme
 descrito abaixo; os dados não são renovados a cada inicialização. Portanto, após algum tempo, consulte
@@ -122,7 +157,7 @@ implementação é destinada à demonstração local com dados fictícios.
 ## Mind & Sleep — isolamento e confinamento
 
 Implementação baseada em [docs/03_Isolamento_DEV.md](docs/03_Isolamento_DEV.md).
-As rotas e o envelope de registros continuam iguais. O catálogo é obtido em
+As rotas existentes e o envelope de registros continuam disponíveis. O catálogo é obtido em
 `GET /api/v1/areas/isolation_confinement?astronautId=astro_demo_001`.
 As definições incluem `scale` (limites, `numericType`, `precision` em casas
 decimais e `step`), `collection`, `monitoring` e `references`. As unidades são
@@ -380,7 +415,7 @@ Na primeira operação nova, o mesmo arquivo passa atomicamente para
 `{ "schemaVersion": 2, "records": [...], "operations": [...] }`, preservando
 todos os registros. `operations` guarda entrada, cálculo versionado, estado,
 data de criação e IDs dos registros resultantes. As consultas existentes
-continuam retornando apenas indicadores; a auditoria é consultada nas rotas
+continuam retornando os indicadores e acrescentam avaliações em campo separado; a auditoria é consultada nas rotas
 novas. Reenvios são serializados na mesma fila das gravações e funcionam
 após reinício. Falhas não deixam auditoria ou indicadores parcialmente salvos.
 Use **uma instância por arquivo**; não há trava entre processos. Versões
@@ -426,7 +461,7 @@ Faixas pessoais para qualidade do sono, estresse, humor, velocidade e lapsos:
 - `no_demonstrative_signal` significa apenas que nenhuma regra disparou;
   `awaiting_follow_up` indica baseline pronta, sem observação posterior.
   Os campos `recordedAt`/`asOf` mostram a idade da avaliação: não é previsão
-  do estado atual. Não há regra de expiração dos registros.
+  do estado atual. No detalhe e no histórico, medições com mais de sete dias recebem `stale`. Os registros e eventos anteriores continuam disponíveis.
 
 As origens `manual`, `sensor` e `simulated` nunca são misturadas. No histórico,
 a baseline usa todos os dados anteriores a `to` (exclusive), mesmo se `from`

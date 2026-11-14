@@ -1,6 +1,7 @@
 import express from 'express';
 import { calculateSleep, calculatePvt } from './calculations.js';
-import { monitoring } from './monitoring.js';
+import { evaluateArea } from './evaluation.js';
+import { areaResearch, registerResearchRoutes } from './research-api.js';
 import { areas } from './config/areas.js';
 import { catalog } from './config/catalog.js';
 import { ApiError, invalid, timestamp, queryContext, validateBatch } from './validation.js';
@@ -41,9 +42,11 @@ export function createApp(store, { now = () => new Date(), corsOrigins = [] } = 
   app.get('/api/v1/areas/:areaId', (req, res) => {
     const ctx = queryContext(req.query);
     const { highlightIndicators, content, references, ...area } = req.area;
-    res.json({ ...ctx, area, content, references, indicatorDefinitions: catalog[area.id],
-      latestRecords: latest(filtered(ctx).filter(r => r.areaId === area.id), catalog[area.id]),
-      ...(area.id === 'isolation_confinement' ? { monitoring: monitoring(filtered(ctx).filter(r => r.areaId === area.id), catalog[area.id], ctx.dataset, now()) } : {}) });
+    const all = store.all();
+    const assessments = evaluateArea(area.id,all,store.operations(),ctx,now().getTime());
+    res.json({ ...ctx, area, content, references, indicatorDefinitions: catalog[area.id], ...areaResearch(area.id),
+      latestRecords: latest(filtered(ctx).filter(r => r.areaId === area.id), catalog[area.id]), assessments,
+      ...(area.id === 'isolation_confinement' ? { monitoring:assessments } : {}) });
   });
   app.get('/api/v1/areas/:areaId/history', (req, res) => {
     const ctx = queryContext(req.query);
@@ -61,13 +64,15 @@ export function createApp(store, { now = () => new Date(), corsOrigins = [] } = 
     const records = filtered(ctx).filter(r => r.areaId === req.area.id && definitions.some(d => d.id === r.indicator)
       && Date.parse(r.recordedAt) >= start && Date.parse(r.recordedAt) < end).sort(chronological);
     if (records.length > 10000) throw new ApiError(400, 'HISTORY_TOO_LARGE', 'Consulte um intervalo menor; limite de 10000 registros por resposta.');
+    const assessments = evaluateArea(req.area.id,store.all(),store.operations(),ctx,end-1)
+      .filter(item => indicator === undefined || item.indicator === indicator);
     res.json({ ...ctx, areaId: req.area.id, period: { from: new Date(start).toISOString(), to: new Date(end).toISOString() }, records,
-      trends: trends(records, definitions, ctx.dataset),
-      ...(req.area.id === 'isolation_confinement' ? { monitoring: monitoring(filtered(ctx).filter(r => r.areaId === req.area.id), definitions, ctx.dataset, new Date(end)) } : {}) });
+      trends: trends(records, definitions, ctx.dataset), assessments,
+      ...(req.area.id === 'isolation_confinement' ? { monitoring:assessments } : {}) });
   });
   app.post('/api/v1/areas/:areaId/records', async (req, res) => {
     const records = validateBatch(req.body, req.area.id, catalog[req.area.id]);
-    await store.append(records);
+    await store.append(records,now().getTime());
     res.status(201).json({ apiVersion: 'v1', astronautId: req.body.astronautId, records });
   });
   for (const [path, kind, calculate] of [['sleep-episodes', 'sleep', calculateSleep], ['pvt-sessions', 'pvt', calculatePvt]]) {
@@ -76,7 +81,7 @@ export function createApp(store, { now = () => new Date(), corsOrigins = [] } = 
       replayed: result.replayed, operation: result.operation, records: result.records });
     app.post(base, async (req, res) => {
       const { operation, records } = calculate(req.body);
-      const result = await store.saveOperation(operation, records);
+      const result = await store.saveOperation(operation, records,now().getTime());
       res.status(result.replayed ? 200 : 201).json(response(result));
     });
     app.get(`${base}/:operationId`, (req, res) => {
@@ -86,6 +91,7 @@ export function createApp(store, { now = () => new Date(), corsOrigins = [] } = 
       res.json(response(result));
     });
   }
+  registerResearchRoutes(app,store,now);
   app.use((req, res, next) => next(new ApiError(404, 'NOT_FOUND', 'Rota não encontrada.')));
   app.use((error, req, res, next) => {
     if (error.type === 'entity.parse.failed') error = new ApiError(400, 'INVALID_JSON', 'JSON inválido.');
