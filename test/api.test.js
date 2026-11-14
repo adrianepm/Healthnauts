@@ -26,18 +26,19 @@ async function fixture(t) {
   return { file, store, base, get, post };
 }
 const reading = (extra = {}) => ({ indicator: 'dose_rate', value: 10, unit: 'uSv/h', recordedAt: '2026-11-14T12:30:00Z', source: 'manual', ...extra });
-test('demo cobre todas as áreas e indicadores; real começa vazio', async t => {
+test('demo inicial cobre as cinco áreas e o catálogo preservado; real começa vazio', async t => {
   const { get } = await fixture(t);
   const demo = await get(`/overview?astronautId=${astronautId}`);
   assert.equal(demo.status, 200); assert.equal(demo.body.dataset, 'simulated'); assert.equal(demo.body.areas.length, 5);
   for (const [area, definitions] of Object.entries(catalog)) {
     const detail = (await get(`/areas/${area}?astronautId=${astronautId}`)).body;
-    assert.equal(detail.latestRecords.length, definitions.length);
+    const initialDefinitions = definitions.filter(d => d.seeded !== false);
+    assert.equal(detail.latestRecords.length, initialDefinitions.length);
     assert.deepEqual(detail.indicatorDefinitions, definitions);
     const history = (await get(`/areas/${area}/history?astronautId=${astronautId}`)).body;
-    assert.equal(history.records.length, definitions.reduce((count, d) => count + (d.aggregateGroup === 'pvt_b' ? 2 : 7), 0));
+    assert.equal(history.records.length, initialDefinitions.reduce((count, d) => count + (d.aggregateGroup === 'pvt_b' ? 2 : 7), 0));
     assert.ok(history.records.every(r => r.isSimulated && r.source === 'simulated'));
-    assert.ok(history.trends.every(r => r.status === (definitions.find(d => d.id === r.indicator).valueType === 'text' ? 'not_applicable' : 'available')));
+    assert.ok(history.trends.filter(r => initialDefinitions.some(d => d.id === r.indicator)).every(r => r.status === (definitions.find(d => d.id === r.indicator).valueType === 'text' ? 'not_applicable' : 'available')));
   }
   const real = (await get(`/overview?astronautId=${astronautId}&dataset=real`)).body;
   assert.ok(real.areas.every(a => a.recordCount === 0 && a.dataStatus === 'no_data' && a.lastRecordedAt === null && a.highlights.length === 0));
@@ -56,7 +57,7 @@ test('lote atômico, validação, persistência e escritas concorrentes', async 
   assert.equal(JSON.parse(await readFile(file, 'utf8')).length, count + 2);
   const real = (await get(`/areas/radiation/history?astronautId=${astronautId}&dataset=real`)).body;
   assert.equal(real.records.length, 2);
-  assert.ok(real.trends.every(t => t.status === 'insufficient_history'));
+  assert.ok(real.trends.filter(t => ['dose_rate','accumulated_dose'].includes(t.indicator)).every(t => t.status === 'insufficient_history'));
 });
 test('filtros inclusivo/exclusivo, erros JSON e CORS local', async t => {
   const { base, post, get } = await fixture(t);
