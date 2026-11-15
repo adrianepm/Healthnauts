@@ -3,10 +3,10 @@ import assert from 'node:assert/strict';
 import { mkdtemp, readFile, rm, writeFile } from 'node:fs/promises';
 import { tmpdir } from 'node:os';
 import { join } from 'node:path';
-import { createApp } from '../src/app.js';
-import { openStore } from '../src/store.js';
-import { calculateResearch } from '../src/research-operations.js';
-import { evaluateArea, weightedWindow, exposureLedger, news2 } from '../src/evaluation.js';
+import { createApp } from '../server/app.js';
+import { openStore } from '../server/store.js';
+import { calculateResearch } from '../shared/research-operations.js';
+import { evaluateArea, weightedWindow, exposureLedger, news2 } from '../shared/evaluation.js';
 const clock = new Date('2026-11-14T15:00:00Z');
 const time = clock.getTime();
 const iso = minutes => new Date(time+minutes*60000).toISOString();
@@ -45,7 +45,7 @@ test('CO₂ uses elapsed time, handles irregular spacing and refuses gaps, old s
   assert.equal(weightedWindow(rows.filter((_,i) => i!==2),time).value,null);
   const check = input => assessment('hostile_closed_environment',input)[0];
   assert.equal(check(rows.map(r => ({...r,value:3}))).level,null);
-  assert.equal(check(rows.map(r => ({...r,value:3.001}))).level,'attention');
+  assert.equal(check(rows.map(r => ({...r,value:3.001}))).level,'caution');
   assert.equal(assessment('hostile_closed_environment',rows,[],ctx(),time+11*60000)[0].status,'stale');
   assert.ok(assessment('hostile_closed_environment',rows.map((r,i) => i===2 ? {...r,context:{...r.context,location:'other'}} : r)).every(e => ['insufficient_data','stale'].includes(e.status)));
 });
@@ -89,7 +89,7 @@ test('dosimetry separates physical quantities, takes latest counter and rejects 
     completePriorHistory:true,value:350,unit:'mSv',doseMethod:'NASA_Q'});
   const current = calc('radiation',{...standard,value:100,unit:'mSv',doseMethod:'NASA_Q'});
   const career = assessment('radiation',[...prior.records,...current.records],[prior.operation,current.operation,mission.operation]).find(e => e.indicator==='career_effective_dose');
-  assert.equal(career.value,450); assert.equal(career.percentOfLimit,75); assert.equal(career.level,'attention');
+  assert.equal(career.value,450); assert.equal(career.percentOfLimit,75); assert.equal(career.level,'advisory');
 });
 
 test('preflight comparison requires compatible method, mission and nonzero reference', () => {
@@ -100,8 +100,8 @@ test('preflight comparison requires compatible method, mission and nonzero refer
   const record = {id:'r',areaId:'gravity_fields',astronautId:primary,source:'manual',recordedAt:iso(0),
     indicator:'aerobic_capacity',value:31.999,unit:'mL/kg/min',context:{missionId:'m1',method:'cycle'}};
   const check = (r,...refs) => assessment('gravity_fields',[r],[mission,...refs]).find(e => e.indicator==='aerobic_capacity');
-  assert.equal(check(record,reference(40)).level,'attention');
-  assert.equal(check({...record,value:32},reference(40)).level,null);
+  assert.equal(check(record,reference(40)).level,'caution');
+  assert.equal(check({...record,value:32},reference(40)).level,'advisory');
   assert.equal(check(record,reference(0)).percentOfReference,null);
   assert.equal(check({...record,context:{...record.context,method:'treadmill'}},reference(40)).status,'insufficient_data');
   assert.equal(check(record,{...reference(40),source:'simulated'}).status,'insufficient_data');
@@ -126,8 +126,8 @@ const query = (astronautId = primary, dataset = 'simulated') => '?astronautId='+
 test('scenarios exercise the rules, persist alerts once and prepare an unsent outage report', async t => {
   const {request,store,file} = await fixture(t);
   const list = (await request('/scenarios')).body.scenarios;
-  assert.equal(list.length,5);
-  for (const scenario of list) {
+  assert.equal(list.length,8);
+  for (const scenario of list.slice(0,5)) {
     const body = { id:scenario.id,astronautId:primary };
     const first = await request('/scenarios/'+scenario.id,body);
     assert.equal(first.status,201,JSON.stringify(first.body));
