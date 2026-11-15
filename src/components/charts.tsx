@@ -5,11 +5,10 @@ import { Area, Bar, CartesianGrid, Cell, ComposedChart, Line, ReferenceLine, Res
 import type { ApiRecord, DisplayLevel } from '../services/api';
 import { LEVEL_UI, NEUTRAL } from '../lib/levels';
 import { fmtDateTime, fmtDay, fmtHours, fmtTime } from '../lib/format';
-import { axisProps } from './ui';
+import { GRID, axisProps } from './ui';
 
 const tipBox = 'recharts-default-tooltip px-3 py-2 text-xs';
-const tickEvery = (n: number) => (n > 16 ? Math.ceil(n / 8) - 1 : 0);
-const lastColor = (level?: DisplayLevel) => level && level !== 'normal' && level !== 'unavailable' ? LEVEL_UI[level].color : '#E6EDF7';
+const lastColor = (level?: DisplayLevel) => level && level !== 'normal' && level !== 'unavailable' ? LEVEL_UI[level].color : '#E6E9F0';
 
 export interface RefLine { y: number; label: string; color?: string }
 
@@ -30,11 +29,11 @@ export function BarsChart({ records, unit, refs = [], lastLevel, domain, fmt = (
   return (
     <div className="h-56">
       <ResponsiveContainer>
-        <ComposedChart data={data} margin={{ top: 8, right: refs.length ? 92 : 8, left: -18, bottom: 0 }}>
-          <CartesianGrid stroke="#1F2A40" vertical={false} />
-          <XAxis dataKey="label" {...axisProps} fontSize={10} interval={tickEvery(data.length)} />
-          <YAxis domain={domain ?? ['auto', 'auto']} {...axisProps} unit={unit} />
-          {refs.map((r) => <ReferenceLine key={r.label} y={r.y} stroke={r.color ?? '#A7B4C8'} strokeDasharray="4 4" label={{ value: r.label, position: 'right', fill: r.color ?? '#A7B4C8', fontSize: 12 }} />)}
+        <ComposedChart data={data} margin={{ top: 8, right: refs.length ? 96 : 16, left: 0, bottom: 0 }}>
+          <CartesianGrid stroke={GRID} vertical={false} />
+          <XAxis dataKey="label" {...axisProps} interval="preserveStartEnd" minTickGap={14} />
+          <YAxis domain={domain ?? ['auto', 'auto']} {...axisProps} unit={unit} width={56} allowDecimals={false} />
+          {refs.map((r) => <ReferenceLine key={r.label} y={r.y} stroke={r.color ?? '#9AA3B5'} strokeDasharray="4 4" label={{ value: r.label, position: 'right', fill: r.color ?? '#9AA3B5', fontSize: 12 }} />)}
           <Tooltip cursor={{ fill: '#ffffff08' }} content={({ active, payload }) => {
             if (!active || !payload?.length) return null; const p = payload[0].payload;
             return <div className={tipBox}><b>{fmtDateTime(p.at)}</b><br />{fmt(p.v)}</div>;
@@ -63,8 +62,8 @@ export function ScaleHeat({ records, max, labels, lastLevel }: { records: ApiRec
       <div className="grid gap-1" style={{ gridTemplateColumns: `repeat(${n}, minmax(0,1fr))` }}>
         {records.map((r, i) => {
           const v = Number(r.value); const last = i === n - 1 && lastLevel && lastLevel !== 'normal' && lastLevel !== 'unavailable';
-          return <div key={r.id} title={`${fmtDay(r.recordedAt)} · ${v}: ${labels[v - 1] ?? ''}`} className="h-9 rounded-md grid place-items-center text-xs font-semibold"
-            style={last ? { background: LEVEL_UI[lastLevel!].color, color: '#0B1220' } : { background: `rgba(91,127,166,${0.25 + (v / max) * 0.45})`, color: '#E6EDF7' }}>{last && (() => { const I = LEVEL_UI[lastLevel!].Icon; return <span className="inline-flex items-center gap-0.5"><I size={12} aria-label={LEVEL_UI[lastLevel!].label} />{v}</span>; })()}{!last && v}</div>;
+          return <div key={r.id} title={`${fmtDay(r.recordedAt)} · ${v}: ${labels[v - 1] ?? ''}`} className="h-9 rounded-sm grid place-items-center text-xs font-semibold"
+            style={last ? { background: LEVEL_UI[lastLevel!].color, color: '#07090F' } : { background: `rgba(91,127,166,${0.25 + (v / max) * 0.45})`, color: '#E6E9F0' }}>{last && (() => { const I = LEVEL_UI[lastLevel!].Icon; return <span className="inline-flex items-center gap-0.5"><I size={12} aria-label={LEVEL_UI[lastLevel!].label} />{v}</span>; })()}{!last && v}</div>;
         })}
       </div>
       <div className="grid mt-1 text-xs text-slate-500" style={{ gridTemplateColumns: `repeat(${n}, minmax(0,1fr))` }}>
@@ -88,16 +87,16 @@ export function TrendChart({ records, band, refs = [], lastLevel, domain, unit, 
   return (
     <div style={{ height }}>
       <ResponsiveContainer>
-        <ComposedChart data={data} margin={{ top: 8, right: refs.length ? 92 : 8, left: -18, bottom: 0 }}>
-          <CartesianGrid stroke="#1F2A40" vertical={false} />
-          <XAxis dataKey="label" {...axisProps} fontSize={9} interval={tickEvery(data.length)} />
-          <YAxis domain={domain ?? ['auto', 'auto']} {...axisProps} fontSize={9} unit={unit} />
+        <ComposedChart data={data} margin={{ top: 8, right: refs.length ? 96 : 16, left: 0, bottom: 0 }}>
+          <CartesianGrid stroke={GRID} vertical={false} />
+          <XAxis dataKey="label" {...axisProps} interval="preserveStartEnd" minTickGap={14} />
+          <YAxis domain={domain ?? ['auto', 'auto']} {...axisProps} unit={unit} width={52} />
           {band && <Area dataKey="band" fill={NEUTRAL} fillOpacity={0.3} stroke="none" isAnimationActive={false} />}
-          {refs.map((r) => <ReferenceLine key={r.label} y={r.y} stroke={r.color ?? '#A7B4C8'} strokeDasharray="4 4" label={{ value: r.label, position: 'right', fill: r.color ?? '#A7B4C8', fontSize: 12 }} />)}
-          <Line dataKey="v" stroke="#CBD5E1" strokeWidth={1.8} isAnimationActive={false}
+          {refs.map((r) => <ReferenceLine key={r.label} y={r.y} stroke={r.color ?? '#9AA3B5'} strokeDasharray="4 4" label={{ value: r.label, position: 'right', fill: r.color ?? '#9AA3B5', fontSize: 12 }} />)}
+          <Line dataKey="v" stroke="#C9CFDB" strokeWidth={1.8} isAnimationActive={false}
             dot={(p: any) => {
               const last = p.index === data.length - 1;
-              return <circle key={p.index} cx={p.cx} cy={p.cy} r={last ? 4.5 : 2} fill={last ? lastColor(lastLevel) : '#94A3B8'} stroke="none" />;
+              return <circle key={p.index} cx={p.cx} cy={p.cy} r={last ? 4.5 : 2} fill={last ? lastColor(lastLevel) : '#9AA3B5'} stroke="none" />;
             }} />
           <Tooltip content={({ active, payload }) => {
             if (!active || !payload?.length) return null; const p = payload[0].payload;

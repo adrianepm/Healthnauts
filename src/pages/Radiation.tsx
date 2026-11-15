@@ -1,10 +1,10 @@
 // Radiation: exposição, não saúde. Dose de carreira e evento solar vêm avaliados da API.
-import { Radiation as RadIcon, Sun, Atom, History } from 'lucide-react';
+import { Sun, Atom, History } from 'lucide-react';
 import { rules } from '../../shared/config/research.js';
 import { AREA } from '../config/api';
 import { useArea } from './useArea';
 import { KeyTiles, TodayHero } from '../components/lean/Home';
-import { Card, More, SourcesList, WhyBlock } from '../components/ui';
+import { Card, More, Num, PageHeader, SourcesList, StatusPill, WhyBlock } from '../components/ui';
 import { LEVEL_UI } from '../lib/levels';
 import { ORGAN_LIMITS } from '../lib/content';
 import { ago } from '../lib/format';
@@ -22,40 +22,57 @@ export default function Radiation() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-sm text-slate-400">Space radiation · exposure, not health</h1>
+      <PageHeader title="Radiation" sub="Space radiation · exposure, not health" />
       <TodayHero level={d.summary!.displayLevel} label="Radiation now" message={d.summary!.headline.message ?? ''} also={d.also(d.summary!.headline.indicator)} />
+
+      {/* Destaque da tela: dose de carreira em relação ao limite. */}
+      <section className="card" data-indicator="career_effective_dose" aria-labelledby="career-title">
+        <div className="flex flex-wrap items-start justify-between gap-3">
+          <div>
+            <h2 id="career-title" className="card-title">Career effective dose</h2>
+            <p className="card-sub mt-0.5">Percent of the {LIMIT} mSv career limit (NASA) · demonstration bands at {BANDS[0]}% and {BANDS[1]}%</p>
+          </div>
+          <StatusPill level={career?.displayLevel ?? 'unavailable'} />
+        </div>
+        <div className="mt-4 flex flex-wrap items-end gap-x-4 gap-y-1">
+          <span className="text-5xl font-medium tracking-tight text-slate-50 leading-none">{pct === null ? '—' : <><Num>{pct.toFixed(1)}</Num><span className="text-2xl text-slate-300">%</span></>}</span>
+          {career?.value !== undefined && <span className="text-sm text-slate-300 pb-1"><span className="font-mono text-slate-100">{career.value}</span> of <span className="font-mono">{LIMIT}</span> mSv</span>}
+        </div>
+        <div className="mt-5" role="img" aria-label={`Career dose ${pct === null ? 'unavailable' : pct.toFixed(1) + '% of the limit'}; bands at ${BANDS.join(', ')}%`}>
+          <div className="relative h-4 rounded-sm bg-space-card2 border border-space-line overflow-hidden">
+            <div className="absolute inset-y-0 left-0" style={{ width: `${Math.min(100, pct ?? 0)}%`, background: color }} />
+            {BANDS.slice(0, -1).map((b) => <span key={b} className="absolute inset-y-0 w-px bg-slate-300" style={{ left: `${b}%` }} />)}
+          </div>
+          <div className="relative h-5 mt-1.5 text-xs text-slate-300 font-mono" aria-hidden="true">
+            <span className="absolute left-0">0%</span>
+            {BANDS.map((b) => <span key={b} className={`absolute ${b >= 100 ? '-translate-x-full' : '-translate-x-1/2'}`} style={{ left: `${b}%` }}>{b}%</span>)}
+          </div>
+        </div>
+        <p className="text-sm text-slate-200 mt-4">{career?.message}</p>
+        {career?.limitation && <p className="text-xs text-slate-300 mt-1">{career.limitation}</p>}
+      </section>
+
       <KeyTiles tiles={[
-        { key: 'career', indicator: 'career_effective_dose', title: 'Career dose', icon: RadIcon, value: pct === null ? '—' : `${pct.toFixed(1)}%`, level: career?.displayLevel ?? 'unavailable', compare: career?.value !== undefined ? `${career.value} of ${LIMIT} mSv (NASA limit)` : career?.message },
-        { key: 'mission', title: 'This mission', icon: Atom, value: career?.missionValue !== undefined ? `${career.missionValue} mSv` : '—', compare: 'Continuous dosimeter ledger' },
-        { key: 'prior', title: 'Prior flights', icon: History, value: career?.priorValue !== undefined ? `${career.priorValue} mSv` : '—', compare: 'Attested prior history' },
+        { key: 'mission', title: 'This mission', icon: Atom, value: career?.missionValue !== undefined ? String(career.missionValue) : '—', unit: career?.missionValue !== undefined ? 'mSv' : undefined, compare: 'Continuous dosimeter ledger' },
+        { key: 'prior', title: 'Prior flights', icon: History, value: career?.priorValue !== undefined ? String(career.priorValue) : '—', unit: career?.priorValue !== undefined ? 'mSv' : undefined, compare: 'Attested prior history' },
         { key: 'solar', indicator: 'solar_event_simulated', title: 'Solar particle event', icon: Sun, value: solar?.recordedAt ? ago(solar.recordedAt) : 'No event', level: solar?.displayLevel ?? 'normal', compare: solar?.message ?? 'No solar event recorded.' },
       ]} />
 
-      <Card title="Career effective dose" sub={`Percent of the ${LIMIT} mSv career limit · demonstration bands at ${BANDS[0]}% and ${BANDS[1]}%`}>
-        <div className="relative h-5 rounded-full bg-space-deep border border-space-line overflow-hidden">
-          <div className="absolute inset-y-0 left-0" style={{ width: `${Math.min(100, pct ?? 0)}%`, background: color }} />
-          {BANDS.map((b) => <span key={b} className="absolute inset-y-0 w-px bg-slate-400/70" style={{ left: `${b}%` }} />)}
-        </div>
-        <div className="relative h-4 text-xs text-slate-400 mt-1">{BANDS.map((b) => <span key={b} className="absolute -translate-x-1/2" style={{ left: `${Math.min(b, 97)}%` }}>{b}%</span>)}</div>
-        <p className="text-sm text-slate-300 mt-3">{career?.message}</p>
-        {career?.limitation && <p className="text-xs text-slate-500 mt-1">{career.limitation}</p>}
-      </Card>
-
-      <div className="grid lg:grid-cols-2 gap-5">
+      <div className="grid lg:grid-cols-2 gap-3">
         <Card title="Glossary">
-          <ul className="text-sm text-slate-300 space-y-2">
-            <li><b>Gy</b> · energy absorbed per kg of tissue.</li>
-            <li><b>mGy-Eq</b> · absorbed dose adjusted for the type of radiation, used in organ limits.</li>
-            <li><b>Sv and mSv</b> · effective dose, estimates the risk for the whole body.</li>
-            <li><b>Dose rate</b> · mSv per day.</li>
-          </ul>
-          <p className="text-xs text-slate-500 mt-3">Radiation risk is mainly long term. No symptom is attributed to radiation automatically.</p>
+          <dl className="text-sm text-slate-300 space-y-2">
+            <div><dt className="inline font-semibold text-slate-100">Gy</dt> <dd className="inline">· energy absorbed per kg of tissue.</dd></div>
+            <div><dt className="inline font-semibold text-slate-100">mGy-Eq</dt> <dd className="inline">· absorbed dose adjusted for the type of radiation, used in organ limits.</dd></div>
+            <div><dt className="inline font-semibold text-slate-100">Sv and mSv</dt> <dd className="inline">· effective dose, estimates the risk for the whole body.</dd></div>
+            <div><dt className="inline font-semibold text-slate-100">Dose rate</dt> <dd className="inline">· mSv per day.</dd></div>
+          </dl>
+          <p className="text-xs text-slate-300 mt-3">Radiation risk is mainly long term. No symptom is attributed to radiation automatically.</p>
         </Card>
         <Card title="Organ limits (reference only)" sub="mGy-Eq · NASA-STD-3001 Vol. 1 Table 4.8-1. The app does not calculate organ dose.">
           <div className="overflow-x-auto">
             <table className="w-full text-xs">
-              <thead><tr className="text-slate-400 text-left"><th className="py-1">Organ</th><th>30 days</th><th>1 year</th><th>Career</th></tr></thead>
-              <tbody>{ORGAN_LIMITS.map(([o, a, b, c]) => <tr key={o} className="border-t border-space-line text-slate-300"><td className="py-1.5">{o}</td><td>{a}</td><td>{b}</td><td>{c}</td></tr>)}</tbody>
+              <thead><tr className="text-slate-300 text-left"><th className="py-1.5 font-medium">Organ</th><th className="font-medium text-right">30 days</th><th className="font-medium text-right">1 year</th><th className="font-medium text-right">Career</th></tr></thead>
+              <tbody>{ORGAN_LIMITS.map(([o, a, b, c]) => <tr key={o} className="border-t border-space-line text-slate-200"><td className="py-1.5 pr-2">{o}</td><td className="font-mono text-right">{a}</td><td className="font-mono text-right">{b}</td><td className="font-mono text-right">{c}</td></tr>)}</tbody>
             </table>
           </div>
           <SourcesList ids={['s1']} />

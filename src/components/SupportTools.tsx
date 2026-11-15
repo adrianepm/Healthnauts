@@ -18,7 +18,7 @@ export function SupportTools() {
     <Card title="Support tools" sub="Self-care actions from NASA's isolation guidance (C-O-N-N-E-C-T)" icon={<Heart size={18} />}>
       <ul className="space-y-2">
         {tools.map(({ icon: Icon, title, sub, tag }) => (
-          <li key={title} className="w-full flex items-center gap-3 rounded-xl border border-space-line bg-space-deep/60 p-3">
+          <li key={title} className="w-full flex items-center gap-3 rounded-md border border-space-line bg-space-deep/60 p-3">
             <span className="w-9 h-9 rounded-lg bg-space-card grid place-items-center text-slate-300"><Icon size={16} /></span>
             <span className="flex-1"><span className="block text-sm text-slate-100">{title}</span><span className="block text-xs text-slate-400">{sub}</span></span>
             <span className="chip border-space-line text-slate-400 normal-case">{tag}</span>

@@ -88,7 +88,7 @@ function CheckinForm({ onSaved }: { onSaved: () => void }) {
           {KSS_LABELS.map((label, i) => {
             const v = i + 1; const sel = v === kss;
             return <button key={v} title={label} onClick={() => setKss(v)}
-              className={`h-11 rounded-lg border text-sm font-semibold transition ${sel ? 'text-white border-brand bg-brand/20' : 'text-slate-400 border-space-line hover:border-slate-500'}`}>{v}</button>;
+              className={`h-11 rounded-lg border text-sm font-semibold transition ${sel ? 'text-white border-brand bg-brand/20' : 'text-slate-400 border-space-line hover:border-space-strong'}`}>{v}</button>;
           })}
         </div>
         <p className="text-xs text-slate-400 mt-1.5">{kss}: {KSS_LABELS[kss - 1]}</p>
@@ -111,7 +111,7 @@ function CheckinForm({ onSaved }: { onSaved: () => void }) {
 
       <footer className="flex flex-wrap items-center justify-between gap-3 mt-5 pt-4 border-t border-space-line">
         <span className="text-xs text-slate-300 inline-flex items-center gap-1"><Sparkles size={12} />{done ? 'Check-in already saved today' : `+${XP_PER_CHECKIN} XP for completing it, whatever your answers`}</span>
-        <button onClick={save} disabled={busy} className="bg-brand hover:bg-brand-soft text-space-bg text-sm font-semibold rounded-xl px-5 py-2.5 disabled:opacity-60">{busy ? 'Saving…' : done ? 'Save new check-in' : 'Save check-in'}</button>
+        <button onClick={save} disabled={busy} className="bg-brand hover:bg-brand-soft text-space-bg text-sm font-semibold rounded-md px-5 py-2.5 disabled:opacity-60">{busy ? 'Saving…' : done ? 'Save new check-in' : 'Save check-in'}</button>
       </footer>
     </div>
   );

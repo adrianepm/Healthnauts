@@ -106,7 +106,7 @@ export function PvtTest() {
         </div>
       )}
       {e.running && (
-        <button onPointerDown={e.respond} className="w-full h-64 rounded-2xl border border-space-line bg-black grid place-items-center select-none">
+        <button onPointerDown={e.respond} className="w-full h-64 rounded-lg border border-space-line bg-black grid place-items-center select-none">
           {e.phase === 'stim' && <span className="font-mono text-6xl text-slate-100 tabular-nums">{e.counter}</span>}
           {e.phase === 'feedback' && <span className="font-mono text-xl text-slate-300">{e.msg}</span>}
           {e.phase === 'wait' && <span className="text-slate-600 text-sm">Wait for the counter…</span>}
@@ -128,7 +128,7 @@ export function PvtTest() {
               <p className="text-xs text-slate-400 mt-3">{c?.validResponses ?? 0} valid responses. Calculated by the onboard service; open Alertness to see how it compares with your usual range.</p>
             </>
           )}
-          <button onClick={close} className="mt-4 w-full bg-brand hover:bg-brand-soft text-space-bg font-semibold rounded-xl py-3">{result?.status === 'completed' ? `Done (+${XP_PER_PVT} XP)` : 'Close'}</button>
+          <button onClick={close} className="mt-4 w-full bg-brand hover:bg-brand-soft text-space-bg font-semibold rounded-md py-3">{result?.status === 'completed' ? `Done (+${XP_PER_PVT} XP)` : 'Close'}</button>
         </div>
       )}
     </Modal>
