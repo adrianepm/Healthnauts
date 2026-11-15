@@ -17,7 +17,7 @@ Requirements: Node.js 22.18 or newer (the tests import TypeScript files directly
 
 ```bash
 npm ci
-npm test          # rules, API, demo seed and RIDGE Scene mapping (node --test)
+npm test          # rules, API, demo seed and Orbital HUD mapping (node --test)
 npm run dev       # http://localhost:5173/NasaSpaceAppsChallenge2026/
 npm run build     # type-check + production build in dist/
 npm run preview   # serves dist/ like GitHub Pages
@@ -37,19 +37,19 @@ The app runs entirely in the browser: the same rules and API routes in `shared/`
 
 Every rule the team set without a published source is marked as a *team proposal* in the app and in `shared/config`.
 
-## RIDGE Scene
+## Orbital HUD
 
-The Overview opens on the **RIDGE Scene**: a single flat SVG illustration (original and stylised, not anatomical) where each hazard has a physical place and every element is also a link.
+The Overview opens on the **Orbital HUD**: an abstract SVG view (thin lines, no illustration) of NASA's five RIDGE hazards as concentric orbits around the astronaut. Every node is also a link.
 
-- **Radiation**: a stylised particle source. Particles hit the hull and an aura appears **only when the API reports an active solar event**; the aura uses the Radiation level colour.
-- **Distance**: Earth is linked to the ship's antenna by a signal line. When a ground report exists, a pulse travels to Earth with progress `(now − sentAt) / (expectedArrivalAt − sentAt)` and comes back the same way until `expectedReplyAt`. With no link, the pulse waits at the ship and the API text is shown.
-- **Hostile environment**: four wall sensors (CO₂, O₂, pressure, noise) take the level of the cabin atmosphere and noise groups; at Warning or above the cabin light pulses in the level colour.
-- **Isolation and vital signs**: the brain takes the Isolation level; the heart beats every `60 / heart rate` seconds and the chest expands at the respiratory rate, both from the live sensor. No reliable data = grey and still.
-- **Gravity**: a Micro · Moon · Mars · Earth selector shows the fluid shift (towards the head in microgravity, towards the legs on Earth). It is visual and educational only; legs and eyes take the Gravity level.
+- **Centre (vital signs)**: an ECG trace scrolls once every `60 / heart rate` seconds from the live sensor, with heart rate and respiratory rate in monospace. No reliable data = a flat grey line.
+- **Orbits** (inside → out): Gravity, Isolation, Environment (hostile environment), Distance, Radiation. Each has its name in small caps and one node in the colour of the area level. Normal is a quiet dot; Caution or above glows, tints its orbit and pulses slowly; Unavailable is a dashed grey ring.
+- **Distance**: Earth is a small point on the Distance orbit. When a ground report exists, a comet travels along the arc with progress `(now − sentAt) / (expectedArrivalAt − sentAt)` and comes back the same way until `expectedReplyAt`. A `QUEUED` report (no link) is a still comet, and its tooltip shows the API text.
+- **Radiation**: thin particles cross the outer orbit **only when the API reports an active solar event**, in the Radiation level colour.
+- **Gravity**: a discreet Micro · Moon · Mars · Earth selector below the HUD shifts a faint fluid gradient inside the Gravity orbit. It is visual and educational only.
 
-The scene never decides a level: colours and texts come from the level and message the API returns (`src/components/scene/sceneMapping.ts`, tested in `test/scene-mapping.test.js`). Missing data is shown as Unavailable. Clicking an element zooms in for about 400 ms and opens its detail page; every element is reachable with the keyboard (Tab, Enter) and has an accessible label with area and level. Elements at Caution or above pulse slowly; in an Emergency the scene darkens, the cabin takes the level colour and the full-screen alert appears on top.
+The HUD never decides a level: colours and texts come from the level and message the API returns (`src/components/scene/sceneMapping.ts`, tested in `test/scene-mapping.test.js`; geometry in `hudGeometry.ts`, tested in `test/hud-geometry.test.js`). At rest only orbit names and nodes are shown; hover or keyboard focus opens a tooltip with the level (icon + name) and the API message. Clicking a node or pressing Enter zooms in for about 400 ms and opens its detail page. In an Emergency the HUD dims, only the cabin orbit stays lit and the full-screen alert appears on top.
 
-**Simple view** swaps the scene for compact cards (choice saved in the browser). With *reduce motion* enabled in the operating system, the Overview opens in Simple view and nothing animates.
+**Simple view** swaps the HUD for compact cards (choice saved in the browser). With *reduce motion* enabled in the operating system, the Overview opens in Simple view and nothing animates.
 
 ## Publishing (GitHub Pages)
 
@@ -114,4 +114,4 @@ The levels, limits and messages follow the team's specification (v2, 14 Nov 2026
 
 ## Use of AI
 
-This project was built with the help of generative AI. Code, tests and interface texts were written with **Claude Code** (Anthropic's Claude models) following a specification written by the team. The team defined the problem, the rules and their sources, reviewed the plan and the results, and decided what went into the app. Thresholds come only from the specification and the sources above; rules without a published source are labelled as team proposals. The RIDGE Scene illustration is original SVG code; no generated images are used. NASA names are used only to cite sources; the app uses no NASA logos.
+This project was built with the help of generative AI. Code, tests and interface texts were written with **Claude Code** (Anthropic's Claude models) following a specification written by the team. The team defined the problem, the rules and their sources, reviewed the plan and the results, and decided what went into the app. Thresholds come only from the specification and the sources above; rules without a published source are labelled as team proposals. The Orbital HUD is original SVG code; no generated images are used. NASA names are used only to cite sources; the app uses no NASA logos.

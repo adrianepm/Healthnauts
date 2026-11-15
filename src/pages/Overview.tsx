@@ -1,4 +1,4 @@
-// Overview: RIDGE Scene (cena cinemática e enxuta) ou Simple view (resumo do dia + cartões por área).
+// Overview: Orbital HUD (os 5 perigos do RIDGE em órbitas) ou Simple view (resumo do dia + cartões por área).
 // A escolha fica no localStorage (try/catch). Com prefers-reduced-motion abre direto em Simple view, sem animações.
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
@@ -9,7 +9,7 @@ import { TodayHero, type AlsoItem } from '../components/lean/Home';
 import { VitalsCard } from '../components/VitalsCard';
 import { RoutineList } from '../components/Notifications';
 import { Card, StatusPill } from '../components/ui';
-import { RidgeScene } from '../components/scene/RidgeScene';
+import { OrbitalHud } from '../components/scene/OrbitalHud';
 import { AREA_LABEL, AREA_PATH, info } from '../lib/content';
 import { isFlagged } from '../lib/levels';
 import { ago } from '../lib/format';
@@ -31,12 +31,12 @@ export default function Overview() {
   return (
     <div className="space-y-4">
       <div className="flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-sm text-slate-300">Overview · {mode === 'scene' ? 'RIDGE scene' : 'all areas'}</h1>
+        <h1 className="text-sm text-slate-300">Overview · {mode === 'scene' ? 'Orbital HUD' : 'all areas'}</h1>
         <button type="button" onClick={toggle} className="btn-ghost" aria-pressed={mode === 'simple'}>
-          {mode === 'scene' ? <><LayoutGrid size={16} aria-hidden="true" />Simple view</> : <><Orbit size={16} aria-hidden="true" />Scene view</>}
+          {mode === 'scene' ? <><LayoutGrid size={16} aria-hidden="true" />Simple view</> : <><Orbit size={16} aria-hidden="true" />HUD view</>}
         </button>
       </div>
-      {mode === 'scene' ? <RidgeScene reduced={reduced} /> : <SimpleOverview />}
+      {mode === 'scene' ? <OrbitalHud reduced={reduced} /> : <SimpleOverview />}
     </div>
   );
 }
