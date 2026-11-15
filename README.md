@@ -63,11 +63,14 @@ The HUD never decides a level: colours and texts come from the level and message
 
 - Dark theme with colour tokens in `src/index.css`; brand violet only for navigation and primary buttons. Level colours follow the specification (Normal green, Advisory blue, Caution yellow, Warning orange, Emergency red, Unavailable grey) and a level is always shown with **icon + name**, never colour alone.
 - Text contrast of at least 4.5:1 (WCAG AA) on the background and cards; base font 16 px; touch targets of at least 44 px.
+- Glass cards: `rgb(18 27 46 / 0.82)` with blur over `#0B1220`, a 1 px gradient border and a soft shadow. The subtle grid and radial gradient sit only behind the layout. Checked contrast, worst case (lit grid square behind the card + hover glow): text 12.6:1, secondary text 7.1:1, Normal 6.5:1, Advisory 6.9:1, Caution 7.7:1, Warning 5.3:1, Emergency text 5.4:1; on level pills 4.8:1 or more.
+- Bento layout for key indicators (first tile highlighted) and for the Simple view. Numbers count up to their value, cards glow under the mouse and pages fade in; all of it is off with *reduce motion*.
+- Fonts: Geist for text and Geist Mono for numbers, bundled with `@fontsource-variable` (no font CDN).
 - Daily check-in sliders work as visual analogue scales: 0 to 100 underneath, only the end labels on screen.
 
 ## Libraries
 
-React 18, React Router 7, Vite 7, TypeScript 5.9, Tailwind CSS 3, Framer Motion 12, Recharts 3, Zustand 5, lucide-react (icons) and Express 5 (optional onboard server). Tests use the built-in `node:test` runner. No external images, fonts or 3D libraries.
+React 18, React Router 7, Vite 7, TypeScript 5.9, Tailwind CSS 3, Framer Motion 12, Recharts 3, Zustand 5, lucide-react (icons), clsx + tailwind-merge, Geist fonts (`@fontsource-variable/geist`, `@fontsource-variable/geist-mono`) and Express 5 (optional onboard server). NumberTicker, MagicCard, BentoGrid and AnimatedGridPattern are adapted from [Magic UI](https://magicui.design) (MIT) in `src/components/magic/`. Tests use the built-in `node:test` runner. No external images, font CDNs or 3D libraries.
 
 ## Sources
 

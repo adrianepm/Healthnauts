@@ -5,6 +5,10 @@ import type { ReactNode } from 'react';
 import { LEVEL_UI } from '../../lib/levels';
 import type { DisplayLevel } from '../../services/api';
 import { StatusPill } from '../ui';
+import { MagicCard } from '../magic/magic-card';
+import { BentoGrid, bentoLayout } from '../magic/bento-grid';
+import { TickerValue } from '../magic/number-ticker';
+import { cn } from '../../lib/utils';
 
 export interface AlsoItem { label: string; level: DisplayLevel; message: string }
 
@@ -41,24 +45,33 @@ export function TodayHero({ level, message, label = 'Today', sub, also = [], act
 /** `level` só quando a API avalia aquele valor; sem avaliação, o cartão não mostra selo. */
 export interface Tile { key: string; title: string; icon: LucideIcon; value: ReactNode; level?: DisplayLevel; compare?: string; onClick?: () => void }
 
+/**
+ * Indicadores-chave em bento (BentoGrid + MagicCard do Magic UI): o primeiro cartão é o destaque.
+ * cols = 1: coluna ao lado do HUD (empilha embaixo dele em tela estreita). Números contam até o valor (NumberTicker).
+ */
 export function KeyTiles({ tiles, cols = 4 }: { tiles: Tile[]; cols?: 1 | 3 | 4 | 5 }) {
-  // cols = 1: coluna ao lado da cena (empilha embaixo dela em tela estreita).
-  const grid = cols === 1 ? 'lg:grid-cols-1' : cols === 5 ? 'lg:grid-cols-5' : cols === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-4';
+  const stacked = cols === 1;
+  const bento = bentoLayout(tiles.length);
   return (
-    <div className={`grid grid-cols-1 ${cols === 1 ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} ${grid} gap-4`}>
-      {tiles.map(({ key, title, icon: Icon, value, level, compare, onClick }) => (
-        <button key={key} onClick={onClick} disabled={!onClick}
-          className="card text-left hover:border-slate-500 transition-colors flex flex-col gap-3 !p-5 disabled:hover:border-space-line">
-          <div className="flex items-center justify-between">
-            <span className="inline-flex items-center gap-2 text-sm text-slate-300"><Icon size={16} />{title}</span>
-            {onClick && <ChevronRight size={16} className="text-slate-500" />}
-          </div>
-          <span className="text-3xl xl:text-4xl font-semibold tracking-tight">{value}</span>
-          {level && <StatusPill level={level} />}
-          {compare && <span className="text-xs text-slate-400">{compare}</span>}
-        </button>
-      ))}
-    </div>
+    <BentoGrid className={stacked ? 'sm:grid-cols-3 lg:grid-cols-1' : bento.grid}>
+      {tiles.map(({ key, title, icon: Icon, value, level, compare, onClick }, i) => {
+        const hero = !stacked && bento.hero(i);
+        return (
+          <MagicCard as="button" key={key} onClick={onClick} disabled={!onClick}
+            className={cn('text-left flex flex-col gap-3 !p-5 disabled:cursor-default', !stacked && bento.span(i), hero && 'lg:!p-6 lg:justify-between')}>
+            <div className="flex items-center justify-between">
+              <span className="inline-flex items-center gap-2 text-sm text-slate-300"><Icon size={16} aria-hidden="true" />{title}</span>
+              {onClick && <ChevronRight size={16} className="text-slate-400" aria-hidden="true" />}
+            </div>
+            <span className={cn('font-medium tracking-tight text-slate-50', hero ? 'text-4xl xl:text-6xl' : 'text-3xl xl:text-4xl')}><TickerValue value={value} /></span>
+            <span className="flex flex-col items-start gap-2">
+              {level && <StatusPill level={level} />}
+              {compare && <span className="text-xs text-slate-400">{compare}</span>}
+            </span>
+          </MagicCard>
+        );
+      })}
+    </BentoGrid>
   );
 }
 
@@ -67,7 +80,7 @@ export function TopicLinks({ topics, onOpen }: { topics: { id: string; label: st
     <div className="flex flex-wrap items-center gap-2 text-sm">
       <span className="text-slate-400 mr-1">See details:</span>
       {topics.map(({ id, label, level }) => (
-        <button key={id} onClick={() => onOpen(id)} className="inline-flex items-center gap-2 rounded-full border border-space-line hover:border-slate-500 px-3 py-1.5">
+        <button key={id} onClick={() => onOpen(id)} className="inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.03] hover:border-white/25 px-3 py-1.5 transition-colors">
           {label}<StatusPill level={level} small /><ChevronRight size={14} className="text-slate-500" />
         </button>
       ))}

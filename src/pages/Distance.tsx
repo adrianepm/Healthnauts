@@ -31,7 +31,7 @@ export default function Distance() {
           <table className="w-full text-sm">
             <thead><tr className="text-left text-slate-400 text-xs"><th className="py-1">Destination</th><th>One-way delay</th><th>Evacuation</th></tr></thead>
             <tbody>{DESTINATIONS.map((x) => (
-              <tr key={x.name} className={`border-t border-space-line ${x.name === link.destination ? 'text-brand-soft' : 'text-slate-300'}`}><td className="py-2 font-semibold">{x.name}{x.name === link.destination ? ' (current)' : ''}</td><td>{x.delay}</td><td>{x.evacuation}</td></tr>
+              <tr key={x.name} className={`border-t border-space-line ${x.name === link.destination ? 'text-slate-50 bg-white/[0.04]' : 'text-slate-300'}`}><td className="py-2 font-semibold">{x.name}{x.name === link.destination ? ' (current)' : ''}</td><td>{x.delay}</td><td>{x.evacuation}</td></tr>
             ))}</tbody>
           </table>
         </div>

@@ -21,7 +21,11 @@ export default {
         sm: ['1rem', { lineHeight: '1.5rem' }],
         base: ['1.0625rem', { lineHeight: '1.6rem' }],
       },
-      fontFamily: { mono: ['ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'] },
+      // Geist (texto) e Geist Mono (números), instaladas por @fontsource-variable (sem CDN).
+      fontFamily: {
+        sans: ['"Geist Variable"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['"Geist Mono Variable"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+      },
     },
   },
   plugins: [],

@@ -14,6 +14,7 @@ import { DemoPanel, useSim } from './DemoPanel';
 import { StatusPill } from './ui';
 import { MorningCheckin } from './MorningCheckin';
 import { PvtTest } from './PvtTest';
+import { AnimatedGridPattern } from './magic/animated-grid-pattern';
 
 const TABS = [
   { to: '/', label: 'Overview', icon: LayoutGrid, area: null },
@@ -41,22 +42,28 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   return (
     <div className="min-h-screen pb-16">
+      {/* Fundo: gradiente radial e grade muito sutis, só atrás do layout (cartões de vidro opacos a 82% ficam por cima). */}
+      <div aria-hidden="true" className="pointer-events-none fixed inset-0 -z-10 overflow-hidden">
+        <div className="absolute inset-0 [background:radial-gradient(1100px_520px_at_50%_-8%,rgb(91_127_166/0.14),transparent_70%)]" />
+        <AnimatedGridPattern width={44} height={44} numSquares={22} maxOpacity={0.05} duration={5} repeatDelay={1}
+          className="text-slate-400 stroke-white/[0.035] [mask-image:radial-gradient(1000px_circle_at_50%_0%,white,transparent_80%)]" />
+      </div>
       <EmergencyOverlay />
-      <header className="border-b border-space-line bg-space-bg/95 sticky top-0 z-40 backdrop-blur">
+      <header className="border-b border-white/[0.06] bg-space-bg/80 sticky top-0 z-40 backdrop-blur-xl">
         <div className="max-w-[1280px] mx-auto px-4 md:px-6 pt-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
               <div className="w-10 h-10 rounded-xl bg-brand text-space-bg grid place-items-center" aria-hidden="true"><Compass size={20} /></div>
               <div>
-                <p className="font-bold tracking-wide text-lg">Health<span className="text-brand-soft">nauts</span> <span className="chip border-brand/40 text-brand-soft ml-1">Onboard</span></p>
+                <p className="font-bold tracking-wide text-lg">Health<span className="text-brand-soft">nauts</span> <span className="chip border-white/15 text-slate-300 ml-1">Onboard</span></p>
                 <p className="text-xs text-slate-400">Autonomous crew health monitor</p>
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-xs">
               {mission && <span className="chip border-space-line text-slate-300 normal-case text-xs py-1">Mission {mission.input.destination} · Day {day}</span>}
               <span className={`chip normal-case text-xs py-1 ${s.on ? 'border-space-line text-slate-200' : 'border-space-line text-slate-400'}`}>Live sensor {s.on ? 'on' : 'off'}</span>
-              <span className="chip border-brand/40 text-brand-soft normal-case text-xs py-1 inline-flex items-center gap-1"><Award size={12} />Level {levelOfXp(xp)}</span>
-              <span className="w-20 h-1.5 rounded bg-space-line overflow-hidden"><span className="block h-full bg-brand" style={{ width: `${xp % 100}%` }} /></span>
+              <span className="chip border-space-line text-slate-200 normal-case text-xs py-1 inline-flex items-center gap-1"><Award size={12} />Level {levelOfXp(xp)}</span>
+              <span className="w-20 h-1.5 rounded bg-space-line overflow-hidden"><span className="block h-full bg-slate-300" style={{ width: `${xp % 100}%` }} /></span>
               <span className="text-slate-400 font-mono">{xp} XP</span>
               <Notifications />
             </div>
@@ -84,7 +91,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         <AlertBanner />
         {children}
       </main>
-      <footer className="fixed bottom-0 inset-x-0 z-30 border-t border-space-line bg-space-bg/95 backdrop-blur">
+      <footer className="fixed bottom-0 inset-x-0 z-30 border-t border-white/[0.06] bg-space-bg/90 backdrop-blur-xl">
         <p className="max-w-[1280px] mx-auto px-4 md:px-6 py-2.5 pr-28 text-xs text-slate-400">
           {overview?.footer ?? 'This tool supports self-monitoring and crew medical decisions. It does not diagnose any condition.'} Simulated data · Space Apps 2026.
         </p>

@@ -1,6 +1,7 @@
 // Rotas do app. O sensor simulado começa ligado quando o site abre (ajuste aprovado nº 4).
-import { useEffect } from 'react';
-import { HashRouter, Navigate, Route, Routes } from 'react-router-dom';
+import { useEffect, type ReactNode } from 'react';
+import { HashRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom';
+import { motion, useReducedMotion } from 'framer-motion';
 import { useStore } from './store/useStore';
 import { sim } from './sim/liveSensors';
 import { AppShell } from './components/AppShell';
@@ -12,6 +13,18 @@ import Radiation from './pages/Radiation';
 import Gravity from './pages/Gravity';
 import Distance from './pages/Distance';
 import Profile from './pages/Profile';
+
+/** Transição suave entre páginas (só opacidade: transform criaria contêiner para a gaveta fixa do detalhe). Desligada com prefers-reduced-motion. */
+function PageTransition({ children }: { children: ReactNode }) {
+  const { pathname } = useLocation();
+  const reduced = useReducedMotion();
+  if (reduced) return <>{children}</>;
+  return (
+    <motion.div key={pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.24, ease: [0.4, 0, 0.2, 1] }}>
+      {children}
+    </motion.div>
+  );
+}
 
 const POLL_MS = 15000; // prazos de confirmação e status do relatório andam com o relógio
 
@@ -32,6 +45,7 @@ export default function App() {
   return (
     <HashRouter>
       <AppShell>
+        <PageTransition>
         <Routes>
           <Route path="/" element={<Overview />} />
           <Route path="/isolation" element={<Isolation />} />
@@ -43,6 +57,7 @@ export default function App() {
           <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
+        </PageTransition>
       </AppShell>
     </HashRouter>
   );

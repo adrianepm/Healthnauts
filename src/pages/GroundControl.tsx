@@ -19,7 +19,7 @@ function Pipeline({ r }: { r: GroundReport }) {
   return (
     <ol className="grid grid-cols-4 gap-1 mt-3">
       {STEPS.map((s, i) => (
-        <li key={s} className={`rounded-lg border px-2 py-1.5 text-xs ${i <= at ? 'border-brand/60 bg-brand/10 text-brand-soft' : 'border-space-line text-slate-500'}`}>
+        <li key={s} className={`rounded-lg border px-2 py-1.5 text-xs ${i <= at ? 'border-slate-300/60 bg-white/[0.06] text-slate-50' : 'border-space-line text-slate-500'}`}>
           <span className="flex items-center gap-1 font-semibold">{i <= at && <Check size={11} />}{s}</span>
           <span className="block font-mono">{when[i] ? `${i > at ? 'exp. ' : ''}${fmtTime(when[i])}` : '—'}</span>
         </li>

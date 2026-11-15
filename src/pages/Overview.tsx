@@ -9,10 +9,15 @@ import { TodayHero, type AlsoItem } from '../components/lean/Home';
 import { VitalsCard } from '../components/VitalsCard';
 import { RoutineList } from '../components/Notifications';
 import { Card, StatusPill } from '../components/ui';
+import { MagicCard } from '../components/magic/magic-card';
+import { BentoGrid } from '../components/magic/bento-grid';
 import { OrbitalHud } from '../components/scene/OrbitalHud';
 import { AREA_LABEL, AREA_PATH, info } from '../lib/content';
 import { isFlagged } from '../lib/levels';
 import { ago } from '../lib/format';
+
+// Bento das 5 áreas em 6 colunas: 2 + 2 + 2 na primeira linha, 3 + 3 na segunda.
+const AREA_SPAN = ['lg:col-span-2', 'lg:col-span-2', 'lg:col-span-2 sm:col-span-2', 'lg:col-span-3', 'lg:col-span-3'];
 
 const VIEW_KEY = 'healthnauts:overview-view';
 type ViewMode = 'scene' | 'simple';
@@ -41,7 +46,7 @@ export default function Overview() {
   );
 }
 
-/** Overview enxuta: resumo do dia, sinais vitais ao vivo, rotina e um cartão por área. */
+/** Overview enxuta em bento: resumo do dia, sinais vitais ao vivo, rotina e um cartão por área. */
 function SimpleOverview() {
   const o = useStore((s) => s.overview);
   if (!o) return null;
@@ -52,20 +57,18 @@ function SimpleOverview() {
   return (
     <div className="space-y-5">
       <TodayHero level={o.overallDisplayLevel} message={o.headline.message ?? ''} sub={o.headline.indicator ? info(o.headline.indicator).label : undefined} also={also} />
-      <div className="grid lg:grid-cols-[2fr_1fr] gap-5">
-        <VitalsCard />
-        <Card title="Today's routine" sub="Pending items have a red dot" icon={<ListChecks size={18} />}><RoutineList /></Card>
-      </div>
-      <div className="grid sm:grid-cols-2 lg:grid-cols-5 gap-4">
-        {o.areas.map((a) => (
-          <Link key={a.areaId} to={AREA_PATH[a.areaId]} className="card !p-4 hover:border-slate-500 transition-colors flex flex-col gap-2">
-            <div className="flex items-center justify-between"><span className="text-sm font-semibold">{AREA_LABEL[a.areaId]}</span><ChevronRight size={15} className="text-slate-500" /></div>
+      <BentoGrid className="lg:grid-cols-6">
+        <div className="sm:col-span-2 lg:col-span-4 [&>div]:h-full [&_section.card]:h-full"><VitalsCard /></div>
+        <Card className="sm:col-span-2 lg:col-span-2" title="Today's routine" sub="Pending items have a red dot" icon={<ListChecks size={18} />}><RoutineList /></Card>
+        {o.areas.map((a, i) => (
+          <MagicCard as={Link} key={a.areaId} to={AREA_PATH[a.areaId]} className={`!p-4 flex flex-col gap-2 ${AREA_SPAN[i] ?? 'lg:col-span-2'}`}>
+            <div className="flex items-center justify-between"><span className="text-sm font-semibold">{AREA_LABEL[a.areaId]}</span><ChevronRight size={15} className="text-slate-400" aria-hidden="true" /></div>
             <StatusPill level={a.displayLevel} />
-            <p className="text-xs text-slate-300 line-clamp-3">{a.headline.message}</p>
-            <p className="text-xs text-slate-500 mt-auto">{a.summary} · last data {ago(a.lastRecordedAt)}</p>
-          </Link>
+            <p className="text-xs text-slate-300 line-clamp-2">{a.headline.message}</p>
+            <p className="text-xs text-slate-400 mt-auto">last data {ago(a.lastRecordedAt)}</p>
+          </MagicCard>
         ))}
-      </div>
+      </BentoGrid>
     </div>
   );
 }

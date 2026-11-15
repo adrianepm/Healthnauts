@@ -4,6 +4,8 @@ import { ChevronDown, ExternalLink, X } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { LEVEL_UI } from '../lib/levels';
 import { info, SOURCES } from '../lib/content';
+import { MagicCard } from './magic/magic-card';
+import { TickerValue } from './magic/number-ticker';
 import type { DisplayLevel } from '../services/api';
 
 /** Regra 2.1: cor + ícone + texto, nunca só cor. */
@@ -22,18 +24,18 @@ export function Card({ title, sub, icon, right, children, className = '' }: {
   title?: string; sub?: string; icon?: ReactNode; right?: ReactNode; children: ReactNode; className?: string;
 }) {
   return (
-    <motion.section initial={{ opacity: 0, y: 8 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: 0.3 }} className={`card ${className}`}>
+    <MagicCard as="section" className={className}>
       {title && (
         <header className="flex items-start justify-between gap-3 mb-4">
           <div className="flex items-start gap-3">
-            {icon && <div className="w-9 h-9 rounded-xl bg-space-deep border border-space-line grid place-items-center text-slate-300 shrink-0">{icon}</div>}
+            {icon && <div className="w-9 h-9 rounded-xl bg-white/[0.04] border border-white/10 grid place-items-center text-slate-300 shrink-0">{icon}</div>}
             <div><h2 className="card-title">{title}</h2>{sub && <p className="card-sub mt-0.5">{sub}</p>}</div>
           </div>
           {right}
         </header>
       )}
       {children}
-    </motion.section>
+    </MagicCard>
   );
 }
 
@@ -109,7 +111,7 @@ export function WhyBlock({ ids }: { ids: string[] }) {
 }
 
 export const Stat = ({ label, value, sub }: { label: string; value: ReactNode; sub?: ReactNode }) => (
-  <div className="rounded-xl border border-space-line p-3"><p className="text-xs text-slate-400">{label}</p><p className="text-xl font-semibold mt-1">{value}</p>{sub && <p className="text-xs text-slate-500 mt-0.5">{sub}</p>}</div>
+  <div className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-3"><p className="text-xs text-slate-400">{label}</p><p className="text-xl font-medium font-mono tabular-nums mt-1"><TickerValue value={value} /></p>{sub && <p className="text-xs text-slate-500 mt-0.5">{sub}</p>}</div>
 );
 
 /** Cores de dado nos gráficos: normal neutro, só a exceção ganha cor. */
