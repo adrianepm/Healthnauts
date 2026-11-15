@@ -7,7 +7,7 @@ import { ChevronRight } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { useSim } from '../components/DemoPanel';
 import { TodayHero } from '../components/lean/Home';
-import { BodyMap } from '../components/scene/BodyMap';
+import { BodyView } from '../components/scene/BodyView';
 import { RoutineBar } from '../components/TodayRoutine';
 import { MyPanels, useAllAreas } from '../components/MyPanels';
 import { Num, StatusPill } from '../components/ui';
@@ -53,8 +53,8 @@ export default function Overview() {
       <TodayHero compact level={today.level} message={today.message} sub={today.indicator ? info(today.indicator).label : undefined}
         also={today.also.map((i) => ({ label: i.label, level: i.level, message: i.message }))} />
       <RoutineBar />
-      <div className="grid lg:grid-cols-2 gap-3 items-start">
-        <BodyMap scene={scene} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-start [&>*]:min-w-0">
+        <BodyView scene={scene} />
         <MyPanels chosen={chosen} onChange={choose} />
       </div>
       <section aria-label="Other areas" className="grid sm:grid-cols-3 gap-3">

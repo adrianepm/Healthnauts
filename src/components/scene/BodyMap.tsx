@@ -27,7 +27,7 @@ export function BodyMap({ scene }: { scene: SceneState }) {
   const rr = scene.vitals.breathSeconds ? Math.round(60 / scene.vitals.breathSeconds) : null;
 
   return (
-    <section className="card h-full" aria-labelledby="body-map-title">
+    <section className="card h-full" aria-labelledby="body-map-title" data-body="2d">
       <h2 id="body-map-title" className="card-title">Body</h2>
       <p className="card-sub mt-0.5">Areas from the onboard computer. Open a region for its detail.</p>
       <div className="mt-4 grid sm:grid-cols-[auto_minmax(0,1fr)] lg:grid-cols-1 xl:grid-cols-[auto_minmax(0,1fr)] gap-5 items-center">

@@ -151,7 +151,7 @@ docs/      Specification, verification audit, API notes.
 
 In the published site, the rules run in the browser through a small local router, so the app works as a static page. On a real vehicle this layer would run on the onboard computer, which is what the Express server represents.
 
-Main libraries: React, React Router, Vite, TypeScript, Tailwind CSS, Recharts, Framer Motion, Zustand, lucide-react, react-body-highlighter, Instrument Sans and JetBrains Mono fonts (via Fontsource), Express.
+Main libraries: React, React Router, Vite, TypeScript, Tailwind CSS, Recharts, Framer Motion, Zustand, lucide-react, react-body-highlighter, three.js, Instrument Sans and JetBrains Mono fonts (via Fontsource), Express.
 
 ## Limitations and next steps
 
@@ -220,5 +220,6 @@ Black Belt's Team, NASA Space Apps Challenge 2026, Ouro Preto (Brazil):
 - Samn-Perelli fatigue scale, USAF SAM-TR-82-21: https://apps.dtic.mil/sti/pdfs/ADA125319.pdf
 - Basner, Mollicone and Dinges 2011, PVT-B validation: https://www.med.upenn.edu/uep/assets/user-content/documents/Basner2011-ValidityandsensitivityofabriefPVT.pdf
 - ESA, communication latency study: https://nebula.esa.int/sites/default/files/neb_study/3142/C4000136202FR.pdf
+- 3D particle body adapted from possato-a/healthnauts-preview, used with permission; three.js (MIT)
 
 Open source libraries are listed in `package.json`, each under its own license.

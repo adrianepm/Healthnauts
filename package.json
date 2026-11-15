@@ -27,11 +27,13 @@
     "react-router-dom": "^7.18.5",
     "recharts": "^3.10.1",
     "tailwind-merge": "^2.6.1",
+    "three": "^0.170.0",
     "zustand": "^5.1.0"
   },
   "devDependencies": {
     "@types/react": "^18.3.31",
     "@types/react-dom": "^18.3.7",
+    "@types/three": "^0.170.0",
     "@vitejs/plugin-react": "^5.2.0",
     "autoprefixer": "^10.6.2",
     "postcss": "^8.5.33",
