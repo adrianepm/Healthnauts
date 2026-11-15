@@ -1,10 +1,10 @@
-// RIDGE Scene (src/components/scene/sceneMapping.ts): cada cenário do DemoPanel provoca a reação certa,
+// Overview (src/components/scene/sceneMapping.ts): cada cenário do DemoPanel provoca a reação certa,
 // e a cena só repete nível e mensagem da API (nunca inventa valor).
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { memoryApi } from '../test-support/memory-api.js';
 import { atmosphereReading, climateRecords, noiseReading, vitalsReading } from '../src/sim/payloads.ts';
-import { sceneState, signalPulse } from '../src/components/scene/sceneMapping.ts';
+import { BODY_LEVELS, bodyRegions, levelFrequency, regionOfMuscle, sceneState, signalPulse } from '../src/components/scene/sceneMapping.ts';
 
 const rnd = () => 0.5;
 const op = (api, area, kind, id, body) => api.post(`/areas/${area}/operations/${kind}`, { astronautId: api.astronautId, id, source: 'simulated', ...body });
@@ -146,4 +146,32 @@ test('cena: sem resposta da API tudo fica Unavailable', () => {
   for (const e of [s.radiation, s.distance, s.environment, s.isolation, s.vitals, s.gravity, s.earth]) assert.equal(e.level, 'unavailable', e.target);
   assert.equal(s.vitals.beatSeconds, null);
   assert.equal(s.radiation.solarActive, false);
+});
+
+// Corpo humano da Overview: cada região repete o nível do elemento ligado; a cor sai do índice do nível.
+test('corpo: regiões ligadas a Isolation, sinais vitais e Gravity, frequência = posição do nível', async () => {
+  const { api } = await start();
+  api.advance(60000);
+  await api.scenario('fever');
+  const fever = await liveSensor(api, 'nominal', 'fever', 'f');
+  const { s } = await scene(api, fever);
+  const regions = bodyRegions(s);
+  const by = Object.fromEntries(regions.map((r) => [r.key, r]));
+  assert.equal(by.head.element, s.isolation);
+  assert.equal(by.chest.element, s.vitals);
+  assert.equal(by.limbs.element, s.gravity);
+  assert.equal(by.chest.element.level, 'warning');
+  assert.equal(BODY_LEVELS[by.chest.frequency - 1], 'warning');
+  for (const r of regions) assert.equal(BODY_LEVELS[r.frequency - 1], r.element.level, r.key);
+  assert.equal(regionOfMuscle(regions, 'neck')?.key, 'head');
+  assert.equal(regionOfMuscle(regions, 'calves')?.key, 'limbs');
+  assert.equal(regionOfMuscle(regions, 'abs'), null);
+  // Um músculo em uma só região (a biblioteca somaria as frequências).
+  const all = regions.flatMap((r) => r.muscles);
+  assert.equal(new Set(all).size, all.length);
+});
+
+test('corpo: sem resposta da API todas as regiões ficam Unavailable', () => {
+  const s = sceneState({ overview: null, reports: [], live: null, now: Date.now() });
+  for (const r of bodyRegions(s)) { assert.equal(r.element.level, 'unavailable'); assert.equal(r.frequency, levelFrequency('unavailable')); }
 });

@@ -1,9 +1,7 @@
-// RIDGE Scene: converte a resposta da API em estado de cada elemento da cena.
-// Arquivo PURO (sem React, testado em Node). A cena não cria regra nem limite:
+// Overview: converte a resposta da API em estado de cada elemento da cena.
+// Arquivo PURO (sem React, testado em Node). A tela não cria regra nem limite:
 // cor = displayLevel que a API devolveu; texto = message da API; dado ausente = Unavailable (cinza, parado).
-// Para juntar níveis usa worstLevel de shared/config/levels.js, a mesma prioridade da API.
 import type { DisplayLevel, GroundReport, Link, Overview } from '../../services/api';
-import { worstLevel } from '../../../shared/config/levels.js';
 
 export type SceneTarget = 'radiation' | 'distance' | 'earth' | 'environment' | 'isolation' | 'vitals' | 'gravity';
 
@@ -125,18 +123,27 @@ export function sceneState({ overview, reports, live, now }: {
   return { overall, emergency: overall === 'emergency', radiation, distance, earth, environment, sensors, isolation, vitals, gravity };
 }
 
-/** Nível juntado de vários elementos, com a prioridade da API (para a legenda e o resumo). */
-export const combined = (items: ElementState[]) =>
-  worstLevel(items.map((i) => ({ level: null, displayLevel: i.level, message: i.message, critical: i.target === 'vitals' || i.target === 'environment' }))).displayLevel as DisplayLevel;
+/**
+ * Corpo humano da Overview (react-body-highlighter, vista anterior). Cada região repete o nível de um elemento da cena:
+ * cabeça e pescoço = Isolation; peito = sinais vitais; braços, coxas e panturrilhas = Gravity.
+ * Cada músculo aparece em uma só região (a biblioteca soma frequências se o músculo se repetir).
+ */
+export const BODY_LEVELS: DisplayLevel[] = ['normal', 'advisory', 'caution', 'warning', 'emergency', 'unavailable'];
+/** Nível → frequência da biblioteca (highlightedColors[frequency − 1] = cor do nível). */
+export const levelFrequency = (level: DisplayLevel) => BODY_LEVELS.indexOf(level) + 1;
 
-/** Texto acessível de cada elemento: área + nível (+ mensagem da API). */
-export const ariaLabel = (e: ElementState, levelLabel: string) => `${e.area}: ${levelLabel}.${e.message ? ' ' + e.message : ''} Opens details.`;
+export type BodyRegionKey = 'head' | 'chest' | 'limbs';
+const REGIONS: { key: BodyRegionKey; label: string; from: 'isolation' | 'vitals' | 'gravity'; muscles: string[] }[] = [
+  { key: 'head', label: 'Head and neck', from: 'isolation', muscles: ['head', 'neck'] },
+  { key: 'chest', label: 'Chest', from: 'vitals', muscles: ['chest'] },
+  { key: 'limbs', label: 'Arms and legs', from: 'gravity', muscles: ['biceps', 'triceps', 'forearm', 'quadriceps', 'abductors', 'calves'] },
+];
 
-/** Deslocamento de fluidos (só visual e educativo, não muda regra). Frases da especificação e do contexto. */
-export const GRAVITY_VIEWS = {
-  MICRO: { label: 'Micro', headShare: 0.8, text: 'Microgravity: fluids shift toward the head. Puffy face, thinner legs.' },
-  MOON: { label: 'Moon', headShare: 0.6, text: 'Moon: partial gravity. Each gravity change can affect balance and coordination.' },
-  MARS: { label: 'Mars', headShare: 0.45, text: 'Mars (3/8 g): another gravity change. Motion sickness and dizziness can happen.' },
-  EARTH: { label: 'Earth', headShare: 0.2, text: 'Earth (1 g): fluids pull back to the legs. Dizziness when standing up is common after landing.' },
-} as const;
-export type GravityView = keyof typeof GRAVITY_VIEWS;
+export interface BodyRegion { key: BodyRegionKey; label: string; muscles: string[]; element: ElementState; frequency: number }
+
+export function bodyRegions(s: SceneState): BodyRegion[] {
+  return REGIONS.map((r) => ({ key: r.key, label: r.label, muscles: r.muscles, element: s[r.from], frequency: levelFrequency(s[r.from].level) }));
+}
+
+/** Região de um músculo clicado (null = parte do corpo sem área ligada). */
+export const regionOfMuscle = (regions: BodyRegion[], muscle: string) => regions.find((r) => r.muscles.includes(muscle)) ?? null;

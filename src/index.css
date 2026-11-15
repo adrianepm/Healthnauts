@@ -61,20 +61,3 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
-
-/* Orbital HUD: anel de foco do teclado, pulso lento dos nós com alerta, ECG e partículas do evento solar.
-   Com prefers-reduced-motion o componente nem aplica estas classes (e a regra acima zera qualquer animação). */
-.hud-hot:focus { outline: none; }
-.hud-focus { opacity: 0; transition: opacity 0.15s; }
-.hud-hot:focus-visible .hud-focus { opacity: 1; }
-.hud-pulse { transform-box: fill-box; transform-origin: center; animation: hud-pulse 2.8s ease-out infinite; }
-@keyframes hud-pulse { from { transform: scale(1); opacity: 0.7; } to { transform: scale(2.8); opacity: 0; } }
-.hud-ecg { animation: hud-ecg 1s linear infinite; }
-@keyframes hud-ecg { from { transform: translateX(0); } to { transform: translateX(-40px); } }
-.hud-streak { opacity: 0; animation: hud-streak 2.6s linear infinite; }
-@keyframes hud-streak {
-  0% { transform: translate(0, 0); opacity: 0; }
-  12% { opacity: 0.75; }
-  88% { opacity: 0.75; }
-  100% { transform: translate(var(--dx), var(--dy)); opacity: 0; }
-}

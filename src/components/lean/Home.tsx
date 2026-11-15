@@ -47,7 +47,7 @@ export interface Tile { key: string; title: string; icon: LucideIcon; value: Rea
 
 /**
  * Indicadores-chave em bento (BentoGrid + MagicCard do Magic UI): o primeiro cartão é o destaque.
- * cols = 1: coluna ao lado do HUD (empilha embaixo dele em tela estreita). Números contam até o valor (NumberTicker).
+ * cols = 1: uma coluna estreita (empilha em tela pequena). Números contam até o valor (NumberTicker).
  */
 export function KeyTiles({ tiles, cols = 4 }: { tiles: Tile[]; cols?: 1 | 3 | 4 | 5 }) {
   const stacked = cols === 1;

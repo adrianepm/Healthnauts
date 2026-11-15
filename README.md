@@ -17,7 +17,7 @@ Requirements: Node.js 22.18 or newer (the tests import TypeScript files directly
 
 ```bash
 npm ci
-npm test          # rules, API, demo seed and Orbital HUD mapping (node --test)
+npm test          # rules, API, demo seed and Overview mapping (node --test)
 npm run dev       # http://localhost:5173/NasaSpaceAppsChallenge2026/
 npm run build     # type-check + production build in dist/
 npm run preview   # serves dist/ like GitHub Pages
@@ -37,19 +37,15 @@ The app runs entirely in the browser: the same rules and API routes in `shared/`
 
 Every rule the team set without a published source is marked as a *team proposal* in the app and in `shared/config`.
 
-## Orbital HUD
+## Overview
 
-The Overview opens on the **Orbital HUD**: an abstract SVG view (thin lines, no illustration) of NASA's five RIDGE hazards as concentric orbits around the astronaut. Every node is also a link.
+The Overview has three parts, and none of them decides a level: colours and texts come from the level and message the API returns (`src/components/scene/sceneMapping.ts`, tested in `test/scene-mapping.test.js`).
 
-- **Centre (vital signs)**: an ECG trace scrolls once every `60 / heart rate` seconds from the live sensor, with heart rate and respiratory rate in monospace. No reliable data = a flat grey line.
-- **Orbits** (inside → out): Gravity, Isolation, Environment (hostile environment), Distance, Radiation. Each has its name in small caps and one node in the colour of the area level. Normal is a quiet dot; Caution or above glows, tints its orbit and pulses slowly; Unavailable is a dashed grey ring.
-- **Distance**: Earth is a small point on the Distance orbit. When a ground report exists, a comet travels along the arc with progress `(now − sentAt) / (expectedArrivalAt − sentAt)` and comes back the same way until `expectedReplyAt`. A `QUEUED` report (no link) is a still comet, and its tooltip shows the API text.
-- **Radiation**: thin particles cross the outer orbit **only when the API reports an active solar event**, in the Radiation level colour.
-- **Gravity**: a discreet Micro · Moon · Mars · Earth selector below the HUD shifts a faint fluid gradient inside the Gravity orbit. It is visual and educational only.
+- **Today** (full width): the status sentence of the day and *What to do*, from the overall level and the API message, plus any other flagged area.
+- **Body** (left): a clickable human body, front view, drawn with [react-body-highlighter](https://github.com/GV79/react-body-highlighter) (MIT) in dark theme tones. Head and neck = Isolation; chest = vital signs; arms, thighs and calves = Gravity. Each region takes the colour of its area level. Next to the chest, a small badge shows live heart rate and respiratory rate from the simulated sensor ("–" when vital signs are not assessed). A list beside the body repeats each region with **icon + level name** and the API message; every row is a button (keyboard and screen reader), and clicking a region or a row opens the area detail.
+- **Cards** (right): Radiation (career dose, % of the limit), Environment (CO₂ 1 h average) and Distance (one-way delay), each with the value the API returns and the area level. A missing value shows "–" with *Unavailable*.
 
-The HUD never decides a level: colours and texts come from the level and message the API returns (`src/components/scene/sceneMapping.ts`, tested in `test/scene-mapping.test.js`; geometry in `hudGeometry.ts`, tested in `test/hud-geometry.test.js`). At rest only orbit names and nodes are shown; hover or keyboard focus opens a tooltip with the level (icon + name) and the API message. Clicking a node or pressing Enter zooms in for about 400 ms and opens its detail page. In an Emergency the HUD dims, only the cabin orbit stays lit and the full-screen alert appears on top.
-
-**Simple view** swaps the HUD for compact cards (choice saved in the browser). With *reduce motion* enabled in the operating system, the Overview opens in Simple view and nothing animates.
+On narrow screens the parts stack in that order.
 
 ## Publishing (GitHub Pages)
 
@@ -64,13 +60,13 @@ The HUD never decides a level: colours and texts come from the level and message
 - Dark theme with colour tokens in `src/index.css`; brand violet only for navigation and primary buttons. Level colours follow the specification (Normal green, Advisory blue, Caution yellow, Warning orange, Emergency red, Unavailable grey) and a level is always shown with **icon + name**, never colour alone.
 - Text contrast of at least 4.5:1 (WCAG AA) on the background and cards; base font 16 px; touch targets of at least 44 px.
 - Glass cards: `rgb(18 27 46 / 0.82)` with blur over `#0B1220`, a 1 px gradient border and a soft shadow. The subtle grid and radial gradient sit only behind the layout. Checked contrast, worst case (lit grid square behind the card + hover glow): text 12.6:1, secondary text 7.1:1, Normal 6.5:1, Advisory 6.9:1, Caution 7.7:1, Warning 5.3:1, Emergency text 5.4:1; on level pills 4.8:1 or more.
-- Bento layout for key indicators (first tile highlighted) and for the Simple view. Numbers count up to their value, cards glow under the mouse and pages fade in; all of it is off with *reduce motion*.
+- Bento layout for key indicators (first tile highlighted). Numbers count up to their value, cards glow under the mouse and pages fade in; all of it is off with *reduce motion*.
 - Fonts: Geist for text and Geist Mono for numbers, bundled with `@fontsource-variable` (no font CDN).
 - Daily check-in sliders work as visual analogue scales: 0 to 100 underneath, only the end labels on screen.
 
 ## Libraries
 
-React 18, React Router 7, Vite 7, TypeScript 5.9, Tailwind CSS 3, Framer Motion 12, Recharts 3, Zustand 5, lucide-react (icons), clsx + tailwind-merge, Geist fonts (`@fontsource-variable/geist`, `@fontsource-variable/geist-mono`) and Express 5 (optional onboard server). NumberTicker, MagicCard, BentoGrid and AnimatedGridPattern are adapted from [Magic UI](https://magicui.design) (MIT) in `src/components/magic/`. Tests use the built-in `node:test` runner. No external images, font CDNs or 3D libraries.
+React 18, React Router 7, Vite 7, TypeScript 5.9, Tailwind CSS 3, Framer Motion 12, Recharts 3, Zustand 5, lucide-react (icons), clsx + tailwind-merge, Geist fonts (`@fontsource-variable/geist`, `@fontsource-variable/geist-mono`), react-body-highlighter (MIT, body on the Overview) and Express 5 (optional onboard server). NumberTicker, MagicCard, BentoGrid and AnimatedGridPattern are adapted from [Magic UI](https://magicui.design) (MIT) in `src/components/magic/`. Tests use the built-in `node:test` runner. No external images, font CDNs or 3D libraries.
 
 ## Sources
 
@@ -117,4 +113,4 @@ The levels, limits and messages follow the team's specification (v2, 14 Nov 2026
 
 ## Use of AI
 
-This project was built with the help of generative AI. Code, tests and interface texts were written with **Claude Code** (Anthropic's Claude models) following a specification written by the team. The team defined the problem, the rules and their sources, reviewed the plan and the results, and decided what went into the app. Thresholds come only from the specification and the sources above; rules without a published source are labelled as team proposals. The Orbital HUD is original SVG code; no generated images are used. NASA names are used only to cite sources; the app uses no NASA logos.
+This project was built with the help of generative AI. Code, tests and interface texts were written with **Claude Code** (Anthropic's Claude models) following a specification written by the team. The team defined the problem, the rules and their sources, reviewed the plan and the results, and decided what went into the app. Thresholds come only from the specification and the sources above; rules without a published source are labelled as team proposals. The body on the Overview uses the react-body-highlighter SVG model; no generated images are used. NASA names are used only to cite sources; the app uses no NASA logos.
