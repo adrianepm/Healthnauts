@@ -20,7 +20,7 @@ npm start
 ```
 
 A API inicia em `http://127.0.0.1:3000/api/v1`. Para desenvolvimento com
-reinício automático, execute `npm run dev`. Encerre com `Ctrl+C`.
+reinício automático, execute `npm run dev:server` (`npm run dev` agora abre o front em Vite). Encerre com `Ctrl+C`.
 A única dependência direta é Express; os testes usam `node:test` e `fetch`
 nativos do Node.js, sem dependências adicionais.
 
