@@ -1,6 +1,6 @@
-// Lembretes da rotina ("caixa de remédio") e sino com bolinha vermelha (do protótipo).
+// Lembretes da rotina ("caixa de remédio") e sino com bolinha na cor da marca (vermelho fica só para o nível Emergency).
 // Lembrete não é nível: só diz o que fazer hoje. O sino fica na barra Next up da Overview (TodayRoutine.tsx) e abre a
-// lista completa (Ready / Done / Later). Bolinha vermelha = itens Ready de hoje; Later não entra na conta de hoje.
+// lista completa (Ready / Done / Later). Bolinha = itens Ready de hoje; Later não entra na conta de hoje.
 import { useEffect, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { motion, useReducedMotion } from 'framer-motion';
@@ -91,7 +91,7 @@ const GROUPS: { status: RoutineStatus; label: string }[] = [
 ];
 
 /**
- * Sino da rotina (fica na barra Next up da Overview). Bolinha vermelha = tarefas Ready de hoje.
+ * Sino da rotina (fica na barra Next up da Overview). Bolinha = tarefas Ready de hoje.
  * Ao clicar abre a lista completa em grupos Ready / Done / Later. Fecha com Esc ou clique fora.
  */
 export function Notifications() {
@@ -112,7 +112,7 @@ export function Notifications() {
       <button type="button" onClick={() => setOpen(!open)} aria-expanded={open} aria-haspopup="true" className="relative w-11 h-11 rounded-md border border-space-line grid place-items-center hover:border-space-strong hover:bg-space-card2 text-slate-200"
         aria-label={`Today's routine: ${pending.length} ready`}>
         <Bell size={18} aria-hidden="true" />
-        {pending.length > 0 && <span className="absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1 rounded-full bg-[#DC2626] text-xs font-bold grid place-items-center text-white" aria-hidden="true">{pending.length}</span>}
+        {pending.length > 0 && <span className="absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1 rounded-full bg-brand text-xs font-bold grid place-items-center text-space-bg" aria-hidden="true">{pending.length}</span>}
       </button>
       {open && (
         <div className="absolute right-0 top-full mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-md border border-space-strong bg-space-card shadow-2xl shadow-black/60 p-2 z-50">

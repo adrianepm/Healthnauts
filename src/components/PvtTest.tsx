@@ -116,15 +116,15 @@ export function PvtTest() {
       {e.phase === 'done' && (
         <div>
           {!result && !error && <p className="text-sm text-slate-400">Saving…</p>}
-          {error && <p className="text-sm text-red-300">{error}</p>}
+          {error && <p className="text-sm text-slate-50" role="alert">{error}</p>}
           {result && (
             <>
               {result.status === 'interrupted' && <p className="text-sm text-slate-100 mb-3">Demo run, not scored. Only a full 3-minute test is compared with your usual range.</p>}
               {result.status === 'no_valid_responses' && <p className="text-sm text-slate-100 mb-3">No valid responses were recorded.</p>}
               <div className="grid grid-cols-3 gap-3 text-center">
-                <Stat label="Mean speed" value={c?.responseSpeed ? `${c.responseSpeed.toFixed(2)} /s` : '—'} sub={c?.responseSpeed ? `≈ ${Math.round(1000 / c.responseSpeed)} ms` : undefined} />
-                <Stat label="Lapses" value={c?.lapses ?? '—'} />
-                <Stat label="False starts" value={c?.falseStarts ?? '—'} />
+                <Stat label="Mean speed" value={c?.responseSpeed ? `${c.responseSpeed.toFixed(2)} /s` : '–'} sub={c?.responseSpeed ? `≈ ${Math.round(1000 / c.responseSpeed)} ms` : undefined} />
+                <Stat label="Lapses" value={c?.lapses ?? '–'} />
+                <Stat label="False starts" value={c?.falseStarts ?? '–'} />
               </div>
               <p className="text-xs text-slate-400 mt-3">{c?.validResponses ?? 0} valid responses. Calculated by the onboard service; open Alertness to see how it compares with your usual range.</p>
             </>

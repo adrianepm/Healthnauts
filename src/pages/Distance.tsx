@@ -40,7 +40,7 @@ export default function Distance() {
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 id="link-title" className="card-title">One-way delay</h2>
-            <p className="card-sub mt-0.5">Mission {link.destination ?? '—'}{current ? ` · range ${current.delay}` : ''}</p>
+            <p className="card-sub mt-0.5">Mission {link.destination ?? '–'}{current ? ` · range ${current.delay}` : ''}</p>
           </div>
           <StatusPill level={comm?.displayLevel ?? 'unavailable'} />
         </div>
@@ -69,9 +69,9 @@ export default function Distance() {
       </section>
 
       <KeyTiles tiles={[
-        { key: 'reply', title: 'Expected ground reply', icon: Radio, value: off ? '—' : fmtDuration(link.estimatedResponseSeconds), compare: '2 × delay + 15 min to review' },
+        { key: 'reply', title: 'Expected ground reply', icon: Radio, value: off ? '–' : fmtDuration(link.estimatedResponseSeconds), compare: '2 × delay + 15 min to review' },
         { key: 'queue', title: 'Reports waiting', icon: SatelliteDish, value: String(queued), compare: queued ? 'Queued until the link returns' : 'Nothing queued' },
-        { key: 'kit', indicator: 'onboard_medical_resources', title: 'Onboard resources', icon: Package, value: <span className="block text-base font-normal leading-snug text-slate-100">{mission?.input.medicalResources ?? '—'}</span>, compare: 'Operational context, not a clinical measure' },
+        { key: 'kit', indicator: 'onboard_medical_resources', title: 'Onboard resources', icon: Package, value: <span className="block text-base font-normal leading-snug text-slate-100">{mission?.input.medicalResources ?? '–'}</span>, compare: 'Operational context, not a clinical measure' },
       ]} />
       <Card title="Destinations" sub="One-way delay and evacuation, section 3.7 of the specification">
         <div className="overflow-x-auto">

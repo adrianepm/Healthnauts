@@ -16,13 +16,15 @@ export interface AlsoItem { label: string; level: DisplayLevel; message: string 
  * Faixa de status: nível (ícone + nome), a frase da API e o contexto. Barra de 2 px à esquerda na cor do nível.
  * Em Normal a frase fica em peso normal; acima de Normal, em negrito.
  */
-export function TodayHero({ level, message, label = 'Today', sub, also = [], action, extra }: {
+export function TodayHero({ level, message, label = 'Today', sub, also = [], action, extra, quiet }: {
   level: DisplayLevel; message: string; label?: string; sub?: string; also?: AlsoItem[]; action?: ReactNode; compact?: boolean;
   /** Embaixo da frase: o "What to do now" da área (AreaActions). */
   extra?: ReactNode;
+  /** Outro cartão já está em destaque (ex.: "Needs attention"): a frase fica em peso normal, sem competir. */
+  quiet?: boolean;
 }) {
   const ui = LEVEL_UI[level];
-  const calm = level === 'normal';
+  const calm = level === 'normal' || quiet;
   return (
     <section aria-label={`${label}: ${ui.label}`} className="card relative overflow-hidden !py-3 !pl-5">
       <span className="absolute inset-y-0 left-0 w-[3px]" style={{ background: ui.color }} aria-hidden="true" />
@@ -81,7 +83,7 @@ export function KeyTiles({ tiles }: { tiles: Tile[]; cols?: number }) {
           </span>
           <span className="flex flex-wrap items-end justify-between gap-x-3 gap-y-1">
             <span className={cn('text-3xl font-medium tracking-tight text-slate-50 leading-none', isNumeric(value) && 'font-mono')}>
-              <TickerValue value={value} />{unit && value !== '—' && <span className="font-sans text-sm font-normal text-slate-300 ml-1.5 tracking-normal">{unit}</span>}
+              <TickerValue value={value} />{unit && value !== '–' && <span className="font-sans text-sm font-normal text-slate-300 ml-1.5 tracking-normal">{unit}</span>}
             </span>
             {level && <StatusPill level={level} small />}
           </span>

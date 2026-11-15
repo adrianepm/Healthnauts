@@ -57,7 +57,7 @@ export default function Overview() {
     <div className="space-y-3">
       <h1 className="sr-only">Overview</h1>
       <NeedsAttention />
-      <TodayHero compact level={today.level} message={today.message} sub={today.indicator ? info(today.indicator).label : undefined}
+      <TodayHero compact quiet={active.length > 0} level={today.level} message={today.message} sub={today.indicator ? info(today.indicator).label : undefined}
         also={today.also.map((i) => ({ label: i.label, level: i.level, message: i.message }))} />
       <RoutineBar />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-start [&>*]:min-w-0">

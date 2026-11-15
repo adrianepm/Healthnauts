@@ -24,7 +24,7 @@ const TOPICS: TopicDef[] = [
 const PSIA = gas.mmHgPerUnit.psia as number;
 const COMFORT = rules.climate.comfort as { temperature: number[]; humidity: number[] };
 const toPsia = (mmHg: number) => mmHg / PSIA;
-const n = (v: unknown, digits = 1) => (typeof v === 'number' && Number.isFinite(v) ? v.toFixed(digits) : '—');
+const n = (v: unknown, digits = 1) => (typeof v === 'number' && Number.isFinite(v) ? v.toFixed(digits) : '–');
 // Réguas dos gráficos: os mesmos números das regras de shared/config/research.js.
 const CO2_REFS: RefLine[] = [
   { y: rules.co2.limit, label: `${rules.co2.limit} mmHg (1 h, NASA)`, color: LEVEL_UI.caution.color },
@@ -94,7 +94,7 @@ export default function Environment() {
             label: `Cabin pressure on a 0 to 16 psia scale; safe range ${rules.pressure.minimumPsia} to ${rules.pressure.maximumPsia} psia` } },
         { key: 'o2', indicator: 'inspired_oxygen_pressure', title: 'Inspired O₂', icon: Activity, value: n(o2?.value, 0), unit: 'mmHg', level: lv('inspired_oxygen_pressure'), compare: `Target ${o2lo}-${o2hi} mmHg`, onClick: () => setTopic('air'),
           ruler: { min: 120, max: 170, value: val(o2?.value), range: [o2lo, o2hi], marks: [{ at: o2lo, label: String(o2lo) }, { at: o2hi, label: String(o2hi) }], label: `Inspired oxygen on a 120 to 170 mmHg scale; target ${o2lo} to ${o2hi} mmHg` } },
-        { key: 'th', indicator: 'temperature_humidity', title: 'Temp · humidity', icon: Thermometer, value: temp === null ? '—' : n(temp, 1), unit: temp === null ? undefined : `°C · ${n(th?.value?.humidity, 0)}% RH`, level: lv('temperature_humidity'), compare: `Comfort ${COMFORT.temperature.join('-')} °C, ${COMFORT.humidity.join('-')}% RH`, onClick: () => setTopic('comfort'),
+        { key: 'th', indicator: 'temperature_humidity', title: 'Temp · humidity', icon: Thermometer, value: temp === null ? '–' : n(temp, 1), unit: temp === null ? undefined : `°C · ${n(th?.value?.humidity, 0)}% RH`, level: lv('temperature_humidity'), compare: `Comfort ${COMFORT.temperature.join('-')} °C, ${COMFORT.humidity.join('-')}% RH`, onClick: () => setTopic('comfort'),
           ruler: { min: 15, max: 30, value: temp, range: COMFORT.temperature as [number, number], marks: COMFORT.temperature.map((t) => ({ at: t, label: `${t}°` })), label: `Temperature on a 15 to 30 °C scale; comfort ${COMFORT.temperature.join(' to ')} °C` } },
         { key: 'noise', indicator: 'cabin_noise', title: 'Noise', icon: Volume2, value: n(noise?.value, 0), unit: 'dBA', level: lv('cabin_noise'), compare: `Work ≤ ${rules.noise.work} dBA · never ${rules.noise.ceiling}`, onClick: () => setTopic('comfort'),
           ruler: { min: 30, max: 90, value: val(noise?.value), range: [30, rules.noise.work], marks: [{ at: rules.noise.work, label: String(rules.noise.work), priority: 1 }, { at: rules.noise.ceiling, label: String(rules.noise.ceiling), priority: 2 }], label: `Noise on a 30 to 90 dBA scale; work level ${rules.noise.work}, never above ${rules.noise.ceiling} dBA` } },

@@ -8,8 +8,8 @@ import { fmtDateTime } from '../lib/format';
 import { ASTRONAUT_ID } from '../config/api';
 import { isTenPoint, toTen } from '../lib/scales';
 
-const ACK: Record<string, string> = { acknowledged: 'Acknowledged', pending: 'Pending', not_acknowledged: 'Not acknowledged', resolved_before_acknowledgement: 'Resolved first', not_required: '—' };
-const fmtVal = (v: any, unit: any) => typeof v === 'number' ? `${Number(v.toFixed(2))}${typeof unit === 'string' ? ' ' + unit : ''}` : v && typeof v === 'object' ? Object.values(v).join(' / ') : '—';
+const ACK: Record<string, string> = { acknowledged: 'Acknowledged', pending: 'Pending', not_acknowledged: 'Not acknowledged', resolved_before_acknowledgement: 'Resolved first', not_required: '–' };
+const fmtVal = (v: any, unit: any) => typeof v === 'number' ? `${Number(v.toFixed(2))}${typeof unit === 'string' ? ' ' + unit : ''}` : v && typeof v === 'object' ? Object.values(v).join(' / ') : '–';
 
 export default function Profile() {
   const mission = useStore((s) => s.mission); const alerts = useStore((s) => s.alerts); const iso = useStore((s) => s.details[AREA.isolation]);
@@ -30,7 +30,7 @@ export default function Profile() {
             <tbody>{baselines.map((a) => { const b = a.baseline!; const k = (x: number) => (isTenPoint(a.indicator) ? toTen(x) : x); return (
               <tr key={a.indicator} className="border-t border-space-line text-slate-200">
                 <td className="py-1.5">{info(a.indicator).label}</td><td>{b.status === 'ready' ? 'Ready' : b.status === 'collecting' ? 'Collecting' : 'Insufficient'}</td>
-                <td className="font-mono text-right">{typeof b.mean === 'number' ? k(b.mean).toFixed(2) : '—'}</td><td className="font-mono text-right whitespace-nowrap">{b.status === 'ready' ? `${k(b.lower!).toFixed(2)} to ${k(b.upper!).toFixed(2)}` : '—'}</td><td className="font-mono text-right">{b.sampleCount ?? '—'}</td>
+                <td className="font-mono text-right">{typeof b.mean === 'number' ? k(b.mean).toFixed(2) : '–'}</td><td className="font-mono text-right whitespace-nowrap">{b.status === 'ready' ? `${k(b.lower!).toFixed(2)} to ${k(b.upper!).toFixed(2)}` : '–'}</td><td className="font-mono text-right">{b.sampleCount ?? '–'}</td>
               </tr>); })}</tbody>
           </table>
         </div>

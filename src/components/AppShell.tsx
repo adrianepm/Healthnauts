@@ -49,7 +49,7 @@ function useLevelOf() {
 function SideItem({ tab, level }: { tab: Tab; level: DisplayLevel | null }) {
   const Icon = tab.icon;
   return (
-    <NavLink to={tab.to} end={tab.to === '/'} className={({ isActive }) => cn('relative flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md px-3 py-2.5 text-sm transition-colors',
+    <NavLink to={tab.to} end={tab.to === '/'} className={({ isActive }) => cn('relative flex flex-wrap items-center gap-x-2.5 gap-y-1 rounded-md px-2.5 py-2.5 text-sm transition-colors',
       isActive ? 'bg-space-card2 text-slate-50' : 'text-slate-300 hover:text-slate-50 hover:bg-space-card')}>
       {({ isActive }) => (<>
         {isActive && <span className={cn('absolute left-0 inset-y-2 w-[3px] rounded-r', level === 'emergency' ? 'bg-slate-50' : 'bg-brand')} aria-hidden="true" />}
@@ -104,7 +104,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <EmergencyOverlay />
 
       {/* Barra lateral (desktop) */}
-      <aside className="hidden lg:flex fixed inset-y-0 left-0 z-30 w-64 flex-col border-r border-space-line bg-space-bg">
+      <aside className="hidden lg:flex fixed inset-y-0 left-0 z-30 w-[17rem] flex-col border-r border-space-line bg-space-bg">
         <div className="flex items-center gap-3 px-5 h-16 border-b border-space-line"><BrandMark /><BrandName /></div>
         <nav aria-label="Main" className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
           <div className="space-y-0.5"><SideItem tab={OVERVIEW} level={null} /><SideItem tab={JOURNEY} level={null} /></div>
@@ -120,7 +120,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      <div className="lg:pl-64">
+      <div className="lg:pl-[17rem]">
         {/* Cabeçalho de uma linha */}
         <header className="sticky top-0 z-40 h-14 border-b border-space-line bg-space-bg/95 backdrop-blur-sm">
           <div className="max-w-[1200px] mx-auto h-full px-4 md:px-6 flex items-center gap-3">

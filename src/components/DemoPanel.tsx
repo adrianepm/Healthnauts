@@ -57,7 +57,7 @@ export function DemoPanel({ open, onClose }: { open: boolean; onClose: () => voi
 
   if (!open) return null;
   return (
-    <div role="dialog" aria-label="Demo scenarios" className="fixed z-50 inset-x-3 bottom-[76px] max-h-[70vh] lg:inset-x-auto lg:bottom-auto lg:left-[17rem] lg:top-20 lg:w-[23rem] overflow-y-auto overscroll-contain rounded-lg border border-space-strong bg-space-card shadow-2xl shadow-black/60 p-4">
+    <div role="dialog" aria-label="Demo scenarios" className="fixed z-50 inset-x-3 bottom-[76px] max-h-[70vh] lg:inset-x-auto lg:bottom-auto lg:left-[18rem] lg:top-20 lg:w-[23rem] overflow-y-auto overscroll-contain rounded-lg border border-space-strong bg-space-card shadow-2xl shadow-black/60 p-4">
       <div className="flex items-center justify-between"><h2 className="card-title">Demo scenarios</h2><button onClick={onClose} aria-label="Close demo scenarios" className="text-slate-300 hover:text-slate-50"><X size={18} aria-hidden="true" /></button></div>
       <p className="card-sub mt-1">Simulated data only. Each scenario is written through the onboard API.</p>
 

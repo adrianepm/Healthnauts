@@ -95,7 +95,7 @@ export const EVA_SYMPTOMS: [string, string][] = [
 /** Limites por órgão, Tabela 4.8-1 [1]: só referência, o app não calcula dose por órgão. */
 export const ORGAN_LIMITS: [string, string, string, string][] = [
   ['Lens of the eye', '1,000', '2,000', '4,000'], ['Skin', '1,500', '3,000', '6,000'],
-  ['Blood-forming organs', '250', '500', '—'], ['Circulatory system', '250', '500', '1,000'], ['CNS, hippocampus (mGy)', '500', '1,000', '1,500'],
+  ['Blood-forming organs', '250', '500', '–'], ['Circulatory system', '250', '500', '1,000'], ['CNS, hippocampus (mGy)', '500', '1,000', '1,500'],
 ];
 
 /** Destinos, seção 3.7. */

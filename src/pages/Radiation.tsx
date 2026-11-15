@@ -39,7 +39,7 @@ export default function Radiation() {
           <StatusPill level={career?.displayLevel ?? 'unavailable'} />
         </div>
         <div className="mt-4 flex flex-wrap items-end gap-x-4 gap-y-1">
-          <span className="text-5xl font-medium tracking-tight text-slate-50 leading-none">{pct === null ? '—' : <><Num>{pct.toFixed(1)}</Num><span className="text-2xl text-slate-300">%</span></>}</span>
+          <span className="text-5xl font-medium tracking-tight text-slate-50 leading-none">{pct === null ? '–' : <><Num>{pct.toFixed(1)}</Num><span className="text-2xl text-slate-300">%</span></>}</span>
           {career?.value !== undefined && <span className="text-sm text-slate-300 pb-1"><span className="font-mono text-slate-100">{career.value}</span> of <span className="font-mono">{LIMIT}</span> mSv</span>}
         </div>
         <div className="mt-5" role="img" aria-label={`Career dose ${pct === null ? 'unavailable' : pct.toFixed(1) + '% of the limit'}; bands at ${BANDS.join(', ')}%`}>
@@ -56,8 +56,8 @@ export default function Radiation() {
       </section>
 
       <KeyTiles tiles={[
-        { key: 'mission', title: 'This mission', icon: Atom, value: career?.missionValue !== undefined ? String(career.missionValue) : '—', unit: career?.missionValue !== undefined ? 'mSv' : undefined, compare: 'Continuous dosimeter ledger' },
-        { key: 'prior', title: 'Prior flights', icon: History, value: career?.priorValue !== undefined ? String(career.priorValue) : '—', unit: career?.priorValue !== undefined ? 'mSv' : undefined, compare: 'Attested prior history' },
+        { key: 'mission', title: 'This mission', icon: Atom, value: career?.missionValue !== undefined ? String(career.missionValue) : '–', unit: career?.missionValue !== undefined ? 'mSv' : undefined, compare: 'Continuous dosimeter ledger' },
+        { key: 'prior', title: 'Prior flights', icon: History, value: career?.priorValue !== undefined ? String(career.priorValue) : '–', unit: career?.priorValue !== undefined ? 'mSv' : undefined, compare: 'Attested prior history' },
         { key: 'solar', indicator: 'solar_event_simulated', title: 'Solar particle event', icon: Sun, value: solar?.recordedAt ? ago(solar.recordedAt) : 'No event', level: solar?.displayLevel ?? 'normal', compare: solar?.message ?? 'No solar event recorded.' },
       ]} />
 
