@@ -4,3 +4,5 @@ data/*.json
 data/*.tmp
 .env
 referencias/
+.claude/
+Claude outputs/

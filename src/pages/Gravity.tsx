@@ -107,7 +107,7 @@ export default function Gravity() {
       <TodayHero level={d.summary!.displayLevel} label="Body today" message={d.summary!.headline.message ?? ''} sub="vital signs are shown separately below" also={d.also(d.summary!.headline.indicator).filter((x) => x.label !== info('news2').label)} />
       <VitalsCard detailed />
       <KeyTiles tiles={[
-        { key: 'aer', title: 'Aerobic capacity', icon: HeartPulse, value: pctOf(d.a('aerobic_capacity')), level: lv('aerobic_capacity'), compare: 'of pre-flight (NASA minimum 80%)', onClick: () => setTopic('fitness') },
+        { key: 'aer', title: 'Aerobic capacity', icon: HeartPulse, value: pctOf(d.newest('aerobic_capacity')), level: d.newest('aerobic_capacity')?.displayLevel ?? 'unavailable', compare: 'of pre-flight (NASA minimum 80%)', onClick: () => setTopic('fitness') },
         { key: 'str', title: 'Muscle strength', icon: Dumbbell, value: pctOf(d.a('muscle_strength')), level: lv('muscle_strength'), compare: 'of pre-flight (NASA minimum 80%)', onClick: () => setTopic('fitness') },
         { key: 'mass', title: 'Body mass', icon: Scale, value: pctOf(d.a('body_mass')), level: lv('body_mass'), compare: `of pre-flight · ${d.a('body_mass')?.observedValue ?? '—'} kg`, onClick: () => setTopic('fitness') },
         { key: 'ex', title: 'Exercise today', icon: Activity, value: `${Math.round(today)} min`, compare: `Plan ~${REFERENCE.exercisePlanMin} min · ${daysOnPlan} of 7 days on plan`, onClick: () => setTopic('fitness') },

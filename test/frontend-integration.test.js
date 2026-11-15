@@ -98,3 +98,29 @@ test('front: teste de reação curto (modo demo) é gravado sem nota', async () 
   assert.equal(r.body.operation.status, 'interrupted');
   assert.equal(r.body.records.length, 0);
 });
+
+test('front: seletor de missão (ISS · Moon · Mars) muda atraso e resposta do solo sem quebrar a dose de carreira', async () => {
+  const api = await memoryApi();
+  await api.post('/demo/profile', { astronautId: api.astronautId });
+  const { DESTINATIONS } = await import('../src/lib/content.ts');
+  for (const name of ['Moon', 'ISS', 'Mars']) {
+    const target = DESTINATIONS.find((x) => x.name === name);
+    const { mission } = (await api.get('/mission')).body;
+    const { missionId, activity, startedAt, medicalResources } = mission.input;
+    // Mesmo payload de setMissionDestination (src/sim/link.ts).
+    const r = await op(api, 'distance_from_earth', 'mission', `pick-${name}`, { missionId, destination: name, activity, startedAt,
+      recordedAt: api.now().toISOString(), oneWaySeconds: target.demoOneWaySeconds, medicalResources,
+      communication: name === 'ISS' ? 'available' : 'delayed', solarConjunction: false });
+    assert.equal(r.status, 201, JSON.stringify(r.body));
+    const link = (await api.get('/overview')).body.link;
+    assert.equal(link.destination, name);
+    assert.equal(link.oneWaySeconds, target.demoOneWaySeconds);
+    assert.equal(link.estimatedResponseSeconds, 2 * target.demoOneWaySeconds + 900);
+    const career = (await api.get('/areas/radiation')).body.assessments.find((a) => a.indicator === 'career_effective_dose');
+    assert.equal(career.displayLevel, 'normal', name);
+  }
+  // Faixas da especificação 3.7: Lua 3 a 10 s, Marte 4 a 24 min.
+  const delay = (n) => DESTINATIONS.find((x) => x.name === n).demoOneWaySeconds;
+  assert.ok(delay('Moon') >= 3 && delay('Moon') <= 10);
+  assert.ok(delay('Mars') >= 240 && delay('Mars') <= 1440);
+});

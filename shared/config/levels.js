@@ -1,9 +1,9 @@
 // Níveis da especificação v2, seção 2.1. Os nomes seguem a seção 10.3 "Alerts" do
-// NASA-STD-3001 Vol. 2 Rev. D; as definições e o encaixe de cada parâmetro são proposta do time.
+// NASA-STD-3001 Vol. 2 Rev. F; as definições e o encaixe de cada parâmetro são proposta do time.
 const MINUTE = 60000;
 export const levelSource = { classification: 'team_proposal',
-  url: 'https://www.nasa.gov/wp-content/uploads/2023/11/nasa-std-3001-vol-2-rev-d-with-signature.pdf',
-  section: 'Level names from NASA-STD-3001 Vol. 2 Rev. D §10.3. Definitions and the level assigned to each parameter are team decisions.' };
+  url: 'https://standards.nasa.gov/system/files/tmp/NASA-STD-3001%20Vol%202%20Rev%20F.pdf',
+  section: 'Level names from NASA-STD-3001 Vol. 2 Rev. F §10.3. Definitions and the level assigned to each parameter are team decisions.' };
 
 export const levels = {
   normal: { label: 'Normal', color: '#22C55E', icon: 'CircleCheck', action: 'Recorded only.' },

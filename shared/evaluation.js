@@ -366,6 +366,8 @@ export function evaluateArea(areaId, records, operations, ctx, time) {
         ...(active ? event : stale ? {} : { message:rules.solar.messages.normal }),
       });
     });
+    // Especificação v2, 3.5: "Sem evento" é Normal (não Unavailable).
+    if (!solar.length) solar.push(evaluation(rules.solar,'solar_event_simulated',[],'assessed',{ simulated:true, active:false, message:'No solar event recorded.' }));
     result = [...assessRadiation(rows,scoped),...solar];
   } else {
     result = latestBySource('mission',o => o.input.missionId).map(o => {

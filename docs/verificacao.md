@@ -83,11 +83,11 @@ Resumo: **48 OK · 5 DIVERGENTE**. As 5 divergentes são regras da especificaç�
 
 | Parâmetro | Limite no código | Nível | Fonte | Resultado |
 |---|---|---|---|---|
-| ppCO2 1 h | > 3,0; > 4,5 mmHg (média ponderada no tempo) | Caution; Warning | [3] V2 6004, [4] + team_proposal | OK (ponderação do backend, exceção do plano) |
+| ppCO2 1 h | > 3,0; > 4,5 mmHg (média ponderada no tempo) | Caution; Warning | [3] V2 6004 (Rev. F), [4] + team_proposal | OK (ponderação do backend, exceção do plano) |
 | ppCO2 7 dias | ≥ 2,5 mmHg | Advisory | [4] | OK |
-| PIO2 | 127–144 ou 156–356; < 127 ou > 356 mmHg; (PB − 47) × FIO2 | Caution; Emergency | [7] + team_proposal | OK |
-| Pressão da cabine | < 5,0 ou > 15,0 psia | Emergency | [3] V2 6006, [5] | OK |
-| Temperatura e umidade | fora de 20–25 °C / 30–60%; fora de 18–27 °C ou umidade < 25% | Advisory; Caution | [3] V2 6012/6013 | OK |
+| PIO2 | 127–144 ou 156–356; < 127 ou > 356 mmHg; (PB − 47) × FIO2 | Caution; Emergency | [7] V2 6003 (Rev. F) + team_proposal | OK |
+| Pressão da cabine | < 5,0 ou > 15,0 psia | Emergency | [3] V2 6006 (Rev. F), [5] | OK |
+| Temperatura e umidade | fora de 20–25 °C / 30–60%; fora de 18–27 °C ou umidade < 25% | Advisory; Caution | [3] V2 6012/6013 (Rev. F) | OK |
 | Ruído | > 58 dBA (trabalho) ou > 49 dBA (sono); ≥ 85 dBA | Advisory; Caution | [8] [9], V2 6077 | OK |
 | Checklist de DCS pós-EVA | qualquer um dos 7 itens | Warning | [10] + team_proposal | OK |
 
@@ -106,13 +106,19 @@ Mantidos do backend, sem nível próprio: validade de 14 dias para testes de con
 
 ## Só listado, sem alteração
 
-- Gravity: depois do cenário "Fitness change", o cartão "Aerobic capacity" mostra 95% Normal (dado da missão inicial) enquanto o resumo e o tópico Fitness mostram Caution (76%). A tela pega a primeira avaliação do indicador.
-- Overview (HUD): com sinais vitais em Caution, o cartão diz "0 of 5" áreas com o selo Caution (sinais vitais não contam como área).
-- Radiation: sem nenhum evento solar registrado o cartão mostra Unavailable; a especificação diz Normal para "sem evento".
 - "Cabin sensor offline": no navegador só vira Unavailable 5 min depois da última leitura ao vivo (o painel avisa).
-- Distance: não há seletor "Mission: ISS · Moon · Mars".
-- Mensagens de erro de validação da API (`shared/validation.js`, `calculations.js`) estão em português e podem aparecer no check-in e no PVT quando o envio falha.
 - Notas internas de `shared/config/isolation.js` (campo `note`) estão em português; não aparecem na tela.
+- Pressão da cabine: a Rev. F escreve 5 < P ≤ 15,0 psia; o código marca Emergency só abaixo de 5,0, então exatamente 5,0 psia fica Normal. Valor não alterado.
+- Outras mensagens de erro da API fora de `validation.js` e `calculations.js` (`shared/routes.js`, `server/app.js`) continuam em português.
+
+## Corrigido depois da verificação
+
+- Radiation: sem evento solar registrado a avaliação `solar_event_simulated` é Normal ("No solar event recorded."), como a especificação ("Sem evento"). A dose de carreira não muda.
+- Gravity: o cartão "Aerobic capacity" usa a avaliação mais recente do indicador (antes pegava a primeira série).
+- Overview (HUD): o cartão conta as 5 áreas e os sinais vitais ("n of 6", "5 areas + vital signs"), para não mostrar "0 of 5" com selo Caution.
+- Mensagens de erro de `shared/validation.js` e `shared/calculations.js` traduzidas para inglês, sem mudar a lógica.
+- Distance: seletor "Mission: ISS · Moon · Mars". Grava um novo contexto de missão (mesmo `missionId` e `startedAt`, para a dose de carreira continuar avaliada) com um atraso de ida dentro da faixa da 3.7: ISS 0,3 s (mesmo valor de `shared/scenarios.js`), Lua 10 s (faixa 3 a 10 s), Marte 8 min (valor do perfil padrão, faixa 4 a 24 min). A resposta do solo segue 2 × atraso + 15 min.
+- Citações: NASA-STD-3001 Vol. 2 Rev. F (aprovada em 2026-07-14) no lugar da Rev. D e da tabela da Rev. B, sem mudar nenhum valor. Conferidos na Rev. F: V2 6003 (PIO₂ 145 a 155 normoxia, 356 hiperoxia indefinida, 127 hipoxia leve em média de 1 h, mínimo absoluto 122), V2 6004 (CO₂ média de 1 h ≤ 3 mmHg), V2 6006 (5 < P ≤ 15,0 psia), V2 6012 (polígono 18 °C/75% a 27 °C/25%, umidade média acima de 25%). V2 6013, V2 6077 e a seção 10.3 passaram a citar a Rev. F mas não estão nessa lista.
 
 ## Corrigido nesta etapa
 

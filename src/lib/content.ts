@@ -5,10 +5,10 @@
 export const SOURCES: Record<string, { label: string; url?: string }> = {
   s1: { label: '[1] NASA-STD-3001 Vol. 1 Rev. C', url: 'https://standards.nasa.gov/sites/default/files/standards/NASA/C//nasa-std-3001-vol-1-rev-c-signature.pdf' },
   s2: { label: '[2] NASA-STD-3001 Vol. 1, section 6 (sleep planning)', url: 'https://www.nasa.gov/reference/6-0-medical-operations/' },
-  s3: { label: '[3] NASA-STD-3001 Vol. 2 Rev. D', url: 'https://www.nasa.gov/wp-content/uploads/2023/11/nasa-std-3001-vol-2-rev-d-with-signature.pdf' },
+  s3: { label: '[3] NASA-STD-3001 Vol. 2 Rev. F (2026)', url: 'https://standards.nasa.gov/system/files/tmp/NASA-STD-3001%20Vol%202%20Rev%20F.pdf' },
   s4: { label: '[4] OCHMO-TB-004 Carbon Dioxide', url: 'https://www.nasa.gov/wp-content/uploads/2023/12/ochmo-tb-004-carbon-dioxide.pdf' },
   s5: { label: '[5] OCHMO-TB-003 Habitable Atmosphere', url: 'https://www.nasa.gov/wp-content/uploads/2023/12/ochmo-tb-003-habitable-atmosphere.pdf' },
-  s7: { label: '[7] PIO2 table, NASA-STD-3001 Vol. 2 Rev. B (NASA, 2022)', url: 'https://ntrs.nasa.gov/api/citations/20220019130/downloads/SKC%20EVA%20Gas%20Related%20Problems%20related%20to%20Spacesuits%20Dec%202022_Final.pdf' },
+  s7: { label: '[7] PIO2 limits, NASA-STD-3001 Vol. 2 Rev. F [V2 6003]', url: 'https://standards.nasa.gov/system/files/tmp/NASA-STD-3001%20Vol%202%20Rev%20F.pdf' },
   s8: { label: '[8] OCHMO-TB-035 Acoustics', url: 'https://www.nasa.gov/sites/default/files/atoms/files/acoustics_technical_brief_ochmo_0.pdf' },
   s9: { label: '[9] Goodman, spacecraft acoustics (NC-50 ≈ 58 dBA, NC-40 ≈ 49 dBA)', url: 'https://ntrs.nasa.gov/api/citations/20090043801/downloads/20090043801.pdf' },
   s10: { label: '[10] OCHMO-TB-037 Decompression Sickness', url: 'https://www.nasa.gov/sites/default/files/atoms/files/dcs_technical_brief_ochmo.pdf' },
@@ -54,7 +54,7 @@ export const INFO: Record<string, IndicatorInfo> = {
   co2_partial_pressure_7d: { label: 'CO₂, 7-day average', sources: ['s4'], why: 'A research finding links weekly averages of 2.5 mmHg or more to more headaches.' },
   cabin_pressure: { label: 'Total cabin pressure', sources: ['s3', 's5'], why: 'Pressure outside 5.0 to 15.0 psia is outside the safe limits of the standard. The ISS keeps 14.7 psia.' },
   inspired_oxygen_pressure: { label: 'Inspired oxygen (PIO₂)', sources: ['s7', 's5'], why: 'PIO₂ = (cabin pressure − 47) × O₂ fraction. The ISS is about 150 mmHg.',
-    team: 'Values from the Rev. B table; Rev. D differs and Rev. E was not checked.' },
+    team: 'Values from Rev. F [V2 6003]. The absolute minimum of 122 mmHg (1-hour average) and exposure time are not used.' },
   temperature_humidity: { label: 'Temperature and humidity', sources: ['s3'], why: 'Comfort zone 20-25 °C and 30-60% RH. The app uses a rectangle instead of the official polygon (prototype simplification).' },
   cabin_noise: { label: 'Noise', sources: ['s8', 's9'], why: '85 dBA must never be exceeded. NC-50 (work) and NC-40 (sleep) curves are shown in dBA (prototype simplification).' },
   post_eva_symptoms: { label: 'Post-EVA symptom checklist', sources: ['s10'], why: 'Most decompression sickness cases appear 60 to 240 minutes after decompression.', team: 'Any item = Warning (no approved Emergency criterion in the app).' },
@@ -99,10 +99,13 @@ export const ORGAN_LIMITS: [string, string, string, string][] = [
 ];
 
 /** Destinos, seção 3.7. */
-export const DESTINATIONS: { name: string; delay: string; evacuation: string; sources: string[] }[] = [
-  { name: 'ISS', delay: 'Almost instant', evacuation: 'Less than 24 h to definitive care', sources: ['s17'] },
-  { name: 'Moon', delay: '3 to 10 s on the surface (light alone takes 1.3 s)', evacuation: 'Not fast; days (team estimate)', sources: ['s14'] },
-  { name: 'Mars', delay: '4 to 24 min', evacuation: 'Impractical; the crew solves it alone', sources: ['s14'] },
+// `demoOneWaySeconds`: atraso de ida usado pelo seletor de missão da demo, dentro da faixa da especificação 3.7.
+// ISS 0,3 s (mesmo valor de shared/scenarios.js, "quase instantâneo"); Lua 10 s (topo de 3 a 10 s);
+// Marte 480 s (8 min, mesmo valor do perfil padrão em shared/profile.js, dentro de 4 a 24 min).
+export const DESTINATIONS: { name: 'ISS' | 'Moon' | 'Mars'; delay: string; evacuation: string; sources: string[]; demoOneWaySeconds: number }[] = [
+  { name: 'ISS', delay: 'Almost instant', evacuation: 'Less than 24 h to definitive care', sources: ['s17'], demoOneWaySeconds: 0.3 },
+  { name: 'Moon', delay: '3 to 10 s on the surface (light alone takes 1.3 s)', evacuation: 'Not fast; days (team estimate)', sources: ['s14'], demoOneWaySeconds: 10 },
+  { name: 'Mars', delay: '4 to 24 min', evacuation: 'Impractical; the crew solves it alone', sources: ['s14'], demoOneWaySeconds: 480 },
 ];
 
 export const AREA_LABEL: Record<string, string> = {

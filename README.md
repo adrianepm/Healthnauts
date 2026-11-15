@@ -74,15 +74,15 @@ React 18, React Router 7, Vite 7, TypeScript 5.9, Tailwind CSS 3, Framer Motion 
 
 ## Sources
 
-The levels, limits and messages follow the team's specification (v2, 14 Nov 2026). Numbers in brackets match the specification.
+The levels, limits and messages follow the team's specification (v2, 14 Nov 2026). Numbers in brackets match the specification. Values checked against NASA-STD-3001 Vol. 2 Rev. F (July 2026).
 
 **NASA**
 - [1] NASA-STD-3001 Vol. 1 Rev. C: https://standards.nasa.gov/sites/default/files/standards/NASA/C//nasa-std-3001-vol-1-rev-c-signature.pdf
 - [2] NASA-STD-3001 Vol. 1, section 6, [V1 6001] (8.5 h of sleep; avoid critical tasks during the sleep period and circadian low): https://www.nasa.gov/reference/6-0-medical-operations/
-- [3] NASA-STD-3001 Vol. 2, section 6 (atmosphere, temperature, noise, radiation) and [V2 9052] (critical equipment failure): https://www.nasa.gov/reference/6-0-natural-and-induced-environments-vol-2 ; Rev. D: https://www.nasa.gov/wp-content/uploads/2023/11/nasa-std-3001-vol-2-rev-d-with-signature.pdf
+- [3] NASA-STD-3001 Vol. 2, section 6 (atmosphere, temperature, noise, radiation) and [V2 9052] (critical equipment failure): https://www.nasa.gov/reference/6-0-natural-and-induced-environments-vol-2 ; Rev. F (approved 2026-07-14): https://standards.nasa.gov/system/files/tmp/NASA-STD-3001%20Vol%202%20Rev%20F.pdf
 - [4] OCHMO-TB-004 Carbon Dioxide: https://www.nasa.gov/wp-content/uploads/2023/12/ochmo-tb-004-carbon-dioxide.pdf
 - [5] OCHMO-TB-003 Habitable Atmosphere: https://www.nasa.gov/wp-content/uploads/2023/12/ochmo-tb-003-habitable-atmosphere.pdf
-- [7] PIO₂ table of NASA-STD-3001 Vol. 2 Rev. B, in a NASA presentation (2022): https://ntrs.nasa.gov/api/citations/20220019130/downloads/SKC%20EVA%20Gas%20Related%20Problems%20related%20to%20Spacesuits%20Dec%202022_Final.pdf
+- [7] PIO₂ limits of NASA-STD-3001 Vol. 2 Rev. F [V2 6003] (normoxia 145 to 155 mmHg, indefinite hyperoxia 356, mild hypoxia 127 as a 1-hour average, absolute minimum 122): https://standards.nasa.gov/system/files/tmp/NASA-STD-3001%20Vol%202%20Rev%20F.pdf
 - [8] OCHMO-TB-035 Acoustics: https://www.nasa.gov/sites/default/files/atoms/files/acoustics_technical_brief_ochmo_0.pdf
 - [9] Goodman, spacecraft acoustics (NC-50 = 58.1 dBA; NC-40 = 49.0 dBA): https://ntrs.nasa.gov/api/citations/20090043801/downloads/20090043801.pdf
 - [10] OCHMO-TB-037 Decompression Sickness: https://www.nasa.gov/sites/default/files/atoms/files/dcs_technical_brief_ochmo.pdf
@@ -103,8 +103,8 @@ The levels, limits and messages follow the team's specification (v2, 14 Nov 2026
 - [30] NASA BHP Standard Measures: https://ntrs.nasa.gov/api/citations/20170005421/downloads/20170005421.pdf
 - [32] NASA Spinoff 2013 (RST): https://spinoff.nasa.gov/Spinoff2013/hm_1.html
 - [33] NASA, isolation and the C-O-N-N-E-C-T framework: https://www.nasa.gov/humans-in-space/isolation-what-can-we-learn-from-the-experiences-of-nasa-astronauts/
-- [35] NASA-STD-3001 Vol. 2 Rev. D, section 10.3 "Alerts" and Table 10.3-1 (pp. 204-207; table not read by the team): https://www.nasa.gov/wp-content/uploads/2023/11/nasa-std-3001-vol-2-rev-d-with-signature.pdf
-- [36] NASA-STD-3001 Vol. 2 Rev. E (active): https://standards.nasa.gov/node/237 ; https://ntrs.nasa.gov/citations/20250004555
+- [35] NASA-STD-3001 Vol. 2 Rev. F, section 10.3 "Alerts" (alert type table not read by the team): https://standards.nasa.gov/system/files/tmp/NASA-STD-3001%20Vol%202%20Rev%20F.pdf
+- [36] NASA-STD-3001 Vol. 2 Rev. F, current revision (approved 2026-07-14): https://standards.nasa.gov/system/files/tmp/NASA-STD-3001%20Vol%202%20Rev%20F.pdf
 
 **External references (used where NASA publishes no number)**
 - [18] Norsk et al. 2015, J Physiol (24 h blood pressure falls 8-10 mmHg, heart rate unchanged on the ISS): https://doi.org/10.1113/jphysiol.2014.284869

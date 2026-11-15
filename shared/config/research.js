@@ -1,9 +1,8 @@
 export const HOUR = 3600000;
 export const DAY = 24 * HOUR;
 const nasa1 = 'https://www.nasa.gov/wp-content/uploads/2023/11/nasa-std-3001-vol-1-rev-c-with-signature.pdf';
-const nasa2 = 'https://standards.nasa.gov/sites/default/files/standards/NASA/D/nasa-std-3001-vol-2-rev-d-signature.pdf';
+const nasa2 = 'https://standards.nasa.gov/system/files/tmp/NASA-STD-3001%20Vol%202%20Rev%20F.pdf';
 const co2Brief = 'https://www.nasa.gov/wp-content/uploads/2023/12/ochmo-tb-004-carbon-dioxide.pdf';
-const pio2Table = 'https://ntrs.nasa.gov/api/citations/20220019130/downloads/SKC%20EVA%20Gas%20Related%20Problems%20related%20to%20Spacesuits%20Dec%202022_Final.pdf';
 const acoustics = 'https://ntrs.nasa.gov/api/citations/20090043801/downloads/20090043801.pdf';
 const dcsBrief = 'https://www.nasa.gov/sites/default/files/atoms/files/dcs_technical_brief_ochmo.pdf';
 const srag = 'https://www.nationalacademies.org/cdn/materials/9fba0b8d-da37-49fe-9fc5-45b736630da3';
@@ -22,7 +21,7 @@ const vo2Message = 'Your aerobic capacity is below the minimum for this EVA. Fol
 // Regras da especificação v2, seção 3. O limite oficial fica em `source`; o nível atribuído a cada
 // faixa é sempre proposta do time (`levelSource`), como manda a seção 2.1.
 export const rules = {
-  co2: rule('cabin_co2_1h', 'time_weighted', official(nasa2, 'NASA-STD-3001 Vol. 2 Rev. D, §6.2.1.3', 'V2 6004'), {
+  co2: rule('cabin_co2_1h', 'time_weighted', official(nasa2, 'NASA-STD-3001 Vol. 2 Rev. F', 'V2 6004'), {
     windowMs: HOUR, maxGapMs: 10 * 60000, maxAgeMs: 5 * 60000, minCoverage: 1, limit: 3, warningAbove: 4.5, operational: true,
     levelSource: team('Above 3.0 mmHg is Caution. Above 4.5 mmHg is Warning: band of reported symptoms in OCHMO-TB-004, not an official limit.', co2Brief),
     context: 'Nominal habitable cabin, one location and source', limitation: 'Linear interpolation across gaps of at most 10 minutes is an app approximation. No extrapolation.',
@@ -36,20 +35,20 @@ export const rules = {
     limitation: 'Needs seven days of continuous readings from one location and source. No extrapolation.',
     messages: { advisory: 'Average CO2 this week is above 2.5 mmHg. Log any headache so the crew can compare.' },
   }),
-  pressure: rule('cabin_pressure_total', 'threshold', official(nasa2, 'NASA-STD-3001 Vol. 2 Rev. D', 'V2 6006'), {
+  pressure: rule('cabin_pressure_total', 'threshold', official(nasa2, 'NASA-STD-3001 Vol. 2 Rev. F', 'V2 6006'), {
     minimumPsia: 5, maximumPsia: 15, mmHgPerPsia: 6894.757293168 * 760 / 101325, maxAgeMs: 5 * 60000, operational: true,
-    levelSource: team('Outside 5.0 to 15.0 psia is Emergency. Prototype simplification: exposure duration and atmosphere composition are not considered. Rev. E not checked.'),
+    levelSource: team('Outside 5.0 to 15.0 psia is Emergency. Prototype simplification: exposure duration and atmosphere composition are not considered.'),
     messages: { emergency: 'CABIN PRESSURE OUTSIDE SAFE LIMITS. Follow the depressurization emergency procedure now.' },
   }),
-  oxygen: rule('cabin_inspired_oxygen', 'threshold', official(pio2Table, 'NASA-STD-3001 Vol. 2 Rev. B, PIO2 table (NASA presentation, 2022)', 'Inspired oxygen partial pressure'), {
+  oxygen: rule('cabin_inspired_oxygen', 'threshold', official(nasa2, 'NASA-STD-3001 Vol. 2 Rev. F', 'V2 6003'), {
     normal: [145, 155], caution: [127, 356], maxAgeMs: 5 * 60000, operational: true,
-    levelSource: team('127 to 144 or 156 to 356 mmHg is Caution; below 127 or above 356 mmHg is Emergency. Values from the Rev. B table; Rev. D differs and Rev. E was not checked. Exposure time is not considered.'),
+    levelSource: team('127 to 144 or 156 to 356 mmHg is Caution; below 127 or above 356 mmHg is Emergency. Values from Rev. F [V2 6003]: normoxia 145 to 155, indefinite hyperoxia 356, mild hypoxia 127 mmHg (1-hour average). The absolute minimum of 122 mmHg and exposure time are not used.'),
     messages: {
       caution: 'Oxygen level is outside the target range. The crew should check the life support system.',
       emergency: 'OXYGEN OUTSIDE SAFE LIMITS. Follow the cabin atmosphere emergency procedure now.',
     },
   }),
-  climate: rule('cabin_temperature_humidity', 'threshold', official(nasa2, 'NASA-STD-3001 Vol. 2 Rev. D', 'V2 6012, V2 6013'), {
+  climate: rule('cabin_temperature_humidity', 'threshold', official(nasa2, 'NASA-STD-3001 Vol. 2 Rev. F', 'V2 6012, V2 6013'), {
     comfort: { temperature: [20, 25], humidity: [30, 60] }, safeTemperature: [18, 27], minimumHumidity: 25, maxAgeMs: 5 * 60000, operational: true,
     levelSource: team('Rectangular box instead of the official temperature and humidity polygon. Prototype simplification. Latest reading instead of an average.'),
     messages: {
@@ -57,7 +56,7 @@ export const rules = {
       caution: 'Cabin temperature or humidity is outside safe limits. Alert the crew.',
     },
   }),
-  noise: rule('cabin_noise_dba', 'threshold', official(nasa2, 'NASA-STD-3001 Vol. 2 Rev. D', 'V2 6077'), {
+  noise: rule('cabin_noise_dba', 'threshold', official(nasa2, 'NASA-STD-3001 Vol. 2 Rev. F', 'V2 6077'), {
     work: 58, sleep: 49, ceiling: 85, maxAgeMs: 5 * 60000,
     levelSource: team('Broadband dBA instead of the NC-50 and NC-40 octave-band curves (NC-50 is about 58 dBA, NC-40 about 49 dBA). Prototype simplification.', acoustics),
     messages: {

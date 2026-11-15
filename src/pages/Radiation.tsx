@@ -28,7 +28,7 @@ export default function Radiation() {
         { key: 'career', title: 'Career dose', icon: RadIcon, value: pct === null ? '—' : `${pct.toFixed(1)}%`, level: career?.displayLevel ?? 'unavailable', compare: career?.value !== undefined ? `${career.value} of ${LIMIT} mSv (NASA limit)` : career?.message },
         { key: 'mission', title: 'This mission', icon: Atom, value: career?.missionValue !== undefined ? `${career.missionValue} mSv` : '—', compare: 'Continuous dosimeter ledger' },
         { key: 'prior', title: 'Prior flights', icon: History, value: career?.priorValue !== undefined ? `${career.priorValue} mSv` : '—', compare: 'Attested prior history' },
-        { key: 'solar', title: 'Solar particle event', icon: Sun, value: solar?.recordedAt ? ago(solar.recordedAt) : 'No event', level: solar?.displayLevel ?? 'unavailable', compare: solar?.message ?? 'No solar event recorded.' },
+        { key: 'solar', title: 'Solar particle event', icon: Sun, value: solar?.recordedAt ? ago(solar.recordedAt) : 'No event', level: solar?.displayLevel ?? 'normal', compare: solar?.message ?? 'No solar event recorded.' },
       ]} />
 
       <Card title="Career effective dose" sub={`Percent of the ${LIMIT} mSv career limit · demonstration bands at ${BANDS[0]}% and ${BANDS[1]}%`}>

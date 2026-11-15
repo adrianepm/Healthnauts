@@ -119,7 +119,8 @@ export function OrbitalHud({ reduced }: { reduced: boolean }) {
   const link = overview?.link;
   const done = reminders.filter((r) => r.done).length;
   const pending = reminders.find((r) => !r.done);
-  const flagged = overview ? overview.areas.filter((a) => isFlagged(a.displayLevel)).length : null;
+  // Sinais vitais entram na contagem: senão o cartão diria "0 of 5" com selo Caution.
+  const flagged = overview ? overview.areas.filter((a) => isFlagged(a.displayLevel)).length + (isFlagged(s.vitals.level) ? 1 : 0) : null;
   const hr = s.vitals.heartRate; const rr = s.vitals.breathSeconds ? Math.round(60 / s.vitals.breathSeconds) : null;
   const ecgColor = levelColor(s.vitals.level);
 
@@ -264,8 +265,8 @@ export function OrbitalHud({ reduced }: { reduced: boolean }) {
 
       <aside className="space-y-4" aria-label="Key indicators">
         <KeyTiles cols={1} tiles={[
-          { key: 'flagged', title: 'Areas flagged', icon: Layers, value: flagged === null ? '—' : `${flagged} of ${overview?.areas.length ?? 5}`, level: s.overall,
-            compare: 'above Normal today' },
+          { key: 'flagged', title: 'Areas + vital signs flagged', icon: Layers, value: flagged === null ? '—' : `${flagged} of ${(overview?.areas.length ?? 5) + 1}`, level: s.overall,
+            compare: `above Normal today (${overview?.areas.length ?? 5} areas + vital signs)` },
           { key: 'link', title: 'Earth link', icon: Radio, value: !link || link.status === 'unknown' ? '—' : link.status === 'unavailable' ? 'No link' : fmtDuration(link.oneWaySeconds),
             level: s.distance.level, compare: link && link.status !== 'unavailable' && link.status !== 'unknown' ? 'one-way delay' : undefined, onClick: () => go(s.distance) },
           { key: 'routine', title: "Today's routine", icon: ListChecks, value: `${done} of ${reminders.length}`, compare: pending ? `Next: ${pending.title}` : 'All done today',

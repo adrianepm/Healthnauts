@@ -90,7 +90,7 @@ export default function Environment() {
         <p className="text-sm text-slate-300 mb-3">{d.a('post_eva_symptoms')?.message}</p>
         <PostEvaForm />
       </Card>
-      <p className="text-xs text-slate-500">Limits marked NASA come from NASA-STD-3001 Vol. 2 Rev. D (PIO₂ from the Rev. B table). The temperature/humidity box and noise in dBA are prototype simplifications. Rev. E was not checked.</p>
+      <p className="text-xs text-slate-500">Limits marked NASA come from NASA-STD-3001 Vol. 2 Rev. F (July 2026). The temperature/humidity box and noise in dBA are prototype simplifications.</p>
 
       <TopicDetail areaId={AREA.cabin} topics={TOPICS} topic={topic} onTopic={setTopic} assessments={d.assessments}>
         {(t, ctx) => (<>

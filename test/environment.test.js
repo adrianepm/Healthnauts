@@ -189,4 +189,10 @@ test('radiação: carreira 75/90/100% e evento solar por classe e atividade', ()
   assert.equal(solar({ active: false }).level, null);
   assert.equal(solar({ active: false }).message, 'Radiation levels are back to normal.');
   assert.throws(() => solar({ active: true, eventClass: 'X9' }), { code: 'VALIDATION_ERROR' });
+  // Especificação 3.5: "Sem evento" é Normal, não Unavailable; a dose de carreira continua no resultado.
+  const none = evaluateArea('radiation', [], [], simulated, time);
+  const noEvent = none.find(e => e.indicator === 'solar_event_simulated');
+  assert.equal(noEvent.displayLevel, 'normal');
+  assert.equal(noEvent.message, 'No solar event recorded.');
+  assert.ok(none.some(e => e.indicator === 'career_effective_dose'));
 });

@@ -1,13 +1,13 @@
 # Matriz de implementação (v2)
 
-Fonte da verdade dos números: `shared/config/research.js`, `shared/config/isolation.js` e `shared/config/levels.js`. Cada regra guarda duas origens separadas: `source` (de onde vem o limite) e `levelSource` (de onde vem o nível atribuído à faixa). **O encaixe dos níveis é sempre proposta do time** (`team_proposal`), como diz a seção 2.1 da especificação v2: os nomes Advisory, Caution, Warning e Emergency seguem a seção 10.3 do NASA-STD-3001 Vol. 2 Rev. D, mas a tabela de tipos de alerta não foi lida pelo time.
+Fonte da verdade dos números: `shared/config/research.js`, `shared/config/isolation.js` e `shared/config/levels.js`. Cada regra guarda duas origens separadas: `source` (de onde vem o limite) e `levelSource` (de onde vem o nível atribuído à faixa). **O encaixe dos níveis é sempre proposta do time** (`team_proposal`), como diz a seção 2.1 da especificação v2: os nomes Advisory, Caution, Warning e Emergency seguem a seção 10.3 do NASA-STD-3001 Vol. 2 Rev. F, mas a tabela de tipos de alerta não foi lida pelo time.
 
 ## Revisão da norma usada
 
 - **NASA-STD-3001 Vol. 1 Rev. C**: condicionamento (V1 4001, 4002, 4003, 4024) e dose de carreira (V1 4030).
-- **NASA-STD-3001 Vol. 2 Rev. D**: CO₂ (V2 6004), pressão total (V2 6006), temperatura e umidade (V2 6012, 6013), ruído (V2 6077).
-- **PIO₂: tabela da Rev. B**, citada numa apresentação da NASA de 2022. A Rev. D usa outros valores (122 mmHg como limite inferior absoluto e 333 mmHg como limite prático de hiperoxia).
-- **A Rev. E do Vol. 2 já está ativa e não foi conferida.** Nenhum número aqui representa conformidade com a revisão atual nem com os requisitos de uma missão.
+- **NASA-STD-3001 Vol. 2 Rev. F** (revisão vigente, aprovada em 2026-07-14): PIO₂ (V2 6003), CO₂ (V2 6004), pressão total (V2 6006), temperatura e umidade (V2 6012, 6013), ruído (V2 6077).
+- Valores conferidos no texto da Rev. F: [V2 6003] PIO₂ 145 a 155 mmHg normoxia, 356 hiperoxia indefinida, 127 hipoxia leve (média de 1 h, mínimo absoluto 122); [V2 6004] CO₂ média de 1 h no máximo 3 mmHg; [V2 6006] pressão 5 < P ≤ 15,0 psia; [V2 6012] polígono 18 °C/75% a 27 °C/25%, umidade média acima de 25%. V2 6013, V2 6077 e a seção 10.3 não estão nessa lista.
+- Nenhum número aqui representa conformidade com os requisitos de uma missão.
 
 ## Níveis e regras gerais
 
@@ -40,12 +40,12 @@ Fonte da verdade dos números: `shared/config/research.js`, `shared/config/isola
 | Gravidade / dor de cabeça (0–10) | 0 a 3 | 4 a 10 | | | | Escala própria | Aparece ao lado do CO₂, sem afirmar causa |
 | Gravidade / stand test | Queda < 20/10 mmHg | FC sobe ≥ 30 bpm | Queda ≥ 20 sistólica ou ≥ 10 diastólica em até 3 min | Queda + tontura ou quase desmaio relatados depois de levantar | | [Freeman et al. 2011][ortho], definição clínica da Terra | **Só com `activity: post_landing`**; fora disso fica `not_applicable` |
 | Sinais vitais / NEWS2 | Soma 0, ou 1 a 4 sem parâmetro valendo 3 | | Um parâmetro valendo 3, ou soma 5 a 6 | Soma ≥ 7 | | [RCP 2017][rcp] | Hospitalar, não validado para astronautas. Escala 1 apenas |
-| Cabine / ppCO₂ 1 h | ≤ 3,0 mmHg | | 3,0 a 4,5 | > 4,5 | | [Vol. 2 Rev. D][nasa2] V2 6004; [OCHMO-TB-004][co2brief] | 4,5 é faixa de sintomas relatados, não limite oficial |
+| Cabine / ppCO₂ 1 h | ≤ 3,0 mmHg | | 3,0 a 4,5 | > 4,5 | | [Vol. 2 Rev. F][nasa2] V2 6004; [OCHMO-TB-004][co2brief] | 4,5 é faixa de sintomas relatados, não limite oficial |
 | Cabine / ppCO₂ 7 dias | < 2,5 mmHg | ≥ 2,5 | | | | [OCHMO-TB-004][co2brief] | Exige 7 dias contínuos de leituras; sem isso fica Unavailable |
-| Cabine / pressão total | 5,0 a 15,0 psia | | | | Fora da faixa | [Vol. 2 Rev. D][nasa2] V2 6006 | Não considera tempo de exposição nem composição |
-| Cabine / O₂ inspirado (PIO₂) | 145 a 155 mmHg | | 127 a 144 ou 156 a 356 | | < 127 ou > 356 | Tabela da Rev. B | PIO₂ = (PB − 47) × FiO₂ |
-| Cabine / temperatura e umidade | 20 a 25 °C e 30 a 60% | Fora do Normal, entre 18 e 27 °C | Fora de 18 a 27 °C, ou umidade < 25% | | | [Vol. 2 Rev. D][nasa2] V2 6012, V2 6013 | Ver simplificações |
-| Cabine / ruído | ≤ 58 dBA (trabalho) ou ≤ 49 dBA (sono) | Acima da referência | ≥ 85 dBA | | | [Vol. 2 Rev. D][nasa2] V2 6077; [Goodman][acoustics] | Ver simplificações |
+| Cabine / pressão total | 5,0 a 15,0 psia | | | | Fora da faixa | [Vol. 2 Rev. F][nasa2] V2 6006 | Não considera tempo de exposição nem composição |
+| Cabine / O₂ inspirado (PIO₂) | 145 a 155 mmHg | | 127 a 144 ou 156 a 356 | | < 127 ou > 356 | [Vol. 2 Rev. F][nasa2] V2 6003 | PIO₂ = (PB − 47) × FiO₂; mínimo absoluto de 122 mmHg (média de 1 h) não usado |
+| Cabine / temperatura e umidade | 20 a 25 °C e 30 a 60% | Fora do Normal, entre 18 e 27 °C | Fora de 18 a 27 °C, ou umidade < 25% | | | [Vol. 2 Rev. F][nasa2] V2 6012, V2 6013 | Ver simplificações |
+| Cabine / ruído | ≤ 58 dBA (trabalho) ou ≤ 49 dBA (sono) | Acima da referência | ≥ 85 dBA | | | [Vol. 2 Rev. F][nasa2] V2 6077; [Goodman][acoustics] | Ver simplificações |
 | Cabine / sintomas pós-EVA | Nenhum item | | | Qualquer item | | [OCHMO-TB-037][dcs] | Não há critério aprovado de Emergency |
 | Radiação / carreira (% de 600 mSv) | < 75% | 75% a 89% | 90% a 99% | ≥ 100% | | [Vol. 1 Rev. C][nasa1] V1 4030 | Só avalia com histórico prévio atestado + contador contínuo desde o início da missão, em NASA_Q |
 | Radiação / evento solar | Sem evento | SPE dentro da nave | | SPE com atividade `eva`, ou `eventClass: ESPE` | | [NASA SRAG][srag] | Flag simulada, sem integração com GOES |
@@ -81,7 +81,7 @@ Os dados podem ser aceitos sem dar evidência suficiente para avaliação. Um te
 [aviation]: https://doi.org/10.3791/59851
 [pvt]: https://www.med.upenn.edu/uep/assets/user-content/documents/Basner2011-ValidityandsensitivityofabriefPVT.pdf
 [nasa1]: https://www.nasa.gov/wp-content/uploads/2023/11/nasa-std-3001-vol-1-rev-c-with-signature.pdf
-[nasa2]: https://standards.nasa.gov/sites/default/files/standards/NASA/D/nasa-std-3001-vol-2-rev-d-signature.pdf
+[nasa2]: https://standards.nasa.gov/system/files/tmp/NASA-STD-3001%20Vol%202%20Rev%20F.pdf
 [standard]: https://www.nasa.gov/reference/standard-measures/
 [eye]: https://ntrs.nasa.gov/api/citations/20170009173/downloads/20170009173.pdf
 [ortho]: https://www.msdmanuals.com/professional/cardiovascular-disorders/symptoms-of-cardiovascular-disorders/orthostatic-hypotension

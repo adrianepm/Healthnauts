@@ -25,6 +25,9 @@ export function useArea(areaId: AreaId) {
   return useMemo(() => {
     const assessments: Assessment[] = detail?.assessments ?? [];
     const a = (indicator: string) => assessments.find((x) => x.indicator === indicator);
+    /** Avaliação mais recente do indicador (pode haver uma por série: fonte, método, missão). */
+    const newest = (indicator: string) => assessments.filter((x) => x.indicator === indicator)
+      .reduce<Assessment | undefined>((top, x) => !top || (Date.parse(x.recordedAt ?? '') || 0) > (Date.parse(top.recordedAt ?? '') || 0) ? x : top, undefined);
     const latest = (indicator: string) => detail?.latestRecords.find((r) => r.indicator === indicator);
     /** Média dos últimos 7 dias, sem hoje (só descritivo). */
     const avg7 = (indicator: string, map: (v: number) => number = (v) => v) =>
@@ -34,6 +37,6 @@ export function useArea(areaId: AreaId) {
     /** Outras avaliações com nível, além da manchete, para o resumo do dia. */
     const also = (exclude?: string | null): AlsoItem[] => assessments.filter((x) => isFlagged(x.displayLevel) && x.indicator !== exclude)
       .map((x) => ({ label: info(x.indicator).label, level: x.displayLevel, message: x.message }));
-    return { detail, summary, assessments, a, latest, avg7, worst, also, week, ready: !!detail && !!summary };
+    return { detail, summary, assessments, a, newest, latest, avg7, worst, also, week, ready: !!detail && !!summary };
   }, [detail, summary, week]);
 }
