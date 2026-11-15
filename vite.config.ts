@@ -1,8 +1,10 @@
 import { defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 
-// O front roda as regras de shared/ no navegador (Opção A). O `base` do GitHub Pages entra na Etapa 3.
+// O front roda as regras de shared/ no navegador (Opção A).
+// GitHub Pages serve o site em /NasaSpaceAppsChallenge2026/; as rotas usam HashRouter, então recarregar a página funciona.
 export default defineConfig({
+  base: '/NasaSpaceAppsChallenge2026/',
   plugins: [react()],
   server: { port: 5173 },
   build: {
