@@ -1,9 +1,9 @@
 // Casca do app. Desktop (≥ 1024 px): barra lateral com marca, navegação, Demo e o aviso fixo; cabeçalho de uma linha.
-// Celular: cabeçalho de uma linha (missão, atraso, Demo, sino) e barra inferior (Overview, Areas, Ground, Profile).
+// Celular: cabeçalho de uma linha (missão, atraso, Demo, sino) e barra inferior (Overview, Journey, Areas, Ground, Profile).
 // O nível de cada área aparece sempre com ícone + nome (StatusPill). Nada aqui decide nível.
 import { useEffect, useState, type ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Brain, ChevronRight, FlaskConical, LayoutGrid, Orbit, Radiation, Radio, SatelliteDish, Shapes, User, Wind, type LucideIcon } from 'lucide-react';
+import { Brain, ChevronRight, FlaskConical, LayoutGrid, Orbit, Radiation, Radio, SatelliteDish, Shapes, TreeDeciduous, User, Wind, type LucideIcon } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { AREA } from '../config/api';
 import { worstLevel } from '../../shared/config/levels.js';
@@ -22,6 +22,7 @@ import { cn } from '../lib/utils';
 
 interface Tab { to: string; label: string; icon: LucideIcon; area: string | null }
 const OVERVIEW: Tab = { to: '/', label: 'Overview', icon: LayoutGrid, area: null };
+const JOURNEY: Tab = { to: '/journey', label: 'Journey', icon: TreeDeciduous, area: null };
 const AREAS: Tab[] = [
   { to: '/isolation', label: 'Isolation', icon: Brain, area: AREA.isolation },
   { to: '/environment', label: 'Environment', icon: Wind, area: AREA.cabin },
@@ -106,7 +107,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <aside className="hidden lg:flex fixed inset-y-0 left-0 z-30 w-64 flex-col border-r border-space-line bg-space-bg">
         <div className="flex items-center gap-3 px-5 h-16 border-b border-space-line"><BrandMark /><BrandName /></div>
         <nav aria-label="Main" className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
-          <div className="space-y-0.5"><SideItem tab={OVERVIEW} level={null} /></div>
+          <div className="space-y-0.5"><SideItem tab={OVERVIEW} level={null} /><SideItem tab={JOURNEY} level={null} /></div>
           <div>
             <p className="eyebrow px-3 mb-1.5">Hazards (RIDGE)</p>
             <div className="space-y-0.5">{AREAS.map((t) => <SideItem key={t.to} tab={t} level={levelOf(t.area)} />)}</div>
@@ -145,6 +146,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <nav aria-label="Main" className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t border-space-line bg-space-bg/95 backdrop-blur-sm pb-[env(safe-area-inset-bottom)]">
         <div className="flex">
           <BottomItem to="/" label="Overview" icon={LayoutGrid} active={pathname === '/'} />
+          <BottomItem to="/journey" label="Journey" icon={TreeDeciduous} active={pathname === '/journey'} />
           <BottomItem label="Areas" icon={Shapes} active={inArea} onClick={() => setAreasOpen(true)} />
           <BottomItem to="/ground" label="Ground" icon={SatelliteDish} active={pathname === '/ground'} />
           <BottomItem to="/profile" label="Profile" icon={User} active={pathname === '/profile'} />

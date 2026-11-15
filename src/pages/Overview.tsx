@@ -3,7 +3,9 @@
 // Os cartões de área só mostram o valor principal quando ele não está em "My panels" (sem informação repetida).
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Flame, TreeDeciduous } from 'lucide-react';
+import { useJourney } from './Journey';
+import { STAGE_COUNT } from '../lib/journey';
 import { useStore } from '../store/useStore';
 import { useSim } from '../components/DemoPanel';
 import { TodayHero } from '../components/lean/Home';
@@ -62,10 +64,28 @@ export default function Overview() {
         <BodyView scene={scene} focus={focus} />
         <MyPanels chosen={chosen} onChange={choose} />
       </div>
-      <section aria-label="Other areas" className="grid sm:grid-cols-3 gap-3">
+      <section aria-label="Other areas" className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {cards.map((c) => { const a = area(c.id); return a ? <AreaCard key={c.id} a={a} {...c} inPanels={chosen.includes(panelId(c.id, c.indicator))} /> : null; })}
+        <JourneyCard />
       </section>
     </div>
+  );
+}
+
+/** Mini cartão da árvore (estágio e sequência). Gamificação, não nível: cor da marca e neutros. */
+function JourneyCard() {
+  const { st, stage, ui } = useJourney();
+  return (
+    <MagicCard as={Link} to="/journey" className="!p-4 flex flex-col gap-2">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-sm font-semibold inline-flex items-center gap-2"><TreeDeciduous size={16} aria-hidden="true" className="text-brand-soft" />Journey</h3>
+        <ChevronRight size={16} className="text-slate-300" aria-hidden="true" />
+      </div>
+      <span className="text-xs text-slate-300">Health tree</span>
+      <span className="text-2xl font-medium tracking-tight text-slate-50">{stage.name}</span>
+      <span className="text-xs text-slate-300">Stage <span className="font-mono">{stage.index + 1}</span> of <span className="font-mono">{STAGE_COUNT}</span> · <span className="font-mono">{ui.xp}</span> XP</span>
+      <p className="text-xs text-slate-300 mt-auto inline-flex items-center gap-1"><Flame size={13} aria-hidden="true" />Streak <span className="font-mono text-slate-100">{st.days}</span> {st.days === 1 ? 'day' : 'days'}</p>
+    </MagicCard>
   );
 }
 

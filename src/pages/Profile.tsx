@@ -1,6 +1,6 @@
 // Astronaut Profile (3.8): referências pré-missão, faixas pessoais, lista "em observação" e histórico de alertas.
-import { Award, History, ListChecks, User, Ruler } from 'lucide-react';
-import { levelOfXp, useStore } from '../store/useStore';
+import { History, ListChecks, User, Ruler } from 'lucide-react';
+import { useStore } from '../store/useStore';
 import { AREA } from '../config/api';
 import { Card, PageHeader, StatusPill } from '../components/ui';
 import { AREA_LABEL, info } from '../lib/content';
@@ -19,7 +19,6 @@ export default function Profile() {
   return (
     <div className="space-y-5">
       <PageHeader title="Profile" sub="Astronaut profile, personal ranges and alert history" />
-      <XpCard />
       <Card title={`Astronaut ${ASTRONAUT_ID}`} sub={mission ? `Mission ${mission.input.destination} · started ${fmtDateTime(mission.input.startedAt)} · activity ${mission.input.activity}` : 'No mission context'} icon={<User size={18} />}>
         <PreFlight />
       </Card>
@@ -79,19 +78,5 @@ function PreFlight() {
         </div>
       ))}
     </div>
-  );
-}
-
-/** Nível e XP da rotina (gamificação), fora do cabeçalho para não competir com o estado de saúde. */
-function XpCard() {
-  const xp = useStore((s) => s.ui.xp);
-  return (
-    <section className="card !py-3 flex flex-wrap items-center gap-x-5 gap-y-2" aria-label="Routine progress">
-      <span className="inline-flex items-center gap-2 text-sm font-medium"><Award size={18} aria-hidden="true" className="text-brand-soft" />Routine level <span className="font-mono">{levelOfXp(xp)}</span></span>
-      <span className="flex-1 min-w-[8rem] h-1.5 rounded-full bg-space-card2 overflow-hidden" role="progressbar" aria-label="XP to the next level" aria-valuemin={0} aria-valuemax={100} aria-valuenow={xp % 100}>
-        <span className="block h-full bg-brand" style={{ width: `${xp % 100}%` }} />
-      </span>
-      <span className="text-sm text-slate-300"><span className="font-mono text-slate-100">{xp}</span> XP · earned by morning check-ins and reaction checks</span>
-    </section>
   );
 }

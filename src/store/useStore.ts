@@ -6,11 +6,16 @@ import { AREA, UI_KEY, type AreaId } from '../config/api';
 
 export const XP_PER_CHECKIN = 30; // o XP premia FAZER o check-in, nunca a resposta
 export const XP_PER_PVT = 40;
+export const XP_PER_EXERCISE = 30; // uma vez por dia, ao registrar uma sessão (qualquer duração)
+export const XP_PER_WEIGH = 20; // uma vez por dia, ao registrar a pesagem
 
 // checkins: datas (YYYY-MM-DD) dos check-ins feitos no app. seenAlerts: alertas cujo detalhe o astronauta já abriu
 // (o pulso do cartão "Needs attention" para). Só conveniência de interface: nada aqui muda o nível.
-interface UiSaved { xp: number; checkins: string[]; seenAlerts: string[] }
-const EMPTY_UI: UiSaved = { xp: 0, checkins: [], seenAlerts: [] };
+// awards: "tarefa:dia" que já deram XP (exercício e pesagem, uma vez por dia). rewards: flores e frutos da árvore
+// ganhos nas missões semanais (ficam para sempre na Journey).
+export interface TreeReward { id: string; kind: 'flower' | 'fruit' }
+interface UiSaved { xp: number; checkins: string[]; seenAlerts: string[]; awards: string[]; rewards: TreeReward[] }
+const EMPTY_UI: UiSaved = { xp: 0, checkins: [], seenAlerts: [], awards: [], rewards: [] };
 const loadUi = (): UiSaved => { try { return { ...EMPTY_UI, ...JSON.parse(localStorage.getItem(UI_KEY) || '{}') }; } catch { return { ...EMPTY_UI }; } };
 const saveUi = (u: UiSaved) => { try { localStorage.setItem(UI_KEY, JSON.stringify(u)); } catch { /* ignora */ } };
 export const dayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
@@ -26,6 +31,8 @@ interface State {
   loadArea: (id: AreaId) => Promise<void>;
   addXp: (n: number, checkin?: boolean) => void;
   markSeen: (alertIds: string[]) => void;
+  award: (task: string, xp: number) => void;
+  addReward: (r: TreeReward) => void;
   setCheckinOpen: (v: boolean) => void; setPvtOpen: (v: boolean) => void;
   acknowledge: (alertId: string) => Promise<void>;
 }
@@ -75,6 +82,18 @@ export const useStore = create<State>((set, get) => ({
     const next = { ...ui, seenAlerts: [...ui.seenAlerts, ...fresh].slice(-200) };
     saveUi(next); set({ ui: next });
   },
+  award(task, xp) {
+    const ui = get().ui; const key = `${task}:${dayKey()}`;
+    if (ui.awards.includes(key)) return;
+    const next = { ...ui, xp: ui.xp + xp, awards: [...ui.awards, key].slice(-400) };
+    saveUi(next); set({ ui: next });
+  },
+  addReward(r) {
+    const ui = get().ui;
+    if (ui.rewards.some((x) => x.id === r.id)) return;
+    const next = { ...ui, rewards: [...ui.rewards, r] };
+    saveUi(next); set({ ui: next });
+  },
   setCheckinOpen: (v) => set({ checkinOpen: v }),
   setPvtOpen: (v) => set({ pvtOpen: v }),
 
@@ -84,5 +103,4 @@ export const useStore = create<State>((set, get) => ({
   },
 }));
 
-export const levelOfXp = (xp: number) => Math.floor(xp / 100) + 1;
 export { AREA };
