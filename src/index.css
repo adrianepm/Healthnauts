@@ -42,3 +42,8 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
+
+/* RIDGE Scene: anel de foco do teclado nos elementos clicáveis do SVG. */
+.scene-hot:focus { outline: none; }
+.scene-focus { opacity: 0; transition: opacity 0.15s; }
+.scene-hot:focus-visible .scene-focus { opacity: 1; }

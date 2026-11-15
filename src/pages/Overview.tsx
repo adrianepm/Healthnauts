@@ -1,16 +1,48 @@
-// Overview: resumo do dia de todas as áreas, sinais vitais ao vivo e a rotina com bolinha vermelha.
+// Overview: RIDGE Scene (cena cinemática e enxuta) ou Simple view (resumo do dia + cartões por área).
+// A escolha fica no localStorage (try/catch). Com prefers-reduced-motion abre direto em Simple view, sem animações.
+import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight, ListChecks } from 'lucide-react';
+import { useReducedMotion } from 'framer-motion';
+import { ChevronRight, LayoutGrid, ListChecks, Orbit } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { TodayHero, type AlsoItem } from '../components/lean/Home';
 import { VitalsCard } from '../components/VitalsCard';
 import { RoutineList } from '../components/Notifications';
 import { Card, StatusPill } from '../components/ui';
+import { RidgeScene } from '../components/scene/RidgeScene';
 import { AREA_LABEL, AREA_PATH, info } from '../lib/content';
 import { isFlagged } from '../lib/levels';
 import { ago } from '../lib/format';
 
+const VIEW_KEY = 'healthnauts:overview-view';
+type ViewMode = 'scene' | 'simple';
+
+function readView(): ViewMode | null {
+  try { const v = localStorage.getItem(VIEW_KEY); return v === 'scene' || v === 'simple' ? v : null; } catch { return null; }
+}
+function saveView(v: ViewMode) {
+  try { localStorage.setItem(VIEW_KEY, v); } catch { /* modo privado: vale só nesta sessão */ }
+}
+
 export default function Overview() {
+  const reduced = !!useReducedMotion();
+  const [mode, setMode] = useState<ViewMode>(() => readView() ?? (reduced ? 'simple' : 'scene'));
+  const toggle = () => { const next = mode === 'scene' ? 'simple' : 'scene'; setMode(next); saveView(next); };
+  return (
+    <div className="space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <h1 className="text-sm text-slate-300">Overview · {mode === 'scene' ? 'RIDGE scene' : 'all areas'}</h1>
+        <button type="button" onClick={toggle} className="btn-ghost" aria-pressed={mode === 'simple'}>
+          {mode === 'scene' ? <><LayoutGrid size={16} aria-hidden="true" />Simple view</> : <><Orbit size={16} aria-hidden="true" />Scene view</>}
+        </button>
+      </div>
+      {mode === 'scene' ? <RidgeScene reduced={reduced} /> : <SimpleOverview />}
+    </div>
+  );
+}
+
+/** Overview enxuta: resumo do dia, sinais vitais ao vivo, rotina e um cartão por área. */
+function SimpleOverview() {
   const o = useStore((s) => s.overview);
   if (!o) return null;
   const also: AlsoItem[] = o.areas.filter((a) => isFlagged(a.displayLevel) && a.headline.indicator !== o.headline.indicator)
@@ -19,7 +51,6 @@ export default function Overview() {
 
   return (
     <div className="space-y-5">
-      <h1 className="text-sm text-slate-400">Overview · all areas</h1>
       <TodayHero level={o.overallDisplayLevel} message={o.headline.message ?? ''} sub={o.headline.indicator ? info(o.headline.indicator).label : undefined} also={also} />
       <div className="grid lg:grid-cols-[2fr_1fr] gap-5">
         <VitalsCard />

@@ -1,4 +1,6 @@
 // Sinais vitais ao vivo (sensor simulado) + NEWS2 como referência experimental. Nível vem da API (vitalSigns / news2).
+import { useEffect, useRef } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Activity, HeartPulse } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { useSim } from './DemoPanel';
@@ -11,11 +13,16 @@ export function VitalsCard({ detailed }: { detailed?: boolean }) {
   const news2 = useStore((s) => s.details[AREA.gravity]?.assessments.find((a) => a.indicator === 'news2'));
   const s = useSim();
   const m = s.lastVitals?.measurements;
+  // Aberto pelo coração da RIDGE Scene: rola até este cartão.
+  const focus = (useLocation().state as { focus?: string } | null)?.focus === 'vitals';
+  const ref = useRef<HTMLDivElement>(null);
+  useEffect(() => { if (detailed && focus) ref.current?.scrollIntoView({ block: 'center' }); }, [detailed, focus]);
   const items: [string, string][] = m ? [
     ['Heart rate', `${m.heart_rate.value} bpm`], ['Blood pressure', `${m.blood_pressure_systolic.value}/${m.blood_pressure_diastolic.value} mmHg`],
     ['Respiratory rate', `${m.respiratory_rate.value} /min`], ['SpO₂', `${m.spo2.value}%`], ['Temperature', `${m.body_temperature.value} °C`],
   ] : [];
   return (
+    <div ref={ref} id="vital-signs" className="scroll-mt-48">
     <Card title="Vital signs" sub={`Simulated wrist sensor · ${s.lastVitals ? 'updated ' + ago(s.lastVitals.recordedAt) : 'waiting for a reading'}${s.lastVitals?.activity === 'exercise' ? ' · exercising' : ''}`}
       icon={<HeartPulse size={18} />} right={vital && <StatusPill level={vital.displayLevel} />}>
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
@@ -36,5 +43,6 @@ export function VitalsCard({ detailed }: { detailed?: boolean }) {
         </div>
       )}
     </Card>
+    </div>
   );
 }

@@ -41,10 +41,11 @@ export function TodayHero({ level, message, label = 'Today', sub, also = [], act
 /** `level` só quando a API avalia aquele valor; sem avaliação, o cartão não mostra selo. */
 export interface Tile { key: string; title: string; icon: LucideIcon; value: ReactNode; level?: DisplayLevel; compare?: string; onClick?: () => void }
 
-export function KeyTiles({ tiles, cols = 4 }: { tiles: Tile[]; cols?: 3 | 4 | 5 }) {
-  const grid = cols === 5 ? 'lg:grid-cols-5' : cols === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-4';
+export function KeyTiles({ tiles, cols = 4 }: { tiles: Tile[]; cols?: 1 | 3 | 4 | 5 }) {
+  // cols = 1: coluna ao lado da cena (empilha embaixo dela em tela estreita).
+  const grid = cols === 1 ? 'lg:grid-cols-1' : cols === 5 ? 'lg:grid-cols-5' : cols === 3 ? 'lg:grid-cols-3' : 'lg:grid-cols-4';
   return (
-    <div className={`grid grid-cols-1 sm:grid-cols-2 ${grid} gap-4`}>
+    <div className={`grid grid-cols-1 ${cols === 1 ? 'sm:grid-cols-3' : 'sm:grid-cols-2'} ${grid} gap-4`}>
       {tiles.map(({ key, title, icon: Icon, value, level, compare, onClick }) => (
         <button key={key} onClick={onClick} disabled={!onClick}
           className="card text-left hover:border-slate-500 transition-colors flex flex-col gap-3 !p-5 disabled:hover:border-space-line">
