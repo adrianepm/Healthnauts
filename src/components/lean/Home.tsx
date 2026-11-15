@@ -25,7 +25,7 @@ export function TodayHero({ level, message, label = 'Today', sub, also = [], act
     <section aria-label={`${label}: ${ui.label}`} className="card relative overflow-hidden !py-3 !pl-5">
       <span className="absolute inset-y-0 left-0 w-[3px]" style={{ background: ui.color }} aria-hidden="true" />
       <div className="flex flex-wrap items-center justify-between gap-x-4 gap-y-2">
-        <div className="min-w-0 flex-1">
+        <div className="min-w-[min(100%,16rem)] flex-1">
           <div className="flex flex-wrap items-center gap-x-3 gap-y-1">
             <span className="text-xs font-medium text-slate-300">{label}</span>
             <StatusPill level={level} small />

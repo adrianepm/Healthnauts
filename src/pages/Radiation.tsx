@@ -8,9 +8,12 @@ import { Card, More, Num, PageHeader, SourcesList, StatusPill, WhyBlock } from '
 import { LEVEL_UI } from '../lib/levels';
 import { ORGAN_LIMITS } from '../lib/content';
 import { ago } from '../lib/format';
+import { RulerLabels, Tick } from '../components/instruments';
 
 const BANDS = rules.career.bands as number[]; // 75, 90, 100 (% do limite)
 const LIMIT = rules.career.limit as number; // 600 mSv
+/** Marcas da barra de dose: 0% e as faixas de demonstração (75%, 90%, 100%). O limite (100%) é o mais importante. */
+const DOSE_MARKS = [{ at: 0, label: '0%', priority: 1 }, ...BANDS.map((b) => ({ at: b, label: `${b}%`, priority: b >= 100 ? 3 : 2 }))];
 
 export default function Radiation() {
   const d = useArea(AREA.radiation);
@@ -39,14 +42,13 @@ export default function Radiation() {
           {career?.value !== undefined && <span className="text-sm text-slate-300 pb-1"><span className="font-mono text-slate-100">{career.value}</span> of <span className="font-mono">{LIMIT}</span> mSv</span>}
         </div>
         <div className="mt-5" role="img" aria-label={`Career dose ${pct === null ? 'unavailable' : pct.toFixed(1) + '% of the limit'}; bands at ${BANDS.join(', ')}%`}>
-          <div className="relative h-4 rounded-sm bg-space-card2 border border-space-line overflow-hidden">
-            <div className="absolute inset-y-0 left-0" style={{ width: `${Math.min(100, pct ?? 0)}%`, background: color }} />
-            {BANDS.slice(0, -1).map((b) => <span key={b} className="absolute inset-y-0 w-px bg-slate-300" style={{ left: `${b}%` }} />)}
+          <div className="relative h-4">
+            <div className="absolute inset-0 rounded-sm bg-space-card2 border border-space-line overflow-hidden">
+              <div className="absolute inset-y-0 left-0" style={{ width: `${Math.min(100, pct ?? 0)}%`, background: color }} />
+            </div>
+            {DOSE_MARKS.map((m) => <Tick key={m.label} p={m.at} className="-top-1 -bottom-1" />)}
           </div>
-          <div className="relative h-5 mt-1.5 text-xs text-slate-300 font-mono" aria-hidden="true">
-            <span className="absolute left-0">0%</span>
-            {BANDS.map((b) => <span key={b} className={`absolute ${b >= 100 ? '-translate-x-full' : '-translate-x-1/2'}`} style={{ left: `${b}%` }}>{b}%</span>)}
-          </div>
+          <RulerLabels marks={DOSE_MARKS} pos={(x) => x} />
         </div>
         <p className="text-sm text-slate-200 mt-4">{career?.message}</p>
         {career?.limitation && <p className="text-xs text-slate-300 mt-1">{career.limitation}</p>}

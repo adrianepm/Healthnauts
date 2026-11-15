@@ -52,7 +52,7 @@ export default function Isolation() {
       <KeyTiles tiles={[
         { key: 'sleep', indicator: 'sleep_duration', title: 'Sleep last night', icon: Moon, value: fmtHours(v('sleep_duration')), level: d.a('sleep_duration')?.displayLevel ?? 'unavailable',
           compare: `${deltaText(v('sleep_duration'), d.avg7('sleep_duration'), 'hours')} vs 7-day avg`, onClick: () => setTopic('sleep'),
-          ruler: { min: 0, max: 10, value: num(v('sleep_duration')), band: rng(band('sleep_duration')), marks: [{ at: four, label: `${four} h` }, { at: six, label: `${six} h` }, { at: REFERENCE.sleepPlanH, label: `${REFERENCE.sleepPlanH} h` }],
+          ruler: { min: 0, max: 10, value: num(v('sleep_duration')), band: rng(band('sleep_duration')), marks: [{ at: four, label: `${four} h`, priority: 3 }, { at: six, label: `${six} h`, priority: 2 }, { at: REFERENCE.sleepPlanH, label: `${REFERENCE.sleepPlanH} h plan`, priority: 1 }],
             label: `Sleep on a 0 to 10 hour scale with marks at ${four} h, ${six} h and the ${REFERENCE.sleepPlanH} h plan` } },
         { key: 'kss', indicator: 'sleepiness_kss', title: 'Sleepiness', icon: Gauge, value: Number.isFinite(v('sleepiness_kss')) ? v('sleepiness_kss') : '—', unit: 'KSS 1-9', level: d.a('sleepiness_kss')?.displayLevel ?? 'unavailable',
           compare: `${deltaText(v('sleepiness_kss'), d.avg7('sleepiness_kss'))} vs 7-day avg`, onClick: () => setTopic('alertness'),
