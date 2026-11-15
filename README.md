@@ -12,6 +12,7 @@ All data in the demo is simulated. Healthnauts supports self-monitoring and crew
 
 ## Contents
 
+- [Screenshots](#screenshots)
 - [The problem](#the-problem)
 - [What Healthnauts does](#what-healthnauts-does)
 - [How it works](#how-it-works)
@@ -23,6 +24,22 @@ All data in the demo is simulated. Healthnauts supports self-monitoring and crew
 - [Use of AI](#use-of-ai)
 - [Team](#team)
 - [References](#references)
+
+---
+
+## Screenshots
+
+| Overview | Isolation (Mind and Sleep) |
+|---|---|
+| ![Overview: daily status, routine bar and clickable body](docs/screenshots/overview.png) | ![Isolation screen](docs/screenshots/isolation.png) |
+
+| Cabin Environment | Ground Control |
+|---|---|
+| ![Cabin environment screen](docs/screenshots/environment.png) | ![Report to Earth with real Mars delay](docs/screenshots/ground-control.png) |
+
+| Emergency alert | Customizable panels |
+|---|---|
+| ![Full screen emergency with acknowledgement](docs/screenshots/emergency.png) | ![Customize up to 10 panels](docs/screenshots/customize.png) |
 
 ---
 
