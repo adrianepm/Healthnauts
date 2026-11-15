@@ -9,6 +9,7 @@ import { LEVEL_UI, severity } from '../lib/levels';
 import { AREA_LABEL, info } from '../lib/content';
 import { actionsFor, limitText } from '../lib/actions';
 import { fmtReading, fmtTime } from '../lib/format';
+import { fmtTen, isTenPoint } from '../lib/scales';
 import { AckStatus, NO_ACK_TEXT, alertHref, useNow } from './AlertBanner';
 import { OpenDetails, WhatToDo } from './AlertActions';
 import { StatusPill } from './ui';
@@ -53,7 +54,9 @@ export function NeedsAttention() {
 function Row({ a, now, first }: { a: Alert; now: number; first: boolean }) {
   // Alguns alertas (ex.: sono) não trazem valor: usa o último registro do indicador que a API devolveu.
   const latest = useStore((s) => (s.details as Record<string, any>)[a.areaId]?.latestRecords?.find((r: any) => r.indicator === a.indicator));
-  const reading = fmtReading(a.value, a.unit, a.indicator) ?? fmtReading(latest?.value, latest?.unit, a.indicator);
+  const raw = typeof a.value === 'number' ? a.value : Number(latest?.value);
+  const reading = isTenPoint(a.indicator) && Number.isFinite(raw) ? { value: fmtTen(raw), unit: 'of 10' }
+    : fmtReading(a.value, a.unit, a.indicator) ?? fmtReading(latest?.value, latest?.unit, a.indicator);
   return (
     <li className="px-4 py-3 md:px-5 grid gap-x-6 gap-y-3 md:grid-cols-[minmax(0,1fr)_minmax(0,1.2fr)_12rem] md:items-start">
       <div className="min-w-0">

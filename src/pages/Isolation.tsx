@@ -13,6 +13,12 @@ import { PageHeader, Section } from '../components/ui';
 import { SupportTools } from '../components/SupportTools';
 import { ago, deltaText, fmtHours } from '../lib/format';
 import { KSS_LABELS, REFERENCE, SP_LABELS } from '../lib/content';
+import { fmtTen, toTen } from '../lib/scales';
+import type { ApiRecord } from '../services/api';
+
+// Humor, estresse e qualidade do sono: gravados de 0 a 100, mostrados de 0 a 10 (src/lib/scales.ts).
+const ten = (rs: ApiRecord[]) => rs.map((r) => ({ ...r, value: toTen(Number(r.value)) }));
+const tenBand = (b: { lower: number; upper: number } | null) => (b ? { lower: toTen(b.lower), upper: toTen(b.upper) } : null);
 
 const TOPICS: TopicDef[] = [
   { id: 'sleep', label: 'Sleep', indicators: ['sleep_duration', 'sleep_quality'] },
@@ -63,10 +69,10 @@ export default function Isolation() {
         { key: 'pvt', indicator: 'pvt_response_speed', title: 'Reaction time', icon: Timer, value: Number.isFinite(v('pvt_response_speed')) ? String(Math.round(rtMs(v('pvt_response_speed')))) : '—', unit: Number.isFinite(v('pvt_response_speed')) ? 'ms' : undefined,
           level: d.a('pvt_response_speed')?.displayLevel ?? 'unavailable',
           compare: `≈ from mean speed · test ${ago(d.latest('pvt_response_speed')?.recordedAt)}`, onClick: () => setTopic('alertness') },
-        { key: 'stress', indicator: 'stress', title: 'Stress', icon: Brain, value: Number.isFinite(v('stress')) ? Math.round(v('stress')) : '—', unit: '0-100', level: d.a('stress')?.displayLevel ?? 'unavailable',
-          compare: `${deltaText(v('stress'), d.avg7('stress'))} vs 7-day avg`, onClick: () => setTopic('mind'),
-          note: `Scale 0 to 100${band('stress') ? ' · shaded: your usual range' : ''}`,
-          ruler: { min: 0, max: 100, value: num(v('stress')), band: rng(band('stress')), marks: [{ at: 0, label: '0' }, { at: 100, label: '100' }], label: 'Stress on a 0 to 100 scale; shaded: your usual range' } },
+        { key: 'stress', indicator: 'stress', title: 'Stress', icon: Brain, value: Number.isFinite(v('stress')) ? fmtTen(v('stress')) : '–', unit: 'of 10', level: d.a('stress')?.displayLevel ?? 'unavailable',
+          compare: `${deltaText(toTen(v('stress')), d.avg7('stress', toTen))} vs 7-day avg`, onClick: () => setTopic('mind'),
+          note: `Scale 1 to 10${band('stress') ? ' · shaded: your usual range' : ''}`,
+          ruler: { min: 1, max: 10, value: num(toTen(v('stress'))), band: rng(tenBand(band('stress'))), marks: [{ at: 1, label: '1' }, { at: 10, label: '10' }], label: 'Stress on a 1 to 10 scale; shaded: your usual range' } },
       ]} />
       <TopicLinks topics={TOPICS.map((t) => ({ id: t.id, label: t.label, level: d.worst(t.indicators) }))} onOpen={setTopic} />
 
@@ -75,10 +81,10 @@ export default function Isolation() {
           {t === 'sleep' && (<>
             <CompareRow periodLabel={ctx.periodLabel} items={[
               compareItem(ctx, 'sleep_duration', 'Sleep duration', hoursFmt, 'hours'),
-              compareItem(ctx, 'sleep_quality', 'Sleep quality (0-100)', (x) => String(Math.round(x))),
+              compareItem(ctx, 'sleep_quality', 'Sleep quality (1-10)', (x) => String(Number(x.toFixed(1))), 'number', toTen),
             ]} />
             <Section indicator="sleep_duration" title="Hours of sleep"><BarsChart records={ctx.series('sleep_duration')} unit="h" domain={[0, 10]} refs={SLEEP_REFS} fmt={hoursFmt} lastLevel={ctx.assessment('sleep_duration')?.displayLevel} /></Section>
-            <Section indicator="sleep_quality" title="Sleep quality"><TrendChart records={ctx.series('sleep_quality')} band={band('sleep_quality')} domain={[0, 100]} lastLevel={ctx.assessment('sleep_quality')?.displayLevel} /></Section>
+            <Section indicator="sleep_quality" title="Sleep quality"><TrendChart records={ten(ctx.series('sleep_quality'))} band={tenBand(band('sleep_quality'))} domain={[0, 10]} lastLevel={ctx.assessment('sleep_quality')?.displayLevel} /></Section>
             <p className="text-xs text-slate-300 mt-1">Bars: neutral; the latest night takes the colour of its level. Lines: NASA plan 8.5 h (a goal, not a cut-off), 6 h and 4 h.</p>
           </>)}
           {t === 'alertness' && (<>
@@ -97,11 +103,11 @@ export default function Isolation() {
           </>)}
           {t === 'mind' && (<>
             <CompareRow periodLabel={ctx.periodLabel} items={[
-              compareItem(ctx, 'stress', 'Stress (0-100)', (x) => String(Math.round(x))),
-              compareItem(ctx, 'mood_score', 'Mood (0-100)', (x) => String(Math.round(x))),
+              compareItem(ctx, 'stress', 'Stress (1-10)', (x) => String(Number(x.toFixed(1))), 'number', toTen),
+              compareItem(ctx, 'mood_score', 'Mood (1-10)', (x) => String(Number(x.toFixed(1))), 'number', toTen),
             ]} />
-            <Section indicator="stress" title="Stress"><TrendChart records={ctx.series('stress')} band={band('stress')} domain={[0, 100]} lastLevel={ctx.assessment('stress')?.displayLevel} /></Section>
-            <Section indicator="mood_score" title="Mood"><TrendChart records={ctx.series('mood_score')} band={band('mood_score')} domain={[0, 100]} lastLevel={ctx.assessment('mood_score')?.displayLevel} /></Section>
+            <Section indicator="stress" title="Stress"><TrendChart records={ten(ctx.series('stress'))} band={tenBand(band('stress'))} domain={[0, 10]} lastLevel={ctx.assessment('stress')?.displayLevel} /></Section>
+            <Section indicator="mood_score" title="Mood"><TrendChart records={ten(ctx.series('mood_score'))} band={tenBand(band('mood_score'))} domain={[0, 10]} lastLevel={ctx.assessment('mood_score')?.displayLevel} /></Section>
             <p className="text-xs text-slate-300 mt-1">Shaded band: your usual range (mission days 1-7), when ready. No validated cut-off exists for these ratings. Mood and stress are visible only to you and your Crew Medical Officer.</p>
             <div className="mt-6"><SupportTools /></div>
           </>)}

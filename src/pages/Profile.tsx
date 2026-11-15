@@ -6,6 +6,7 @@ import { Card, PageHeader, StatusPill } from '../components/ui';
 import { AREA_LABEL, info } from '../lib/content';
 import { fmtDateTime } from '../lib/format';
 import { ASTRONAUT_ID } from '../config/api';
+import { isTenPoint, toTen } from '../lib/scales';
 
 const ACK: Record<string, string> = { acknowledged: 'Acknowledged', pending: 'Pending', not_acknowledged: 'Not acknowledged', resolved_before_acknowledgement: 'Resolved first', not_required: '—' };
 const fmtVal = (v: any, unit: any) => typeof v === 'number' ? `${Number(v.toFixed(2))}${typeof unit === 'string' ? ' ' + unit : ''}` : v && typeof v === 'object' ? Object.values(v).join(' / ') : '—';
@@ -23,14 +24,14 @@ export default function Profile() {
         <PreFlight />
       </Card>
 
-      <Card title="Personal ranges" sub="Mean ± 2 SD of the first 7 mission days (team proposal), SD floor of 5 points on 0-100 scales" icon={<Ruler size={18} />}>
+      <Card title="Personal ranges" sub="Mean ± 2 SD of the first 7 mission days (team proposal), SD floor of half a point on 1-10 scales" icon={<Ruler size={18} />}>
         <div className="overflow-x-auto">
           <table className="w-full text-xs">
             <thead><tr className="text-left text-slate-300"><th className="py-1.5 font-medium">Parameter</th><th className="font-medium">Status</th><th className="font-medium text-right">Mean</th><th className="font-medium text-right">Range</th><th className="font-medium text-right">Samples</th></tr></thead>
-            <tbody>{baselines.map((a) => { const b = a.baseline!; return (
+            <tbody>{baselines.map((a) => { const b = a.baseline!; const k = (x: number) => (isTenPoint(a.indicator) ? toTen(x) : x); return (
               <tr key={a.indicator} className="border-t border-space-line text-slate-200">
                 <td className="py-1.5">{info(a.indicator).label}</td><td>{b.status === 'ready' ? 'Ready' : b.status === 'collecting' ? 'Collecting' : 'Insufficient'}</td>
-                <td className="font-mono text-right">{typeof b.mean === 'number' ? b.mean.toFixed(2) : '—'}</td><td className="font-mono text-right whitespace-nowrap">{b.status === 'ready' ? `${b.lower!.toFixed(2)} – ${b.upper!.toFixed(2)}` : '—'}</td><td className="font-mono text-right">{b.sampleCount ?? '—'}</td>
+                <td className="font-mono text-right">{typeof b.mean === 'number' ? k(b.mean).toFixed(2) : '—'}</td><td className="font-mono text-right whitespace-nowrap">{b.status === 'ready' ? `${k(b.lower!).toFixed(2)} to ${k(b.upper!).toFixed(2)}` : '—'}</td><td className="font-mono text-right">{b.sampleCount ?? '—'}</td>
               </tr>); })}</tbody>
           </table>
         </div>
