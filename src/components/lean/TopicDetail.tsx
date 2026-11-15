@@ -85,6 +85,12 @@ export function TopicDetail({ areaId, topics, topic, onTopic, assessments, child
   const [records, setRecords] = useState<ApiRecord[] | null>(null);
   const version = useStore((s) => s.version);
   useEffect(() => { if (!topic) setPeriod((p) => ({ ...p, mode: '7d' })); }, [topic]);
+  // Esc fecha o detalhe.
+  useEffect(() => {
+    if (!topic) return;
+    const k = (e: KeyboardEvent) => { if (e.key === 'Escape') onTopic(null); };
+    window.addEventListener('keydown', k); return () => window.removeEventListener('keydown', k);
+  }, [topic]);
 
   const range = period.mode === '7d' ? { from: today0 - 7 * DAY_MS, to: today0 } : { from: dayStart(period.from), to: dayStart(period.to) + DAY_MS };
   useEffect(() => {
@@ -117,15 +123,15 @@ export function TopicDetail({ areaId, topics, topic, onTopic, assessments, child
         <motion.div className="fixed inset-0 z-50 flex justify-end" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
           <div className="absolute inset-0 bg-black/60" onClick={() => onTopic(null)} />
           <motion.aside initial={{ x: 60 }} animate={{ x: 0 }} exit={{ x: 60 }} transition={{ duration: 0.25 }}
-            data-topic-panel className="relative w-full max-w-3xl h-full bg-space-deep border-l border-space-line overflow-y-auto">
-            <div className="sticky top-0 z-10 bg-space-deep/95 backdrop-blur border-b border-space-line px-6 pt-5 pb-4">
+            data-topic-panel className="relative w-full max-w-3xl h-full bg-space-bg border-l border-space-line overflow-y-auto overscroll-contain" role="dialog" aria-modal="true" aria-label={`${def.label} detail`}>
+            <div className="sticky top-0 z-10 bg-space-bg border-b border-space-line px-4 md:px-6 pt-4 pb-4">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex flex-wrap gap-1">
                   {topics.map(({ id, label }) => (
-                    <button key={id} onClick={() => onTopic(id)} className={`px-4 py-2 rounded-xl text-sm ${id === topic ? 'bg-space-card text-white border border-space-line' : 'text-slate-400 hover:text-slate-200'}`}>{label}</button>
+                    <button key={id} onClick={() => onTopic(id)} className={`px-4 py-2 rounded-md text-sm ${id === topic ? 'bg-space-card2 text-slate-50 border border-space-strong' : 'text-slate-300 hover:text-slate-50 border border-transparent'}`}>{label}</button>
                   ))}
                 </div>
-                <button onClick={() => onTopic(null)} className="text-slate-400 hover:text-white" aria-label="Close"><X /></button>
+                <button onClick={() => onTopic(null)} className="text-slate-300 hover:text-slate-50" aria-label="Close detail"><X aria-hidden="true" /></button>
               </div>
               <div className="flex flex-wrap items-center gap-2 mt-4 text-xs">
                 <span className="text-slate-400">Compare today with:</span>
@@ -134,21 +140,21 @@ export function TopicDetail({ areaId, topics, topic, onTopic, assessments, child
                 {period.mode === 'custom' && (
                   <span className="inline-flex flex-wrap items-center gap-2">
                     {[14, 30].map((n) => (
-                      <button key={n} onClick={() => setPeriod({ mode: 'custom', from: isoDay(today0 - n * DAY_MS), to: isoDay(today0 - DAY_MS) })} className="rounded-lg px-2 py-1 border border-space-line text-slate-300 hover:border-slate-500">{n} days</button>
+                      <button key={n} onClick={() => setPeriod({ mode: 'custom', from: isoDay(today0 - n * DAY_MS), to: isoDay(today0 - DAY_MS) })} className="rounded-lg px-2 py-1 border border-space-line text-slate-300 hover:border-space-strong">{n} days</button>
                     ))}
-                    <label className="text-slate-400">From <input type="date" value={period.from} max={period.to} onChange={(e) => e.target.value && setPeriod({ ...period, from: e.target.value })} className="bg-space-card border border-space-line rounded-md px-1.5 py-1 text-slate-200" /></label>
-                    <label className="text-slate-400">To <input type="date" value={period.to} min={period.from} max={isoDay(today0)} onChange={(e) => e.target.value && setPeriod({ ...period, to: e.target.value })} className="bg-space-card border border-space-line rounded-md px-1.5 py-1 text-slate-200" /></label>
+                    <label className="text-slate-400">From <input type="date" value={period.from} max={period.to} onChange={(e) => e.target.value && setPeriod({ ...period, from: e.target.value })} className="field !w-auto !py-1 !px-2 ml-1" /></label>
+                    <label className="text-slate-400">To <input type="date" value={period.to} min={period.from} max={isoDay(today0)} onChange={(e) => e.target.value && setPeriod({ ...period, to: e.target.value })} className="field !w-auto !py-1 !px-2 ml-1" /></label>
                   </span>
                 )}
               </div>
             </div>
 
-            <div className="px-6 pb-10">
+            <div className="px-4 md:px-6 pb-10">
               {flagged.length > 0 && (
                 <Section title="What to do">
                   <ul className="space-y-2">
                     {flagged.map((a) => (
-                      <li key={a.indicator + (a.recordedAt ?? '')} className="rounded-xl border border-space-line bg-white/[0.03] p-3 text-sm text-slate-200">
+                      <li key={a.indicator + (a.recordedAt ?? '')} className="rounded-md border border-space-line bg-space-card2 p-3 text-sm text-slate-200">
                         <div className="mb-1 flex items-center gap-2"><StatusPill level={a.displayLevel} small /><span className="text-xs text-slate-400">{info(a.indicator).label}</span></div>
                         {a.message}
                       </li>
@@ -179,9 +185,9 @@ export function CompareRow({ items, periodLabel }: { items: Cmp[]; periodLabel: 
     <Section title={`Today vs ${periodLabel}`}>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3">
         {items.map((c) => (
-          <div key={c.label} data-indicator={c.indicator} className="rounded-xl border border-space-line bg-space-card p-4">
+          <div key={c.label} data-indicator={c.indicator} className="rounded-md border border-space-line bg-space-card p-4">
             <span className="text-xs text-slate-400">{c.label}</span>
-            <div className="flex items-center justify-between gap-2 mt-1"><p className="text-2xl font-semibold">{c.today}</p>{c.level && <StatusPill level={c.level} small />}</div>
+            <div className="flex items-center justify-between gap-2 mt-1"><p className="text-2xl font-medium font-mono">{c.today}</p>{c.level && <StatusPill level={c.level} small />}</div>
             <p className="text-xs text-slate-400 mt-1"><span className="font-mono text-slate-200">{c.diff}</span> vs {periodLabel} <span className="text-slate-500">(avg {c.avg})</span></p>
             {c.note && <p className="text-xs text-slate-500 mt-1">{c.note}</p>}
           </div>

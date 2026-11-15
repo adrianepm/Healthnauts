@@ -6,40 +6,52 @@ import { useStore } from '../store/useStore';
 import { useSim } from './DemoPanel';
 import { AREA } from '../config/api';
 import { ago } from '../lib/format';
-import { Card, StatusPill } from './ui';
+import { Card, Num, StatusPill } from './ui';
+
+const NEWS2_LABEL: Record<string, string> = {
+  respiratory_rate: 'Respiratory rate', spo2: 'SpO₂', blood_pressure_systolic: 'Systolic BP', heart_rate: 'Heart rate',
+  body_temperature: 'Temperature', supplemental_oxygen: 'Supplemental O₂', consciousness: 'Consciousness',
+};
 
 export function VitalsCard({ detailed }: { detailed?: boolean }) {
   const vital = useStore((s) => s.overview?.vitalSigns);
   const news2 = useStore((s) => s.details[AREA.gravity]?.assessments.find((a) => a.indicator === 'news2'));
   const s = useSim();
   const m = s.lastVitals?.measurements;
-  // Aberto pelo coração da RIDGE Scene: rola até este cartão.
+  // Aberto pelo corpo da Overview: rola até este cartão.
   const focus = (useLocation().state as { focus?: string } | null)?.focus === 'vitals';
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => { if (detailed && focus) ref.current?.scrollIntoView({ block: 'center' }); }, [detailed, focus]);
-  const items: [string, string][] = m ? [
-    ['Heart rate', `${m.heart_rate.value} bpm`], ['Blood pressure', `${m.blood_pressure_systolic.value}/${m.blood_pressure_diastolic.value} mmHg`],
-    ['Respiratory rate', `${m.respiratory_rate.value} /min`], ['SpO₂', `${m.spo2.value}%`], ['Temperature', `${m.body_temperature.value} °C`],
+  const items: [string, string, string][] = m ? [
+    ['Heart rate', String(m.heart_rate.value), 'bpm'], ['Blood pressure', `${m.blood_pressure_systolic.value}/${m.blood_pressure_diastolic.value}`, 'mmHg'],
+    ['Respiratory rate', String(m.respiratory_rate.value), '/min'], ['SpO₂', String(m.spo2.value), '%'], ['Temperature', String(m.body_temperature.value), '°C'],
   ] : [];
   return (
-    <div ref={ref} id="vital-signs" className="scroll-mt-48">
+    <div ref={ref} id="vital-signs" className="scroll-mt-24">
     <Card title="Vital signs" sub={`Simulated wrist sensor · ${s.lastVitals ? 'updated ' + ago(s.lastVitals.recordedAt) : 'waiting for a reading'}${s.lastVitals?.activity === 'exercise' ? ' · exercising' : ''}`}
       icon={<HeartPulse size={18} />} right={vital && <StatusPill level={vital.displayLevel} />}>
-      <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-        {items.map(([k, v]) => <div key={k} className="rounded-xl border border-white/[0.08] bg-white/[0.02] p-3"><p className="text-xs text-slate-400">{k}</p><p className="text-lg font-medium font-mono tabular-nums mt-0.5">{v}</p></div>)}
-      </div>
+      <dl className="grid grid-cols-2 sm:grid-cols-5 gap-2">
+        {items.map(([k, v, u]) => (
+          <div key={k} className="rounded-md border border-space-line bg-space-card2 px-3 py-2.5">
+            <dt className="text-xs text-slate-300">{k}</dt>
+            <dd className="text-xl font-medium text-slate-50 mt-0.5"><Num>{v}</Num><span className="text-xs font-normal text-slate-300 ml-1">{u}</span></dd>
+          </div>
+        ))}
+      </dl>
       {vital?.message && <p className="text-sm text-slate-200 mt-3">{vital.message}</p>}
       {news2 && (
-        <div className="mt-3 rounded-xl border border-space-line bg-space-deep/60 p-3">
-          <p className="text-xs text-slate-300 inline-flex items-center gap-1.5"><Activity size={13} />Early warning score (terrestrial reference, experimental): <b className="text-slate-100">{news2.score ?? '—'}</b></p>
+        <div className="mt-3 rounded-md border border-space-line p-3">
+          <p className="text-xs text-slate-300 inline-flex flex-wrap items-center gap-1.5"><Activity size={14} aria-hidden="true" />Early warning score (terrestrial reference, experimental): <b className="font-mono text-slate-50">{news2.score ?? '—'}</b></p>
           {detailed && news2.components && (
-            <div className="flex flex-wrap gap-1.5 mt-2">
+            <dl className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-x-4 gap-y-1 mt-2">
               {Object.entries(news2.components as Record<string, number>).map(([k, pts]) => (
-                <span key={k} className="chip normal-case border-space-line text-slate-300">{k.replace(/_/g, ' ')}: {pts}</span>
+                <div key={k} className="flex items-baseline justify-between gap-2 border-b border-space-line py-1 text-xs">
+                  <dt className="text-slate-300">{NEWS2_LABEL[k] ?? k.replace(/_/g, ' ')}</dt><dd className="font-mono text-slate-100">{pts}</dd>
+                </div>
               ))}
-            </div>
+            </dl>
           )}
-          <p className="text-xs text-slate-500 mt-1.5">{news2.limitation}</p>
+          <p className="text-xs text-slate-300 mt-2">{news2.limitation}</p>
         </div>
       )}
     </Card>

@@ -6,6 +6,7 @@ import { pvtProtocol } from '../../shared/calculations.js';
 import { api } from '../services/api';
 import { useStore, XP_PER_PVT } from '../store/useStore';
 import { Modal, Stat } from './ui';
+import { toast } from '../store/toast';
 
 const ISI_MIN_MS = 1000, ISI_MAX_MS = 4000, FEEDBACK_MS = 1000; // espera de 1 a 4 s, contando 1 s de feedback [31]
 const DEMO_MS = 30000;
@@ -90,8 +91,8 @@ export function PvtTest() {
     api.pvtSession({ startedAt: d.startedAt.toISOString(), endedAt: new Date(d.startedAt.getTime() + Math.max(1, Math.ceil(durationMs))).toISOString(),
       // Toque sem estímulo só conta dentro da janela de 3 min do protocolo.
       durationMs, completed, events: d.events.filter((x) => x.atMs <= durationMs && (x.kind !== 'false_start' || x.atMs < pvtProtocol.durationMs)) })
-      .then(async (res) => { setResult(res.operation); if (res.operation.status === 'completed') addXp(XP_PER_PVT); await refresh(); })
-      .catch((err) => setError(err?.message ?? 'Could not save.'));
+      .then(async (res) => { setResult(res.operation); if (res.operation.status === 'completed') addXp(XP_PER_PVT); await refresh(); toast.success('Reaction test saved'); })
+      .catch((err) => { setError(err?.message ?? 'Could not save.'); toast.error(err); });
   }, [e.phase]);
 
   const c = result?.calculation;
@@ -106,7 +107,7 @@ export function PvtTest() {
         </div>
       )}
       {e.running && (
-        <button onPointerDown={e.respond} className="w-full h-64 rounded-2xl border border-space-line bg-black grid place-items-center select-none">
+        <button onPointerDown={e.respond} className="w-full h-64 rounded-lg border border-space-line bg-black grid place-items-center select-none">
           {e.phase === 'stim' && <span className="font-mono text-6xl text-slate-100 tabular-nums">{e.counter}</span>}
           {e.phase === 'feedback' && <span className="font-mono text-xl text-slate-300">{e.msg}</span>}
           {e.phase === 'wait' && <span className="text-slate-600 text-sm">Wait for the counter…</span>}
@@ -128,7 +129,7 @@ export function PvtTest() {
               <p className="text-xs text-slate-400 mt-3">{c?.validResponses ?? 0} valid responses. Calculated by the onboard service; open Alertness to see how it compares with your usual range.</p>
             </>
           )}
-          <button onClick={close} className="mt-4 w-full bg-brand hover:bg-brand-soft text-space-bg font-semibold rounded-xl py-3">{result?.status === 'completed' ? `Done (+${XP_PER_PVT} XP)` : 'Close'}</button>
+          <button onClick={close} className="mt-4 w-full bg-brand hover:bg-brand-soft text-space-bg font-semibold rounded-md py-3">{result?.status === 'completed' ? `Done (+${XP_PER_PVT} XP)` : 'Close'}</button>
         </div>
       )}
     </Modal>

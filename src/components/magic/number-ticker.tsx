@@ -1,59 +1,41 @@
-// NumberTicker do Magic UI (magicui.design/r/number-ticker), adaptado: framer-motion no lugar de motion/react,
-// Geist Mono, valor final para leitores de tela e sem animação com prefers-reduced-motion.
-import { useEffect, useRef, type ComponentPropsWithoutRef, type ReactNode } from 'react';
-import { useInView, useMotionValue, useReducedMotion, useSpring } from 'framer-motion';
-import { cn } from '../../lib/utils';
-
-interface NumberTickerProps extends ComponentPropsWithoutRef<'span'> {
-  value: number;
-  startValue?: number;
-  direction?: 'up' | 'down';
-  delay?: number;
-  decimalPlaces?: number;
-}
+// Número que anima só quando o valor MUDA (300 ms), nunca ao aparecer na tela. JetBrains Mono com algarismos de largura igual,
+// valor final para leitores de tela e sem animação com prefers-reduced-motion.
+import { useEffect, useRef, type ReactNode } from 'react';
+import { animate, useReducedMotion } from 'framer-motion';
+import { Num } from '../ui';
 
 const format = (n: number, decimals: number) =>
-  Intl.NumberFormat('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals }).format(Number(n.toFixed(decimals)));
+  Intl.NumberFormat('en-US', { minimumFractionDigits: decimals, maximumFractionDigits: decimals, useGrouping: false }).format(Number(n.toFixed(decimals)));
 
-export function NumberTicker({ value, startValue = 0, direction = 'up', delay = 0, className, decimalPlaces = 0, ...props }: NumberTickerProps) {
+export function NumberTicker({ value, decimalPlaces = 0, className }: { value: number; decimalPlaces?: number; className?: string }) {
   const reduced = !!useReducedMotion();
   const ref = useRef<HTMLSpanElement>(null);
-  const motionValue = useMotionValue(direction === 'down' ? value : startValue);
-  const springValue = useSpring(motionValue, { damping: 60, stiffness: 100 });
-  const isInView = useInView(ref, { once: true, margin: '0px' });
-
+  const prev = useRef(value);
   useEffect(() => {
-    if (reduced) return;
-    let timer: ReturnType<typeof setTimeout> | null = null;
-    if (isInView) timer = setTimeout(() => motionValue.set(direction === 'down' ? startValue : value), delay * 1000);
-    return () => { if (timer !== null) clearTimeout(timer); };
-  }, [motionValue, isInView, delay, value, direction, startValue, reduced]);
-
-  useEffect(() => springValue.on('change', (latest) => {
-    if (ref.current) ref.current.textContent = format(latest, decimalPlaces);
-  }), [springValue, decimalPlaces]);
-
-  const final = format(direction === 'down' ? startValue : value, decimalPlaces);
+    const from = prev.current; prev.current = value;
+    if (reduced || from === value || !ref.current) return;
+    const controls = animate(from, value, { duration: 0.3, ease: 'easeOut', onUpdate: (v) => { if (ref.current) ref.current.textContent = format(v, decimalPlaces); } });
+    return () => controls.stop();
+  }, [value, decimalPlaces, reduced]);
+  const final = format(value, decimalPlaces);
   return (
-    <span className={cn('relative inline-block font-mono tabular-nums', className)} {...props}>
+    <span className={className}>
       <span className="sr-only">{final}</span>
-      <span ref={ref} aria-hidden="true">{reduced ? final : format(direction === 'down' ? value : startValue, decimalPlaces)}</span>
+      <span ref={ref} aria-hidden="true" className="font-mono">{final}</span>
     </span>
   );
 }
 
 /**
- * Valor de cartão: conta até o número inicial do texto ("7.2 h", "2 of 4", "118") e mantém o resto igual.
- * Texto sem número no começo ("No link", "—") ou nó React aparece como veio.
+ * Valor de cartão: anima o número inicial do texto ("7.2 h", "2 of 4", "118") e mantém o resto igual.
+ * Texto sem número no começo ("No link", "—") ou nó React aparece como veio. Número com ponto decimal usa Num.
  */
 export function TickerValue({ value }: { value: ReactNode }) {
   if (typeof value !== 'string' && typeof value !== 'number') return <>{value}</>;
   const m = String(value).match(/^(-?\d+(?:\.(\d+))?)(.*)$/s);
   if (!m) return <span>{value}</span>;
-  return (
-    <span className="font-mono tabular-nums">
-      <NumberTicker value={Number(m[1])} decimalPlaces={m[2]?.length ?? 0} />
-      {m[3]}
-    </span>
-  );
+  // Resto que começa com espaço é unidade (" min", " mSv"): fica na fonte do texto. "7h15" continua inteiro em mono.
+  const rest = /^\s/.test(m[3]) ? <span className="font-sans font-normal text-[0.6em] text-slate-300 tracking-normal">{m[3]}</span> : <span className="font-mono">{m[3]}</span>;
+  if (m[2]) return <><Num>{m[1]}</Num>{rest}</>;
+  return <><NumberTicker value={Number(m[1])} />{rest}</>;
 }

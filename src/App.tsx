@@ -20,7 +20,7 @@ function PageTransition({ children }: { children: ReactNode }) {
   const reduced = useReducedMotion();
   if (reduced) return <>{children}</>;
   return (
-    <motion.div key={pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.24, ease: [0.4, 0, 0.2, 1] }}>
+    <motion.div key={pathname} initial={{ opacity: 0 }} animate={{ opacity: 1 }} transition={{ duration: 0.15, ease: 'easeOut' }}>
       {children}
     </motion.div>
   );
@@ -40,7 +40,7 @@ export default function App() {
     return () => { cancelled = true; clearInterval(timer); sim.stop(); };
   }, []);
 
-  if (error) return <div className="p-8 text-red-300">{error}</div>;
+  if (error) return <div className="p-8 text-slate-100" role="alert">{error}</div>;
   if (!ready) return <div className="min-h-screen grid place-items-center text-slate-400 text-sm">Starting the onboard data service…</div>;
   return (
     <HashRouter>

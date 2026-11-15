@@ -7,10 +7,10 @@ import { ChevronRight } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { useSim } from '../components/DemoPanel';
 import { TodayHero } from '../components/lean/Home';
-import { BodyMap } from '../components/scene/BodyMap';
+import { BodyView } from '../components/scene/BodyView';
 import { RoutineBar } from '../components/TodayRoutine';
 import { MyPanels, useAllAreas } from '../components/MyPanels';
-import { StatusPill } from '../components/ui';
+import { Num, StatusPill } from '../components/ui';
 import { MagicCard } from '../components/magic/magic-card';
 import { indicatorHref, sceneState, todaySummary } from '../components/scene/sceneMapping';
 import { AREA } from '../config/api';
@@ -48,18 +48,18 @@ export default function Overview() {
   ];
 
   return (
-    <div className="space-y-4">
+    <div className="space-y-3">
       <h1 className="sr-only">Overview</h1>
       <TodayHero compact level={today.level} message={today.message} sub={today.indicator ? info(today.indicator).label : undefined}
         also={today.also.map((i) => ({ label: i.label, level: i.level, message: i.message }))} />
       <RoutineBar />
-      <div className="grid lg:grid-cols-2 gap-4 items-start">
-        <BodyMap scene={scene} />
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-start [&>*]:min-w-0">
+        <BodyView scene={scene} />
         <MyPanels chosen={chosen} onChange={choose} />
       </div>
-      <div className="grid sm:grid-cols-3 gap-4">
+      <section aria-label="Other areas" className="grid sm:grid-cols-3 gap-3">
         {cards.map((c) => { const a = area(c.id); return a ? <AreaCard key={c.id} a={a} {...c} inPanels={chosen.includes(panelId(c.id, c.indicator))} /> : null; })}
-      </div>
+      </section>
     </div>
   );
 }
@@ -70,19 +70,19 @@ function AreaCard({ a, indicator, title, value, unit, sub, inPanels }: {
   return (
     <MagicCard as={Link} to={indicatorHref(AREA_PATH[a.areaId], inPanels ? a.headline.indicator : indicator)} className="!p-4 flex flex-col gap-2">
       <div className="flex items-center justify-between gap-2">
-        <span className="text-sm font-semibold">{AREA_LABEL[a.areaId]}</span>
-        <span className="flex items-center gap-2"><StatusPill level={a.displayLevel} small /><ChevronRight size={15} className="text-slate-400" aria-hidden="true" /></span>
+        <h3 className="text-sm font-semibold">{AREA_LABEL[a.areaId]}</h3>
+        <span className="flex items-center gap-2"><StatusPill level={a.displayLevel} small /><ChevronRight size={16} className="text-slate-300" aria-hidden="true" /></span>
       </div>
       {/* Valor principal só quando não está em My panels. */}
       {!inPanels && (<>
         <span className="text-xs text-slate-300">{title}</span>
         {value === null
           ? <span className="flex flex-wrap items-center gap-2"><span className="text-2xl font-medium">–</span><StatusPill level="unavailable" small /></span>
-          : <span className="text-2xl font-medium tracking-tight text-slate-50">{value}{unit && <span className="text-sm text-slate-400"> {unit}</span>}</span>}
+          : <span className="text-2xl font-medium tracking-tight text-slate-50">{/^-?\d/.test(value) ? <Num>{value}</Num> : value}{unit && <span className="text-sm font-normal text-slate-300 ml-1.5">{unit}</span>}</span>}
         {sub && <span className="text-xs text-slate-300">{sub}</span>}
       </>)}
       <p className="text-xs text-slate-300 line-clamp-2">{a.headline.message}</p>
-      <p className="text-xs text-slate-400 mt-auto">last data {ago(a.lastRecordedAt)}</p>
+      <p className="text-xs text-slate-300 mt-auto">Last data {ago(a.lastRecordedAt)}</p>
     </MagicCard>
   );
 }
