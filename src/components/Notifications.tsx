@@ -1,8 +1,10 @@
 // Lembretes da rotina ("caixa de remédio") e sino com bolinha vermelha (do protótipo).
-// Lembrete não é nível: só diz o que falta fazer hoje. O cartão da Overview fica em TodayRoutine.tsx.
+// Lembrete não é nível: só diz o que falta fazer hoje. O painel do sino tem a lista completa (Ready / Done / Later);
+// a Overview mostra só a barra "Next up" (TodayRoutine.tsx). Bolinha vermelha = itens Ready.
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Bell, ClipboardCheck, Dumbbell, Scale, Timer, type LucideIcon } from 'lucide-react';
+import { motion, useReducedMotion } from 'framer-motion';
+import { Bell, Check, ClipboardCheck, Dumbbell, Scale, Timer, type LucideIcon } from 'lucide-react';
 import { pvtCollection } from '../../shared/config/isolation.js';
 import { dayKey, useStore } from '../store/useStore';
 import { DAY_MS, startOfToday } from '../lib/format';
@@ -47,23 +49,56 @@ export function useReminders(): Reminder[] {
   ];
 }
 
+/** Contagem da rotina com os mesmos itens da lista: x = Done, y = todos os itens. */
+export function routineProgress(items: Reminder[]) {
+  return { done: items.filter((r) => r.status === 'done').length, total: items.length, next: items.find((r) => r.status === 'ready') ?? null };
+}
+
+const STATUS_LABEL: Record<RoutineStatus, string> = { ready: 'Ready', done: 'Done', later: 'Later' };
+
+/** Status neutro, na cor da marca (nunca as cores de nível de alerta). Done com um check animado curto. */
+export function StatusChip({ status }: { status: RoutineStatus }) {
+  const reduced = useReducedMotion();
+  if (status === 'done') return (
+    <span className="inline-flex items-center gap-1 rounded-full border border-space-line px-2 py-0.5 text-xs text-slate-200 whitespace-nowrap">
+      <motion.span className="grid place-items-center w-4 h-4 rounded-full bg-brand text-space-bg" aria-hidden="true"
+        initial={reduced ? false : { scale: 0, rotate: -45 }} animate={{ scale: 1, rotate: 0 }} transition={{ duration: 0.3, ease: 'backOut' }}>
+        <Check size={11} strokeWidth={3} />
+      </motion.span>Done
+    </span>
+  );
+  return (
+    <span className={`inline-flex items-center rounded-full border px-2 py-0.5 text-xs whitespace-nowrap ${status === 'ready' ? 'border-brand/60 text-brand-soft' : 'border-space-line text-slate-300'}`}>
+      {STATUS_LABEL[status]}
+    </span>
+  );
+}
+
 export function Notifications() {
   const [open, setOpen] = useState(false);
-  const pending = useReminders().filter((r) => r.status === 'ready');
+  const items = useReminders();
+  const pending = items.filter((r) => r.status === 'ready');
+  const { done, total } = routineProgress(items);
   return (
     <div className="relative">
-      <button onClick={() => setOpen(!open)} className="relative w-10 h-10 rounded-xl border border-space-line grid place-items-center hover:border-slate-500" aria-label={`Reminders: ${pending.length} pending`}>
+      <button onClick={() => setOpen(!open)} aria-expanded={open} className="relative w-10 h-10 rounded-xl border border-space-line grid place-items-center hover:border-slate-500" aria-label={`Today's routine: ${pending.length} ready`}>
         <Bell size={18} />
         {pending.length > 0 && <span className="absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1 rounded-full bg-red-600 text-xs font-bold grid place-items-center text-white">{pending.length}</span>}
       </button>
       {open && (
-        <div className="absolute right-0 mt-2 w-72 rounded-xl border border-space-line bg-space-deep shadow-xl p-2 z-50">
-          {pending.length === 0 ? <p className="text-sm text-slate-400 p-3">You're all caught up.</p> : pending.map(({ id, icon: Icon, title, sub, go }) => (
-            <button key={id} onClick={() => { go(); setOpen(false); }} className="w-full flex items-center gap-3 rounded-lg p-3 hover:bg-space-card text-left">
-              <span className="relative"><Icon size={18} className="text-slate-300" /><span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500" /></span>
-              <span><span className="block text-sm">{title}</span><span className="block text-xs text-slate-400">{sub}</span></span>
-            </button>
-          ))}
+        <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-space-line bg-space-deep shadow-xl p-2 z-50">
+          <p className="px-3 pt-2 pb-1 text-xs text-slate-300">Today's routine · {done} of {total} done today</p>
+          <ul>
+            {items.map(({ id, icon: Icon, title, sub, moment, status, go }) => (
+              <li key={id}>
+                <button onClick={() => { go(); setOpen(false); }} className="w-full flex items-center gap-3 rounded-lg p-3 hover:bg-space-card text-left">
+                  <span className="relative shrink-0"><Icon size={18} className="text-slate-300" aria-hidden="true" />{status === 'ready' && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500" aria-hidden="true" />}</span>
+                  <span className="flex-1 min-w-0"><span className="block text-sm">{title}</span><span className="block text-xs text-slate-300">{moment} · {sub}</span></span>
+                  <StatusChip status={status} />
+                </button>
+              </li>
+            ))}
+          </ul>
         </div>
       )}
     </div>

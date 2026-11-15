@@ -18,9 +18,9 @@ import { DAY_MS, startOfToday } from '../lib/format';
 import { NEUTRAL } from '../lib/levels';
 
 const TOPICS: TopicDef[] = [
-  { id: 'fitness', label: 'Fitness', indicators: ['aerobic_capacity', 'muscle_strength', 'body_mass', 'vo2max'] },
+  { id: 'fitness', label: 'Fitness', indicators: ['aerobic_capacity', 'muscle_strength', 'body_mass', 'vo2max'], also: ['exercise_duration'] },
   { id: 'balance', label: 'Balance & vision', indicators: ['motion_sickness', 'headache', 'dizziness', 'vision_change', 'amsler_change'] },
-  { id: 'vitals', label: 'Vital signs', indicators: ['news2'] },
+  { id: 'vitals', label: 'Vital signs', indicators: ['news2'], also: ['heart_rate', 'respiratory_rate', 'spo2', 'body_temperature', 'blood_pressure_systolic', 'blood_pressure_diastolic', 'supplemental_oxygen', 'consciousness'] },
 ];
 const pctOf = (x: any) => (typeof x?.percentOfReference === 'number' ? `${Math.round(x.percentOfReference)}%` : '—');
 
@@ -140,24 +140,24 @@ export default function Gravity() {
               compareItem(ctx, 'aerobic_capacity', 'Aerobic capacity', (x) => x.toFixed(1)),
               compareItem(ctx, 'muscle_strength', 'Strength', (x) => `${Math.round(x)} N`),
             ]} />
-            <Section title="Body mass"><TrendChart records={ctx.series('body_mass')} fmt={(x) => `${x} kg`} lastLevel={lv('body_mass')} /></Section>
-            <Section title="Exercise sessions"><BarsChart records={ctx.series('exercise_duration')} unit="m" refs={[{ y: REFERENCE.exercisePlanMin, label: `${REFERENCE.exercisePlanMin} min/day plan` }]} fmt={(x) => `${x} min`} /></Section>
+            <Section indicator="body_mass" title="Body mass"><TrendChart records={ctx.series('body_mass')} fmt={(x) => `${x} kg`} lastLevel={lv('body_mass')} /></Section>
+            <Section indicator="exercise_duration" title="Exercise sessions"><BarsChart records={ctx.series('exercise_duration')} unit="m" refs={[{ y: REFERENCE.exercisePlanMin, label: `${REFERENCE.exercisePlanMin} min/day plan` }]} fmt={(x) => `${x} min`} /></Section>
           </>)}
           {t === 'balance' && (<>
             <CompareRow periodLabel={ctx.periodLabel} items={[
               compareItem(ctx, 'motion_sickness', 'Motion sickness (0-20)', (x) => x.toFixed(0)),
               compareItem(ctx, 'headache', 'Headache (0-10)', (x) => x.toFixed(0)),
             ]} />
-            <Section title="Headache (shown next to cabin CO₂ on Environment)"><TrendChart records={ctx.series('headache')} domain={[0, 10]} lastLevel={lv('headache')} /></Section>
-            <Section title="Motion sickness"><TrendChart records={ctx.series('motion_sickness')} domain={[0, 20]} lastLevel={lv('motion_sickness')} /></Section>
+            <Section indicator="headache" title="Headache (shown next to cabin CO₂ on Environment)"><TrendChart records={ctx.series('headache')} domain={[0, 10]} lastLevel={lv('headache')} /></Section>
+            <Section indicator="motion_sickness" title="Motion sickness"><TrendChart records={ctx.series('motion_sickness')} domain={[0, 20]} lastLevel={lv('motion_sickness')} /></Section>
             <ul className="mt-4 space-y-1 text-xs">
               {['dizziness', 'vision_change', 'amsler_change'].map((id) => <li key={id} className="flex items-center gap-2"><StatusPill level={lv(id)} small />{d.a(id)?.message}</li>)}
             </ul>
           </>)}
           {t === 'vitals' && (<>
-            <Section title="Heart rate"><TrendChart records={ctx.series('heart_rate')} fmt={(x) => `${x} bpm`} dayTicks={false} /></Section>
-            <Section title="Body temperature"><TrendChart records={ctx.series('body_temperature')} fmt={(x) => `${x} °C`} dayTicks={false} /></Section>
-            <Section title="Systolic blood pressure"><TrendChart records={ctx.series('blood_pressure_systolic')} fmt={(x) => `${x} mmHg`} dayTicks={false} /></Section>
+            <Section indicator="heart_rate respiratory_rate spo2 news2" title="Heart rate"><TrendChart records={ctx.series('heart_rate')} fmt={(x) => `${x} bpm`} dayTicks={false} /></Section>
+            <Section indicator="body_temperature" title="Body temperature"><TrendChart records={ctx.series('body_temperature')} fmt={(x) => `${x} °C`} dayTicks={false} /></Section>
+            <Section indicator="blood_pressure_systolic blood_pressure_diastolic" title="Systolic blood pressure"><TrendChart records={ctx.series('blood_pressure_systolic')} fmt={(x) => `${x} mmHg`} dayTicks={false} /></Section>
             <p className="text-xs text-slate-500 mt-2">In microgravity 24-hour blood pressure drops about 8 to 10 mmHg and heart rate does not change (Norsk et al. 2015).</p>
           </>)}
         </>)}

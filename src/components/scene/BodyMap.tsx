@@ -7,7 +7,7 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronRight, HeartPulse } from 'lucide-react';
 import { LEVEL_UI } from '../../lib/levels';
 import { StatusPill } from '../ui';
-import { BODY_LEVELS, bodyRegions, regionOfMuscle, type ElementState, type SceneState } from './sceneMapping';
+import { BODY_LEVELS, bodyRegions, indicatorHref, regionOfMuscle, type BodyRegion, type SceneState } from './sceneMapping';
 
 /** Corpo sem área ligada: tom escuro do tema (borda dos cartões), nunca branco. */
 const BODY_COLOR = '#24324D';
@@ -16,8 +16,9 @@ const COLORS = BODY_LEVELS.map((l) => LEVEL_UI[l].color);
 export function BodyMap({ scene }: { scene: SceneState }) {
   const nav = useNavigate();
   const regions = bodyRegions(scene);
-  const open = (el: ElementState) => nav(el.route, el.target === 'vitals' ? { state: { focus: 'vitals' } } : undefined);
-  const onClick = (stats: IMuscleStats) => { const r = regionOfMuscle(regions, stats.muscle); if (r) open(r.element); };
+  // Abre a área já no parâmetro da manchete (ou o parâmetro-chave da região) dentro do tópico.
+  const open = (r: BodyRegion) => nav(indicatorHref(r.element.route, r.indicator));
+  const onClick = (stats: IMuscleStats) => { const r = regionOfMuscle(regions, stats.muscle); if (r) open(r); };
   const data = regions.map((r) => ({ name: r.element.area, muscles: r.muscles as any[], frequency: r.frequency }));
 
   const hr = scene.vitals.heartRate;
@@ -27,8 +28,8 @@ export function BodyMap({ scene }: { scene: SceneState }) {
     <section className="card !p-5 h-full" aria-labelledby="body-map-title">
       <h2 id="body-map-title" className="text-sm font-semibold">Body · areas from the onboard computer</h2>
       <p className="text-xs text-slate-400 mt-0.5">Click a region or a row to open its detail.</p>
-      <div className="mt-4 grid sm:grid-cols-[auto_minmax(0,1fr)] gap-5 items-center">
-        <div className="flex justify-center pr-24 sm:pr-24">
+      <div className="mt-4 grid sm:grid-cols-[auto_minmax(0,1fr)] lg:grid-cols-1 xl:grid-cols-[auto_minmax(0,1fr)] gap-5 items-center">
+        <div className="flex justify-center pr-24">
           <div className="relative w-[150px] sm:w-[170px]">
             {/* Só para o mouse; a mesma ação está nos botões da legenda. */}
             <div aria-hidden="true">
@@ -47,7 +48,7 @@ export function BodyMap({ scene }: { scene: SceneState }) {
         <ul className="space-y-2">
           {regions.map((r) => (
             <li key={r.key}>
-              <button type="button" onClick={() => open(r.element)}
+              <button type="button" onClick={() => open(r)}
                 className="tap w-full text-left rounded-xl border border-white/10 bg-white/[0.03] hover:border-white/25 px-3 py-2 transition-colors flex items-start gap-3">
                 <span className="mt-1.5 h-3 w-3 shrink-0 rounded-full" style={{ background: LEVEL_UI[r.element.level].color }} aria-hidden="true" />
                 <span className="min-w-0 flex-1">

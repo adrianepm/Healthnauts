@@ -7,6 +7,8 @@ export type SceneTarget = 'radiation' | 'distance' | 'earth' | 'environment' | '
 
 export interface ElementState {
   target: SceneTarget; area: string; level: DisplayLevel; message: string | null;
+  /** Indicador da manchete que a API devolveu (null = sem manchete). */
+  indicator: string | null;
   /** Caution ou acima pulsa devagar (pedido de interface, não regra de saúde). */
   pulse: boolean; route: string;
 }
@@ -41,7 +43,7 @@ const UNAVAILABLE: Head = { level: null, displayLevel: 'unavailable', message: n
 
 function element(target: SceneTarget, area: string, route: string, head: Head | undefined): ElementState {
   const h = head ?? UNAVAILABLE;
-  return { target, area, route, level: h.displayLevel, message: h.message ?? null, pulse: PULSING.includes(h.displayLevel) };
+  return { target, area, route, level: h.displayLevel, message: h.message ?? null, indicator: h.indicator ?? null, pulse: PULSING.includes(h.displayLevel) };
 }
 
 /** Relatório mais recente (a linha de sinal mostra um por vez). */
@@ -76,7 +78,7 @@ export function sceneState({ overview, reports, live, now }: {
   const area = (id: string) => overview?.areas.find((a) => a.areaId === id);
   const group = (id: string, g: string): Head | undefined => area(id)?.groups?.[g] as Head | undefined;
   const headOf = (id: string): Head | undefined => {
-    const a = area(id); return a ? { level: a.level, displayLevel: a.displayLevel, message: a.headline?.message ?? null } : undefined;
+    const a = area(id); return a ? { level: a.level, displayLevel: a.displayLevel, message: a.headline?.message ?? null, indicator: a.headline?.indicator ?? null } : undefined;
   };
 
   const overall: DisplayLevel = overview?.overallDisplayLevel ?? 'unavailable';
@@ -133,16 +135,46 @@ export const BODY_LEVELS: DisplayLevel[] = ['normal', 'advisory', 'caution', 'wa
 export const levelFrequency = (level: DisplayLevel) => BODY_LEVELS.indexOf(level) + 1;
 
 export type BodyRegionKey = 'head' | 'chest' | 'limbs';
-const REGIONS: { key: BodyRegionKey; label: string; from: 'isolation' | 'vitals' | 'gravity'; muscles: string[] }[] = [
-  { key: 'head', label: 'Head and neck', from: 'isolation', muscles: ['head', 'neck'] },
-  { key: 'chest', label: 'Chest', from: 'vitals', muscles: ['chest'] },
-  { key: 'limbs', label: 'Arms and legs', from: 'gravity', muscles: ['biceps', 'triceps', 'forearm', 'quadriceps', 'abductors', 'calves'] },
+/** `fallback`: parâmetro aberto quando a API não devolve manchete para a área (só navegação). */
+const REGIONS: { key: BodyRegionKey; label: string; from: 'isolation' | 'vitals' | 'gravity'; muscles: string[]; fallback: string }[] = [
+  { key: 'head', label: 'Head and neck', from: 'isolation', muscles: ['head', 'neck'], fallback: 'sleep_duration' },
+  { key: 'chest', label: 'Chest', from: 'vitals', muscles: ['chest'], fallback: 'heart_rate' },
+  { key: 'limbs', label: 'Arms and legs', from: 'gravity', muscles: ['biceps', 'triceps', 'forearm', 'quadriceps', 'abductors', 'calves'], fallback: 'aerobic_capacity' },
 ];
 
-export interface BodyRegion { key: BodyRegionKey; label: string; muscles: string[]; element: ElementState; frequency: number }
+export interface BodyRegion { key: BodyRegionKey; label: string; muscles: string[]; element: ElementState; frequency: number; indicator: string }
 
 export function bodyRegions(s: SceneState): BodyRegion[] {
-  return REGIONS.map((r) => ({ key: r.key, label: r.label, muscles: r.muscles, element: s[r.from], frequency: levelFrequency(s[r.from].level) }));
+  return REGIONS.map((r) => ({ key: r.key, label: r.label, muscles: r.muscles, element: s[r.from], frequency: levelFrequency(s[r.from].level),
+    indicator: s[r.from].indicator ?? r.fallback }));
+}
+
+/** Endereço do detalhe com o parâmetro já aberto no tópico (?indicator=<id>). */
+export const indicatorHref = (route: string, indicator: string | null) => (indicator ? `${route}?indicator=${encodeURIComponent(indicator)}` : route);
+
+export interface TodayItem { label: string; level: DisplayLevel; message: string; indicator: string | null }
+export interface TodaySummary { level: DisplayLevel; message: string; indicator: string | null; also: TodayItem[] }
+
+const SEVERITY: Partial<Record<DisplayLevel, number>> = { emergency: 4, warning: 3, caution: 2, advisory: 1 };
+export const ALL_NORMAL = 'All areas within expected range today.';
+
+/**
+ * Frase do TodayHero. Pior nível Normal: frase fixa, sem citar indicador. Algo em Advisory ou acima: a message do item
+ * mais grave (empate: a manchete da API primeiro, depois a ordem das áreas). Só Unavailable: a manchete da API.
+ * O nível mostrado é sempre o overallDisplayLevel da API.
+ */
+export function todaySummary(o: Overview, areaLabel: (id: string) => string): TodaySummary {
+  const items: TodayItem[] = [
+    { label: 'Vital signs', level: o.vitalSigns.displayLevel, message: o.vitalSigns.message ?? '', indicator: o.vitalSigns.indicator },
+    ...o.areas.map((a) => ({ label: areaLabel(a.areaId), level: a.displayLevel, message: a.headline.message ?? '', indicator: a.headline.indicator })),
+  ];
+  const flagged = items.filter((i) => SEVERITY[i.level]);
+  const isHeadline = (i: TodayItem) => i.indicator !== null && i.indicator === o.headline.indicator;
+  const top = [...flagged].sort((a, b) => (SEVERITY[b.level]! - SEVERITY[a.level]!) || (Number(isHeadline(b)) - Number(isHeadline(a))))[0];
+  const level = o.overallDisplayLevel;
+  if (top) return { level, message: top.message, indicator: top.indicator, also: flagged.filter((i) => i !== top) };
+  if (level === 'normal') return { level, message: ALL_NORMAL, indicator: null, also: [] };
+  return { level, message: o.headline.message ?? '', indicator: o.headline.indicator, also: [] };
 }
 
 /** Região de um músculo clicado (null = parte do corpo sem área ligada). */

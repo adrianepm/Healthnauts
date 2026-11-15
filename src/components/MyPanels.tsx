@@ -1,43 +1,53 @@
-// "My panels" da Overview: até 10 indicadores escolhidos pela pessoa, mais graves primeiro.
+// "My panels" da Overview: até 10 indicadores escolhidos pela pessoa, mais graves primeiro, em grade de 2 colunas.
 // Lista disponível = catálogo de cada área (indicatorDefinitions do /areas/:id) + indicadores que a API avalia
-// sem estar no catálogo (ex.: dose de carreira, NEWS2). Valor, unidade e nível vêm da API; seta = compare.ts.
+// sem estar no catálogo (ex.: dose de carreira, NEWS2), sem os legados e sem os que repetem outro (COVERED_BY).
+// Valor, unidade e nível vêm da API; seta = compare.ts. A escolha fica na Overview (os cartões de área não repetem valor).
 import { useEffect, useMemo, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowDownRight, ArrowRight, ArrowUpRight, ChevronRight, LayoutGrid, SlidersHorizontal } from 'lucide-react';
-import { api, type ApiRecord, type AreaDetail, type Assessment, type DisplayLevel } from '../services/api';
+import { api, type ApiRecord, type AreaDetail, type Assessment, type DisplayLevel, type Overview } from '../services/api';
 import { AREA, type AreaId } from '../config/api';
 import { useStore } from '../store/useStore';
 import { AREA_LABEL, AREA_PATH, info } from '../lib/content';
 import { DAY_MS, deltaText, fmtDuration, fmtHours, startOfToday } from '../lib/format';
 import { weekCompare, type WeekCompare } from '../lib/compare';
-import { DEFAULT_PANELS, MAX_PANELS, clearPanels, loadPanels, panelId, savePanels, sortPanels, togglePanel } from '../lib/panels';
+import { COVERED_BY, DEFAULT_PANELS, MAX_PANELS, panelId, sortPanels, togglePanel } from '../lib/panels';
+import { indicatorHref } from './scene/sceneMapping';
 import { Modal, StatusPill } from './ui';
 import { groups } from '../../shared/config/research.js';
 
-/** Sinais vitais ficam no cartão de sinais vitais da página Gravity (não em um tópico). */
-const VITALS = new Set<string>((groups as any).gravity_fields.vital_signs);
-
 const AREAS: AreaId[] = [AREA.isolation, AREA.gravity, AREA.cabin, AREA.radiation, AREA.distance];
+const GROUPS = groups as Record<string, Record<string, string[]>>;
 
-interface Available { id: string; areaId: AreaId; indicator: string; label: string; unit: string | null; scaleMax?: number }
+export interface Available { id: string; areaId: AreaId; indicator: string; label: string; unit: string | null; scaleMax?: number; includes: string[] }
 interface Panel extends Available { value: unknown; shown: string | null; level: DisplayLevel | null; week: WeekCompare | null; kind: 'hours' | 'number' }
 
-/** Indicadores disponíveis por área: catálogo (sem os legados) + avaliados fora do catálogo. */
-function available(details: Partial<Record<AreaId, AreaDetail>>): Available[] {
+/** Indicadores disponíveis por área: catálogo (sem os legados) + avaliados fora do catálogo; os repetidos ficam dentro do que os cobre. */
+export function availablePanels(details: Partial<Record<AreaId, AreaDetail>>): Available[] {
   return AREAS.flatMap((areaId) => {
     const d = details[areaId]; if (!d) return [];
     const defs = d.indicatorDefinitions.filter((x: any) => !x.deprecated);
-    const ids = new Set(defs.map((x: any) => x.id));
+    const ids = new Set<string>(defs.map((x: any) => x.id));
     const extra = [...new Set(d.assessments.map((a) => a.indicator))].filter((i) => !ids.has(i));
-    return [
-      ...defs.map((x: any): Available => ({ id: panelId(areaId, x.id), areaId, indicator: x.id, label: x.label ?? info(x.id).label, unit: x.displayUnit ?? x.unit ?? null, scaleMax: x.scale?.max })),
-      ...extra.map((i): Available => { const a = d.assessments.find((x) => x.indicator === i); return { id: panelId(areaId, i), areaId, indicator: i, label: info(i).label, unit: typeof a?.unit === 'string' ? a.unit : null }; }),
+    const all: Available[] = [
+      ...defs.map((x: any): Available => ({ id: panelId(areaId, x.id), areaId, indicator: x.id, label: x.label ?? info(x.id).label, unit: x.displayUnit ?? x.unit ?? null, scaleMax: x.scale?.max, includes: [] })),
+      ...extra.map((i): Available => { const a = d.assessments.find((x) => x.indicator === i); return { id: panelId(areaId, i), areaId, indicator: i, label: info(i).label, unit: typeof a?.unit === 'string' ? a.unit : null, includes: [] }; }),
     ];
+    const present = new Set(all.map((x) => x.indicator));
+    const kept = all.filter((x) => !(COVERED_BY[x.indicator] && present.has(COVERED_BY[x.indicator])));
+    for (const x of kept) x.includes = all.filter((y) => COVERED_BY[y.indicator] === x.indicator).map((y) => y.label);
+    return kept;
   });
 }
 
 const newest = (xs: Assessment[], indicator: string) => xs.filter((x) => x.indicator === indicator)
   .reduce<Assessment | undefined>((top, x) => !top || (Date.parse(x.recordedAt ?? '') || 0) > (Date.parse(top.recordedAt ?? '') || 0) ? x : top, undefined);
+
+/** Nível do grupo que a API devolve em /overview (para indicador sem nível próprio). */
+function groupLevel(o: Overview | null, areaId: string, indicator: string): DisplayLevel | null {
+  const g = Object.entries(GROUPS[areaId] ?? {}).find(([, ids]) => ids.includes(indicator))?.[0];
+  return (g && o?.areas.find((a) => a.areaId === areaId)?.groups?.[g]?.displayLevel) || null;
+}
 
 const num = (v: number) => (Number.isInteger(v) ? String(v) : Math.abs(v) >= 100 ? v.toFixed(0) : Math.abs(v) >= 10 ? v.toFixed(1) : v.toFixed(2));
 
@@ -61,16 +71,21 @@ function show(v: unknown, unit: string | null, scaleMax?: number): string | null
   return null;
 }
 
-export function MyPanels() {
-  const details = useStore((s) => s.details);
+/** Carrega o detalhe das 5 áreas (o store passa a atualizá-las a cada refresh). */
+export function useAllAreas() {
   const loadArea = useStore((s) => s.loadArea);
+  useEffect(() => { AREAS.forEach((id) => loadArea(id).catch(() => undefined)); }, []);
+  return useStore((s) => s.details);
+}
+
+export function MyPanels({ chosen, onChange }: { chosen: string[]; onChange: (next: string[]) => void }) {
+  const details = useAllAreas();
+  const overview = useStore((s) => s.overview);
   const version = useStore((s) => s.version);
   const nav = useNavigate();
-  const [chosen, setChosen] = useState<string[]>(() => loadPanels());
   const [open, setOpen] = useState(false);
   const [week, setWeek] = useState<ApiRecord[]>([]);
 
-  useEffect(() => { AREAS.forEach((id) => loadArea(id).catch(() => undefined)); }, []);
   useEffect(() => {
     let live = true;
     const from = new Date(startOfToday() - 7 * DAY_MS); const to = new Date(Date.now() + 60000);
@@ -79,7 +94,7 @@ export function MyPanels() {
     return () => { live = false; };
   }, [version]);
 
-  const list = useMemo(() => available(details), [details]);
+  const list = useMemo(() => availablePanels(details), [details]);
   const panels = useMemo(() => {
     const today0 = startOfToday();
     const made = chosen.map((id) => list.find((x) => x.id === id)).filter((x): x is Available => !!x).map((x): Panel => {
@@ -88,15 +103,14 @@ export function MyPanels() {
       const rec = d?.latestRecords.find((r) => r.indicator === x.indicator);
       const value = rec?.value ?? a?.value ?? a?.observedValue;
       const shown = show(value, x.unit, x.scaleMax);
-      // Sem valor: "–" com Unavailable. Com valor, o nível é o da avaliação da API (null = a API não avalia esse indicador).
-      const level: DisplayLevel | null = shown === null ? 'unavailable' : a?.displayLevel ?? null;
+      // Sem valor: "–" com Unavailable. Com valor: nível próprio da API; sem ele, o nível do grupo; sem grupo, sem selo.
+      const own = a && a.status !== 'not_applicable' ? a.displayLevel : null;
+      const level: DisplayLevel | null = shown === null ? 'unavailable' : own ?? groupLevel(overview, x.areaId, x.indicator);
       const kind = x.unit === 'h' ? 'hours' : 'number';
       return { ...x, value, shown, level, kind, week: x.scaleMax === 1 && !x.unit ? null : weekCompare(value, week, x.indicator, today0) };
     });
     return sortPanels(made, chosen);
-  }, [chosen, list, details, week]);
-
-  const openPanel = (p: Panel) => nav(AREA_PATH[p.areaId], { state: { topicFor: p.indicator, ...(p.areaId === AREA.gravity && VITALS.has(p.indicator) ? { focus: 'vitals' } : {}) } });
+  }, [chosen, list, details, week, overview]);
 
   return (
     <section aria-labelledby="panels-title" className="space-y-3">
@@ -110,12 +124,11 @@ export function MyPanels() {
       {panels.length === 0 ? (
         <p className="card !p-5 text-sm text-slate-300">No panels chosen. Use Customize to add up to {MAX_PANELS}.</p>
       ) : (
-        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 xl:grid-cols-5 gap-3">
-          {panels.map((p) => <li key={p.id}><PanelCard p={p} onOpen={() => openPanel(p)} /></li>)}
+        <ul className="grid grid-cols-1 sm:grid-cols-2 gap-3">
+          {panels.map((p) => <li key={p.id}><PanelCard p={p} onOpen={() => nav(indicatorHref(AREA_PATH[p.areaId], p.indicator))} /></li>)}
         </ul>
       )}
-      <Customize open={open} onClose={() => setOpen(false)} list={list} chosen={chosen}
-        onSave={(next) => { setChosen(next); if (next.join() === DEFAULT_PANELS.join()) clearPanels(); else savePanels(next); setOpen(false); }} />
+      <Customize open={open} onClose={() => setOpen(false)} list={list} chosen={chosen} onSave={(next) => { onChange(next); setOpen(false); }} />
     </section>
   );
 }
@@ -144,9 +157,7 @@ function PanelCard({ p, onOpen }: { p: Panel; onOpen: () => void }) {
         <ChevronRight size={15} className="text-slate-400 shrink-0 mt-0.5" aria-hidden="true" />
       </span>
       <span className="text-2xl font-medium tracking-tight text-slate-50 line-clamp-2 break-words">{p.shown ?? '–'}</span>
-      <span className="flex flex-wrap items-center gap-2">
-        {p.level ? <StatusPill level={p.level} small /> : <span className="rounded-full border border-space-line px-1.5 py-0.5 text-xs text-slate-300">Not assessed</span>}
-      </span>
+      {p.level && <span className="flex flex-wrap items-center gap-2"><StatusPill level={p.level} small /></span>}
       {p.shown !== null && <Arrow p={p} />}
     </button>
   );
@@ -173,9 +184,12 @@ function Customize({ open, onClose, list, chosen, onSave }: {
                   const on = draft.includes(x.id); const disabled = !on && full;
                   return (
                     <label key={x.id} className={`tap flex items-center gap-2 rounded-lg border px-3 py-2 text-sm ${on ? 'border-brand/60 bg-brand/10 text-slate-50' : 'border-space-line text-slate-200'} ${disabled ? 'opacity-60 cursor-not-allowed' : 'cursor-pointer'}`}>
-                      <input type="checkbox" className="accent-brand w-4 h-4" checked={on} disabled={disabled} onChange={() => setDraft(togglePanel(draft, x.id))}
+                      <input type="checkbox" className="accent-brand w-4 h-4 shrink-0" checked={on} disabled={disabled} onChange={() => setDraft(togglePanel(draft, x.id))}
                         {...(gi === 0 && i === 0 ? { 'data-autofocus': true } : {})} />
-                      <span>{x.label}{x.unit && x.unit !== 'count' ? <span className="text-slate-300"> · {x.unit}</span> : null}</span>
+                      <span>
+                        {x.label}{x.unit && x.unit !== 'count' ? <span className="text-slate-300"> · {x.unit}</span> : null}
+                        {x.includes.length > 0 && <span className="block text-xs text-slate-300">Includes {x.includes.join(' and ')}</span>}
+                      </span>
                     </label>
                   );
                 })}

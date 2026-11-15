@@ -25,10 +25,10 @@ export default function Radiation() {
       <h1 className="text-sm text-slate-400">Space radiation · exposure, not health</h1>
       <TodayHero level={d.summary!.displayLevel} label="Radiation now" message={d.summary!.headline.message ?? ''} also={d.also(d.summary!.headline.indicator)} />
       <KeyTiles tiles={[
-        { key: 'career', title: 'Career dose', icon: RadIcon, value: pct === null ? '—' : `${pct.toFixed(1)}%`, level: career?.displayLevel ?? 'unavailable', compare: career?.value !== undefined ? `${career.value} of ${LIMIT} mSv (NASA limit)` : career?.message },
+        { key: 'career', indicator: 'career_effective_dose', title: 'Career dose', icon: RadIcon, value: pct === null ? '—' : `${pct.toFixed(1)}%`, level: career?.displayLevel ?? 'unavailable', compare: career?.value !== undefined ? `${career.value} of ${LIMIT} mSv (NASA limit)` : career?.message },
         { key: 'mission', title: 'This mission', icon: Atom, value: career?.missionValue !== undefined ? `${career.missionValue} mSv` : '—', compare: 'Continuous dosimeter ledger' },
         { key: 'prior', title: 'Prior flights', icon: History, value: career?.priorValue !== undefined ? `${career.priorValue} mSv` : '—', compare: 'Attested prior history' },
-        { key: 'solar', title: 'Solar particle event', icon: Sun, value: solar?.recordedAt ? ago(solar.recordedAt) : 'No event', level: solar?.displayLevel ?? 'normal', compare: solar?.message ?? 'No solar event recorded.' },
+        { key: 'solar', indicator: 'solar_event_simulated', title: 'Solar particle event', icon: Sun, value: solar?.recordedAt ? ago(solar.recordedAt) : 'No event', level: solar?.displayLevel ?? 'normal', compare: solar?.message ?? 'No solar event recorded.' },
       ]} />
 
       <Card title="Career effective dose" sub={`Percent of the ${LIMIT} mSv career limit · demonstration bands at ${BANDS[0]}% and ${BANDS[1]}%`}>

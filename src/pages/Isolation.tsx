@@ -15,7 +15,7 @@ import { KSS_LABELS, REFERENCE, SP_LABELS } from '../lib/content';
 
 const TOPICS: TopicDef[] = [
   { id: 'sleep', label: 'Sleep', indicators: ['sleep_duration', 'sleep_quality'] },
-  { id: 'alertness', label: 'Alertness', indicators: ['sleepiness_kss', 'fatigue_samn_perelli', 'pvt_response_speed', 'pvt_lapses'] },
+  { id: 'alertness', label: 'Alertness', indicators: ['sleepiness_kss', 'fatigue_samn_perelli', 'pvt_response_speed', 'pvt_lapses'], also: ['pvt_false_starts'] },
   { id: 'mind', label: 'Mind', indicators: ['stress', 'mood_score'] },
 ];
 // Réguas do gráfico de sono: os mesmos cortes das regras de shared/config/isolation.js.
@@ -65,8 +65,8 @@ export default function Isolation() {
               compareItem(ctx, 'sleep_duration', 'Sleep duration', hoursFmt, 'hours'),
               compareItem(ctx, 'sleep_quality', 'Sleep quality (0-100)', (x) => String(Math.round(x))),
             ]} />
-            <Section title="Hours of sleep"><BarsChart records={ctx.series('sleep_duration')} unit="h" domain={[0, 10]} refs={SLEEP_REFS} fmt={hoursFmt} lastLevel={ctx.assessment('sleep_duration')?.displayLevel} /></Section>
-            <Section title="Sleep quality"><TrendChart records={ctx.series('sleep_quality')} band={band('sleep_quality')} domain={[0, 100]} lastLevel={ctx.assessment('sleep_quality')?.displayLevel} /></Section>
+            <Section indicator="sleep_duration" title="Hours of sleep"><BarsChart records={ctx.series('sleep_duration')} unit="h" domain={[0, 10]} refs={SLEEP_REFS} fmt={hoursFmt} lastLevel={ctx.assessment('sleep_duration')?.displayLevel} /></Section>
+            <Section indicator="sleep_quality" title="Sleep quality"><TrendChart records={ctx.series('sleep_quality')} band={band('sleep_quality')} domain={[0, 100]} lastLevel={ctx.assessment('sleep_quality')?.displayLevel} /></Section>
             <p className="text-xs text-slate-500 mt-1">Bars: neutral; the latest night takes the colour of its level. Lines: NASA plan 8.5 h (a goal, not a cut-off), 6 h and 4 h.</p>
           </>)}
           {t === 'alertness' && (<>
@@ -75,9 +75,9 @@ export default function Isolation() {
               compareItem(ctx, 'fatigue_samn_perelli', 'Fatigue (Samn-Perelli 1-7)', (x) => x.toFixed(1).replace('.0', '')),
               compareItem(ctx, 'pvt_response_speed', 'Reaction time (≈)', (x) => `${Math.round(x)} ms`, 'ms', rtMs),
             ]} />
-            <Section title="Sleepiness · KSS (1-9)"><ScaleHeat records={ctx.series('sleepiness_kss')} max={9} labels={KSS_LABELS} lastLevel={ctx.assessment('sleepiness_kss')?.displayLevel} /></Section>
-            <Section title="Fatigue · Samn-Perelli (1-7)"><ScaleHeat records={ctx.series('fatigue_samn_perelli')} max={7} labels={SP_LABELS} lastLevel={ctx.assessment('fatigue_samn_perelli')?.displayLevel} /></Section>
-            <Section title="Reaction check (PVT-B, every 4 days)"
+            <Section indicator="sleepiness_kss" title="Sleepiness · KSS (1-9)"><ScaleHeat records={ctx.series('sleepiness_kss')} max={9} labels={KSS_LABELS} lastLevel={ctx.assessment('sleepiness_kss')?.displayLevel} /></Section>
+            <Section indicator="fatigue_samn_perelli" title="Fatigue · Samn-Perelli (1-7)"><ScaleHeat records={ctx.series('fatigue_samn_perelli')} max={7} labels={SP_LABELS} lastLevel={ctx.assessment('fatigue_samn_perelli')?.displayLevel} /></Section>
+            <Section indicator="pvt_response_speed pvt_lapses pvt_false_starts" title="Reaction check (PVT-B, every 4 days)"
               right={<button onClick={() => setPvtOpen(true)} className="inline-flex items-center gap-1.5 bg-brand hover:bg-brand-soft text-space-bg text-xs font-semibold rounded-lg px-3 py-1.5"><Play size={12} />Start 3-min check</button>}>
               <TrendChart records={ctx.series('pvt_response_speed')} band={band('pvt_response_speed')} fmt={(x) => `${x.toFixed(2)} /s (≈ ${Math.round(rtMs(x))} ms)`} lastLevel={ctx.assessment('pvt_response_speed')?.displayLevel} />
               <p className="text-xs text-slate-400 mt-1">Line: mean response speed (higher is faster){band('pvt_response_speed') ? ' · shaded: your usual range' : ''}.</p>
@@ -88,8 +88,8 @@ export default function Isolation() {
               compareItem(ctx, 'stress', 'Stress (0-100)', (x) => String(Math.round(x))),
               compareItem(ctx, 'mood_score', 'Mood (0-100)', (x) => String(Math.round(x))),
             ]} />
-            <Section title="Stress"><TrendChart records={ctx.series('stress')} band={band('stress')} domain={[0, 100]} lastLevel={ctx.assessment('stress')?.displayLevel} /></Section>
-            <Section title="Mood"><TrendChart records={ctx.series('mood_score')} band={band('mood_score')} domain={[0, 100]} lastLevel={ctx.assessment('mood_score')?.displayLevel} /></Section>
+            <Section indicator="stress" title="Stress"><TrendChart records={ctx.series('stress')} band={band('stress')} domain={[0, 100]} lastLevel={ctx.assessment('stress')?.displayLevel} /></Section>
+            <Section indicator="mood_score" title="Mood"><TrendChart records={ctx.series('mood_score')} band={band('mood_score')} domain={[0, 100]} lastLevel={ctx.assessment('mood_score')?.displayLevel} /></Section>
             <p className="text-xs text-slate-500 mt-1">Shaded band: your usual range (mission days 1-7), when ready. No validated cut-off exists for these ratings. Mood and stress are visible only to you and your Crew Medical Officer.</p>
             <div className="mt-6"><SupportTools /></div>
           </>)}

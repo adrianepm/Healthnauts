@@ -61,3 +61,6 @@
 @media (prefers-reduced-motion: reduce) {
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
 }
+
+/* Parâmetro aberto pela Overview (?indicator=): contorno na cor da marca por alguns segundos. */
+.indicator-focus { outline: 2px solid rgb(var(--brand-soft)); outline-offset: 4px; transition: outline-color 0.3s; }

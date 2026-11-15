@@ -4,7 +4,7 @@ import test from 'node:test';
 import assert from 'node:assert/strict';
 import { memoryApi } from '../test-support/memory-api.js';
 import { atmosphereReading, climateRecords, noiseReading, vitalsReading } from '../src/sim/payloads.ts';
-import { BODY_LEVELS, bodyRegions, levelFrequency, regionOfMuscle, sceneState, signalPulse } from '../src/components/scene/sceneMapping.ts';
+import { ALL_NORMAL, BODY_LEVELS, bodyRegions, indicatorHref, levelFrequency, regionOfMuscle, sceneState, signalPulse, todaySummary } from '../src/components/scene/sceneMapping.ts';
 
 const rnd = () => 0.5;
 const op = (api, area, kind, id, body) => api.post(`/areas/${area}/operations/${kind}`, { astronautId: api.astronautId, id, source: 'simulated', ...body });
@@ -174,4 +174,50 @@ test('corpo: regiões ligadas a Isolation, sinais vitais e Gravity, frequência 
 test('corpo: sem resposta da API todas as regiões ficam Unavailable', () => {
   const s = sceneState({ overview: null, reports: [], live: null, now: Date.now() });
   for (const r of bodyRegions(s)) { assert.equal(r.element.level, 'unavailable'); assert.equal(r.frequency, levelFrequency('unavailable')); }
+});
+
+test('corpo: cada região abre um parâmetro (manchete da API ou o parâmetro-chave da região)', async () => {
+  const { api, live } = await start();
+  const { s } = await scene(api, live);
+  for (const r of bodyRegions(s)) assert.equal(r.indicator, r.element.indicator ?? { head: 'sleep_duration', chest: 'heart_rate', limbs: 'aerobic_capacity' }[r.key], r.key);
+  const none = bodyRegions(sceneState({ overview: null, reports: [], live: null, now: Date.now() }));
+  assert.deepEqual(none.map((r) => r.indicator), ['sleep_duration', 'heart_rate', 'aerobic_capacity']);
+  assert.equal(indicatorHref('/gravity', 'heart_rate'), '/gravity?indicator=heart_rate');
+  assert.equal(indicatorHref('/gravity', null), '/gravity');
+});
+
+const label = (id) => id;
+test('hoje: pior nível Normal = frase fixa, sem indicador', async () => {
+  const { api, live } = await start();
+  const { overview } = await scene(api, live);
+  const fake = { ...overview, overallDisplayLevel: 'normal', vitalSigns: { ...overview.vitalSigns, displayLevel: 'normal' },
+    areas: overview.areas.map((a) => ({ ...a, displayLevel: 'normal' })) };
+  const t = todaySummary(fake, label);
+  assert.equal(t.message, ALL_NORMAL);
+  assert.equal(t.indicator, null);
+  assert.deepEqual(t.also, []);
+});
+
+test('hoje: Advisory ou acima = message do item mais grave; os outros vão para a lista', async () => {
+  const { api, live } = await start();
+  await api.scenario('solar-event');
+  api.advance(60000);
+  await api.scenario('fever');
+  const fever = await liveSensor(api, 'nominal', 'fever', 'f');
+  const { overview } = await scene(api, fever);
+  const t = todaySummary(overview, label);
+  assert.equal(t.level, overview.overallDisplayLevel);
+  assert.equal(t.message, overview.vitalSigns.message);
+  assert.equal(t.indicator, overview.vitalSigns.indicator);
+  const rad = t.also.find((i) => i.label === 'radiation');
+  assert.equal(rad?.level, 'advisory');
+  assert.ok(!t.also.some((i) => i.message === t.message && i.label === 'Vital signs'));
+});
+
+test('hoje: só Unavailable (sem Advisory ou acima) = manchete da API', () => {
+  const o = { overallDisplayLevel: 'unavailable', headline: { displayLevel: 'unavailable', indicator: 'cabin_pressure', message: 'No reliable data.' },
+    vitalSigns: { displayLevel: 'normal', indicator: 'news2', message: 'ok' }, areas: [{ areaId: 'x', displayLevel: 'unavailable', headline: { indicator: 'cabin_pressure', message: 'No reliable data.' } }] };
+  const t = todaySummary(o, label);
+  assert.equal(t.message, 'No reliable data.');
+  assert.equal(t.indicator, 'cabin_pressure');
 });

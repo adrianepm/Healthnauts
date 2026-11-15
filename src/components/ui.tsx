@@ -39,9 +39,10 @@ export function Card({ title, sub, icon, right, children, className = '' }: {
   );
 }
 
-export function Section({ title, children, right }: { title: string; children: ReactNode; right?: ReactNode }) {
+/** `indicator`: âncora para abrir este parâmetro direto (Overview → ?indicator=<id>). Vários ids separados por espaço. */
+export function Section({ title, children, right, indicator }: { title: string; children: ReactNode; right?: ReactNode; indicator?: string }) {
   return (
-    <section className="mt-6">
+    <section className="mt-6 rounded-xl" data-indicator={indicator}>
       <div className="flex items-center justify-between gap-2 mb-2"><h4 className="text-sm font-semibold text-slate-200">{title}</h4>{right}</div>
       {children}
     </section>

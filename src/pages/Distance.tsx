@@ -45,10 +45,10 @@ export default function Distance() {
         <p className="text-xs text-slate-500 mt-2">Simulated mission context. The demo uses one delay inside each range of the specification (ISS 0.3 s, Moon 10 s, Mars 8 min). Ground reply estimate: 2 × delay + 15 min.</p>
       </Card>
       <KeyTiles tiles={[
-        { key: 'delay', title: 'One-way delay', icon: Clock, value: link.status === 'unavailable' ? 'No link' : fmtDuration(link.oneWaySeconds), level: comm?.displayLevel ?? 'unavailable', compare: `Mission: ${link.destination ?? '—'} · ${link.status}` },
+        { key: 'delay', indicator: 'communication_delay', title: 'One-way delay', icon: Clock, value: link.status === 'unavailable' ? 'No link' : fmtDuration(link.oneWaySeconds), level: comm?.displayLevel ?? 'unavailable', compare: `Mission: ${link.destination ?? '—'} · ${link.status}` },
         { key: 'reply', title: 'Expected ground reply', icon: Radio, value: link.status === 'unavailable' ? '—' : fmtDuration(link.estimatedResponseSeconds), compare: '2 × delay + 15 min to review' },
         { key: 'queue', title: 'Reports waiting', icon: SatelliteDish, value: String(queued), compare: queued ? 'Queued until the link returns' : 'Nothing queued' },
-        { key: 'kit', title: 'Onboard resources', icon: Package, value: <span className="text-base font-normal text-slate-200">{mission?.input.medicalResources ?? '—'}</span>, compare: 'Operational context, not a clinical measure' },
+        { key: 'kit', indicator: 'onboard_medical_resources', title: 'Onboard resources', icon: Package, value: <span className="text-base font-normal text-slate-200">{mission?.input.medicalResources ?? '—'}</span>, compare: 'Operational context, not a clinical measure' },
       ]} />
       <Card title="Destinations" sub="One-way delay and evacuation, section 3.7 of the specification">
         <div className="overflow-x-auto">

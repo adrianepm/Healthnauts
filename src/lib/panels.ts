@@ -8,10 +8,9 @@ export const PANELS_KEY = 'healthnauts:panels';
 /** Id de um painel: área + indicador (o mesmo indicador nunca se repete entre áreas, mas o id fica explícito). */
 export const panelId = (areaId: string, indicator: string) => `${areaId}:${indicator}`;
 
-/** Sem escolha salva: um indicador-chave por área. */
+/** Sem escolha salva: no máximo 6, um indicador-chave por área (sinais vitais contam como área), sem repetir. */
 export const DEFAULT_PANELS: string[] = [
   panelId('isolation_confinement', 'sleep_duration'),
-  panelId('isolation_confinement', 'stress'),
   panelId('gravity_fields', 'heart_rate'),
   panelId('hostile_closed_environment', 'co2_partial_pressure'),
   panelId('radiation', 'career_effective_dose'),
@@ -19,7 +18,28 @@ export const DEFAULT_PANELS: string[] = [
   panelId('distance_from_earth', 'communication_delay'),
 ];
 
-/** Mais grave primeiro: Emergency > Warning > Caution > Unavailable > Advisory > Normal; sem avaliação da API por último. */
+/**
+ * Indicadores que repetem a informação de outro: no Customize aparece só o que cobre (com "Includes …"),
+ * e uma escolha salva antiga com o coberto passa para o que cobre.
+ * Temperatura e umidade = temperature_humidity; CO₂ em ppm = a mesma leitura em mmHg; fração e pressão seca de O₂ entram no PIO₂.
+ */
+export const COVERED_BY: Record<string, string> = {
+  temperature: 'temperature_humidity',
+  relative_humidity: 'temperature_humidity',
+  co2_concentration: 'co2_partial_pressure',
+  oxygen_fraction: 'inspired_oxygen_pressure',
+  oxygen_partial_pressure: 'inspired_oxygen_pressure',
+};
+const indicatorOf = (id: string) => id.slice(id.indexOf(':') + 1);
+const areaOf = (id: string) => id.slice(0, id.indexOf(':'));
+
+/** Troca coberto pelo que cobre, tira repetidos e corta no limite. */
+export function normalizePanels(ids: string[]): string[] {
+  const out = ids.map((id) => { const c = COVERED_BY[indicatorOf(id)]; return c ? panelId(areaOf(id), c) : id; });
+  return [...new Set(out)].slice(0, MAX_PANELS);
+}
+
+/** Mais grave primeiro: Emergency > Warning > Caution > Unavailable > Advisory > Normal; sem nível (nem do grupo) por último. */
 const RANK: Record<DisplayLevel, number> = { emergency: 0, warning: 1, caution: 2, unavailable: 3, advisory: 4, normal: 5 };
 export const panelRank = (level: DisplayLevel | null) => (level ? RANK[level] : 6);
 
@@ -43,13 +63,13 @@ export function loadPanels(storage?: KV): string[] {
   try {
     const raw = store(storage)?.getItem(PANELS_KEY);
     const v = raw ? JSON.parse(raw) : null;
-    if (Array.isArray(v) && v.every((x) => typeof x === 'string')) return [...new Set(v)].slice(0, MAX_PANELS);
+    if (Array.isArray(v) && v.every((x) => typeof x === 'string')) return normalizePanels(v);
   } catch { /* usa o padrão */ }
   return [...DEFAULT_PANELS];
 }
 
 export function savePanels(chosen: string[], storage?: KV) {
-  try { store(storage)?.setItem(PANELS_KEY, JSON.stringify(chosen.slice(0, MAX_PANELS))); } catch { /* vale só nesta sessão */ }
+  try { store(storage)?.setItem(PANELS_KEY, JSON.stringify(normalizePanels(chosen))); } catch { /* vale só nesta sessão */ }
 }
 
 export function clearPanels(storage?: KV) {

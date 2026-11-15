@@ -14,6 +14,7 @@ import { DemoPanel, useSim } from './DemoPanel';
 import { StatusPill } from './ui';
 import { MorningCheckin } from './MorningCheckin';
 import { PvtTest } from './PvtTest';
+import { useIndicatorFocus } from './lean/TopicDetail';
 import { AnimatedGridPattern } from './magic/animated-grid-pattern';
 
 const TABS = [
@@ -30,6 +31,7 @@ const TABS = [
 export function AppShell({ children }: { children: ReactNode }) {
   const overview = useStore((s) => s.overview); const mission = useStore((s) => s.mission); const xp = useStore((s) => s.ui.xp);
   const s = useSim();
+  useIndicatorFocus();
   const levelOf = (area: string | null): DisplayLevel | null => {
     if (!area || !overview) return null;
     const a = overview.areas.find((x) => x.areaId === area);

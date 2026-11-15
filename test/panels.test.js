@@ -1,19 +1,22 @@
 // My panels (src/lib/panels.ts) e comparação com 7 dias (src/lib/compare.ts): funções puras da Overview.
 import test from 'node:test';
 import assert from 'node:assert/strict';
-import { DEFAULT_PANELS, MAX_PANELS, PANELS_KEY, clearPanels, loadPanels, panelId, savePanels, sortPanels, togglePanel } from '../src/lib/panels.ts';
+import { COVERED_BY, DEFAULT_PANELS, MAX_PANELS, PANELS_KEY, clearPanels, loadPanels, normalizePanels, panelId, savePanels, sortPanels, togglePanel } from '../src/lib/panels.ts';
 import { weekCompare } from '../src/lib/compare.ts';
 import { catalog } from '../shared/config/catalog.js';
 import { memoryApi } from '../test-support/memory-api.js';
 
 const memory = () => { const m = new Map(); return { getItem: (k) => m.get(k) ?? null, setItem: (k, v) => m.set(k, String(v)), removeItem: (k) => m.delete(k) }; };
 
-test('painéis: padrão tem um indicador-chave por área e todos existem no catálogo ou nas avaliações da API', async () => {
+test('painéis: padrão com 6, um por área (sinais vitais à parte), sem repetir, todos no catálogo ou nas avaliações da API', async () => {
   const api = await memoryApi();
   await api.post('/demo/profile', { astronautId: api.astronautId });
   const areas = new Set(DEFAULT_PANELS.map((id) => id.split(':')[0]));
   assert.equal(areas.size, 5);
-  assert.ok(DEFAULT_PANELS.length <= MAX_PANELS);
+  assert.deepEqual(DEFAULT_PANELS.map((id) => id.split(':')[1]),
+    ['sleep_duration', 'heart_rate', 'co2_partial_pressure', 'career_effective_dose', 'aerobic_capacity', 'communication_delay']);
+  assert.equal(new Set(DEFAULT_PANELS).size, DEFAULT_PANELS.length);
+  for (const id of DEFAULT_PANELS) assert.equal(COVERED_BY[id.split(':')[1]], undefined, id);
   for (const id of DEFAULT_PANELS) {
     const [area, indicator] = id.split(':');
     const d = (await api.get(`/areas/${area}`)).body;
@@ -68,4 +71,20 @@ test('comparação: média dos 7 dias antes de hoje, seta pela diferença arredo
   assert.equal(weekCompare(null, recs, 'sleep_duration', today0), null);
   assert.equal(weekCompare('text', recs, 'sleep_duration', today0), null);
   assert.equal(weekCompare(5, recs, 'heart_rate', today0), null);
+});
+
+test('painéis: indicador que repete outro vira o que o cobre (temperatura + umidade = temperature_humidity)', async () => {
+  const api = await memoryApi();
+  await api.post('/demo/profile', { astronautId: api.astronautId });
+  const cabin = 'hostile_closed_environment';
+  const d = (await api.get(`/areas/${cabin}`)).body;
+  for (const [covered, by] of Object.entries(COVERED_BY)) {
+    assert.ok(catalog[cabin].some((x) => x.id === covered), covered);
+    assert.ok(catalog[cabin].some((x) => x.id === by) || d.assessments.some((x) => x.indicator === by), by);
+  }
+  const t = panelId(cabin, 'temperature'), h = panelId(cabin, 'relative_humidity'), th = panelId(cabin, 'temperature_humidity');
+  assert.deepEqual(normalizePanels([t, h, th, panelId(cabin, 'cabin_noise')]), [th, panelId(cabin, 'cabin_noise')]);
+  const s = memory();
+  savePanels([t, h], s);
+  assert.deepEqual(loadPanels(s), [th]);
 });

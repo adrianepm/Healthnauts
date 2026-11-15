@@ -1,7 +1,7 @@
 // Detalhe por tópico (do protótipo), genérico para todas as telas.
 // Compara hoje com os últimos 7 dias (padrão) ou com um período escolhido; o período chama /history?from&to.
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useLocation, useSearchParams } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { api, type ApiRecord, type Assessment, type DisplayLevel } from '../../services/api';
@@ -12,7 +12,8 @@ import { info } from '../../lib/content';
 import { More, Section, StatusPill, WhyBlock } from '../ui';
 import { useStore } from '../../store/useStore';
 
-export interface TopicDef { id: string; label: string; indicators: string[] }
+/** `also`: outros indicadores mostrados no tópico (só para abrir o tópico certo a partir de ?indicator=). */
+export interface TopicDef { id: string; label: string; indicators: string[]; also?: string[] }
 
 export interface TopicCtx {
   /** Registros do período escolhido (antes de hoje). */
@@ -26,15 +27,49 @@ export interface TopicCtx {
   series: (indicator: string, from?: ApiRecord[]) => ApiRecord[];
 }
 
-/**
- * Tópico aberto na página. Chegando de "My panels" (state.topicFor = indicador), abre o tópico que contém o indicador.
- */
+/** Indicador pedido na URL (?indicator=<id>), vindo de "My panels" ou do corpo na Overview. */
+export const useIndicatorParam = () => useSearchParams()[0].get('indicator');
+
+const topicFor = (topics: TopicDef[], id: string | null) => (id ? topics.find((t) => t.indicators.includes(id) || t.also?.includes(id))?.id ?? null : null);
+
+/** Tópico aberto na página. Com ?indicator=<id>, abre o tópico que mostra esse indicador (useIndicatorFocus rola até ele). */
 export function useTopicState(topics: TopicDef[]) {
+  const wanted = useIndicatorParam();
   const loc = useLocation();
-  const wanted = (loc.state as { topicFor?: string } | null)?.topicFor;
-  const [topic, setTopic] = useState<string | null>(() => topics.find((t) => wanted && t.indicators.includes(wanted))?.id ?? null);
-  useEffect(() => { const t = topics.find((x) => wanted && x.indicators.includes(wanted)); if (t) setTopic(t.id); }, [loc.key]);
+  const [topic, setTopic] = useState<string | null>(() => topicFor(topics, wanted));
+  useEffect(() => { const t = topicFor(topics, wanted); if (t) setTopic(t); }, [loc.key]);
   return [topic, setTopic] as const;
+}
+
+/**
+ * Rola até o parâmetro pedido em ?indicator=<id> e põe o foco nele (marcado com data-indicator).
+ * Prefere o que está no painel do tópico aberto; espera os dados carregarem (até 4 s). Fica no AppShell.
+ */
+export function useIndicatorFocus() {
+  const wanted = useIndicatorParam();
+  const loc = useLocation();
+  useEffect(() => {
+    if (!wanted) return;
+    const sel = `[data-indicator~="${CSS.escape(wanted)}"]`;
+    const until = Date.now() + 4000;
+    let raf = 0;
+    const find = () => {
+      const panel = document.querySelector('[data-topic-panel]');
+      // No painel: o gráfico (section) antes do cartão de comparação.
+      const el = panel ? (panel.querySelector(`section${sel}`) ?? panel.querySelector(sel)) : document.querySelector(sel);
+      if (el instanceof HTMLElement) {
+        if (!el.hasAttribute('tabindex')) el.setAttribute('tabindex', '-1');
+        el.focus({ preventScroll: true });
+        el.scrollIntoView({ block: 'center', behavior: matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+        el.classList.add('indicator-focus');
+        window.setTimeout(() => el.classList.remove('indicator-focus'), 2500);
+        return;
+      }
+      if (Date.now() < until) raf = requestAnimationFrame(find);
+    };
+    raf = requestAnimationFrame(find);
+    return () => cancelAnimationFrame(raf);
+  }, [wanted, loc.key]);
 }
 
 type Period = { mode: '7d' | 'custom'; from: string; to: string }; // datas YYYY-MM-DD
@@ -82,7 +117,7 @@ export function TopicDetail({ areaId, topics, topic, onTopic, assessments, child
         <motion.div className="fixed inset-0 z-50 flex justify-end" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
           <div className="absolute inset-0 bg-black/60" onClick={() => onTopic(null)} />
           <motion.aside initial={{ x: 60 }} animate={{ x: 0 }} exit={{ x: 60 }} transition={{ duration: 0.25 }}
-            className="relative w-full max-w-3xl h-full bg-space-deep border-l border-space-line overflow-y-auto">
+            data-topic-panel className="relative w-full max-w-3xl h-full bg-space-deep border-l border-space-line overflow-y-auto">
             <div className="sticky top-0 z-10 bg-space-deep/95 backdrop-blur border-b border-space-line px-6 pt-5 pb-4">
               <div className="flex items-center justify-between gap-2">
                 <div className="flex flex-wrap gap-1">
@@ -136,7 +171,7 @@ export function TopicDetail({ areaId, topics, topic, onTopic, assessments, child
   );
 }
 
-export interface Cmp { label: string; today: string; avg: string; diff: string; level?: DisplayLevel; note?: string }
+export interface Cmp { label: string; today: string; avg: string; diff: string; level?: DisplayLevel; note?: string; indicator?: string }
 
 /** Linha "hoje vs período" (do protótipo). O nível de cada item vem da avaliação da API. */
 export function CompareRow({ items, periodLabel }: { items: Cmp[]; periodLabel: string }) {
@@ -144,7 +179,7 @@ export function CompareRow({ items, periodLabel }: { items: Cmp[]; periodLabel: 
     <Section title={`Today vs ${periodLabel}`}>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(170px,1fr))] gap-3">
         {items.map((c) => (
-          <div key={c.label} className="rounded-xl border border-space-line bg-space-card p-4">
+          <div key={c.label} data-indicator={c.indicator} className="rounded-xl border border-space-line bg-space-card p-4">
             <span className="text-xs text-slate-400">{c.label}</span>
             <div className="flex items-center justify-between gap-2 mt-1"><p className="text-2xl font-semibold">{c.today}</p>{c.level && <StatusPill level={c.level} small />}</div>
             <p className="text-xs text-slate-400 mt-1"><span className="font-mono text-slate-200">{c.diff}</span> vs {periodLabel} <span className="text-slate-500">(avg {c.avg})</span></p>
@@ -162,6 +197,6 @@ export function compareItem(ctx: TopicCtx, indicator: string, label: string, fmt
   const last = all.at(-1);
   const prev = ctx.series(indicator, ctx.compare).filter((r) => r !== last).map((r) => map(Number(r.value)));
   const today = last ? map(Number(last.value)) : NaN; const avg = mean(prev);
-  return { label, today: last ? fmt(today) : '—', avg: prev.length ? fmt(avg) : '—', diff: deltaText(today, avg, kind),
+  return { label, indicator, today: last ? fmt(today) : '—', avg: prev.length ? fmt(avg) : '—', diff: deltaText(today, avg, kind),
     level: ctx.assessment(indicator)?.displayLevel, note: !prev.length ? 'No other value in this period.' : undefined };
 }

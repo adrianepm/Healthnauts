@@ -15,9 +15,9 @@ import { EVA_SYMPTOMS, info } from '../lib/content';
 import { ago, fmtDateTime } from '../lib/format';
 
 const TOPICS: TopicDef[] = [
-  { id: 'air', label: 'Air', indicators: ['co2_partial_pressure', 'co2_partial_pressure_7d', 'cabin_pressure', 'inspired_oxygen_pressure'] },
-  { id: 'comfort', label: 'Comfort & noise', indicators: ['temperature_humidity', 'cabin_noise'] },
-  { id: 'eva', label: 'After EVA', indicators: ['post_eva_symptoms'] },
+  { id: 'air', label: 'Air', indicators: ['co2_partial_pressure', 'co2_partial_pressure_7d', 'cabin_pressure', 'inspired_oxygen_pressure'], also: ['co2_concentration', 'oxygen_fraction', 'oxygen_partial_pressure'] },
+  { id: 'comfort', label: 'Comfort & noise', indicators: ['temperature_humidity', 'cabin_noise'], also: ['temperature', 'relative_humidity'] },
+  { id: 'eva', label: 'After EVA', indicators: ['post_eva_symptoms'], also: ['reported_symptoms'] },
 ];
 const PSIA = gas.mmHgPerUnit.psia as number;
 const COMFORT = rules.climate.comfort as { temperature: number[]; humidity: number[] };
@@ -100,13 +100,13 @@ export default function Environment() {
               { ...compareItem(ctx, 'cabin_pressure', 'Cabin pressure', (x) => `${x.toFixed(1)} psia`, 'number', toPsia), level: lv('cabin_pressure') },
               { ...compareItem(ctx, 'inspired_oxygen_pressure', 'Inspired O₂', (x) => `${Math.round(x)} mmHg`), level: lv('inspired_oxygen_pressure') },
             ]} />
-            <Section title="CO₂ partial pressure (each reading)"><TrendChart records={ctx.series('co2_partial_pressure')} refs={CO2_REFS} unit="" fmt={(x) => `${x.toFixed(2)} mmHg`} lastLevel={lv('co2_partial_pressure')} /></Section>
+            <Section indicator="co2_partial_pressure co2_partial_pressure_7d co2_concentration" title="CO₂ partial pressure (each reading)"><TrendChart records={ctx.series('co2_partial_pressure')} refs={CO2_REFS} unit="" fmt={(x) => `${x.toFixed(2)} mmHg`} lastLevel={lv('co2_partial_pressure')} /></Section>
             <p className="text-xs text-slate-500">The level uses the time-weighted 1-hour average ({n(co2?.value, 2)} mmHg). 7-day average: {d.a('co2_partial_pressure_7d')?.message}</p>
             <div className="mt-3 rounded-xl border border-space-line p-3 text-xs text-slate-300">
               Reported headache (shown side by side, no cause is inferred): <b>{headache ? `${headache.value}/10 · ${fmtDateTime(headache.recordedAt)}` : 'none reported'}</b>
             </div>
-            <Section title="Total cabin pressure"><TrendChart records={ctx.series('cabin_pressure').map((r) => ({ ...r, value: toPsia(Number(r.value)) }))} refs={PRESSURE_REFS} domain={[0, 16]} fmt={(x) => `${x.toFixed(2)} psia`} lastLevel={lv('cabin_pressure')} /></Section>
-            <Section title="Inspired oxygen (PIO₂)"><TrendChart records={ctx.series('inspired_oxygen_pressure')} refs={[{ y: rules.oxygen.normal[0], label: `${rules.oxygen.normal[0]} mmHg`, color: LEVEL_UI.caution.color }, { y: rules.oxygen.normal[1], label: `${rules.oxygen.normal[1]} mmHg`, color: LEVEL_UI.caution.color }]} fmt={(x) => `${Math.round(x)} mmHg`} lastLevel={lv('inspired_oxygen_pressure')} /></Section>
+            <Section indicator="cabin_pressure" title="Total cabin pressure"><TrendChart records={ctx.series('cabin_pressure').map((r) => ({ ...r, value: toPsia(Number(r.value)) }))} refs={PRESSURE_REFS} domain={[0, 16]} fmt={(x) => `${x.toFixed(2)} psia`} lastLevel={lv('cabin_pressure')} /></Section>
+            <Section indicator="inspired_oxygen_pressure oxygen_fraction oxygen_partial_pressure" title="Inspired oxygen (PIO₂)"><TrendChart records={ctx.series('inspired_oxygen_pressure')} refs={[{ y: rules.oxygen.normal[0], label: `${rules.oxygen.normal[0]} mmHg`, color: LEVEL_UI.caution.color }, { y: rules.oxygen.normal[1], label: `${rules.oxygen.normal[1]} mmHg`, color: LEVEL_UI.caution.color }]} fmt={(x) => `${Math.round(x)} mmHg`} lastLevel={lv('inspired_oxygen_pressure')} /></Section>
           </>)}
           {t === 'comfort' && (<>
             <CompareRow periodLabel={ctx.periodLabel} items={[
@@ -114,11 +114,11 @@ export default function Environment() {
               { ...compareItem(ctx, 'relative_humidity', 'Humidity', (x) => `${Math.round(x)}%`), level: lv('temperature_humidity') },
               { ...compareItem(ctx, 'cabin_noise', 'Noise', (x) => `${Math.round(x)} dBA`), level: lv('cabin_noise') },
             ]} />
-            <Section title="Temperature"><TrendChart records={ctx.series('temperature')} refs={COMFORT.temperature.map((y: number) => ({ y, label: `${y} °C`, color: '#94A3B8' }))} fmt={(x) => `${x} °C`} lastLevel={lv('temperature_humidity')} /></Section>
-            <Section title="Relative humidity"><TrendChart records={ctx.series('relative_humidity')} refs={COMFORT.humidity.map((y: number) => ({ y, label: `${y}%`, color: '#94A3B8' }))} fmt={(x) => `${x}%`} lastLevel={lv('temperature_humidity')} /></Section>
-            <Section title="Noise"><TrendChart records={ctx.series('cabin_noise')} refs={NOISE_REFS} fmt={(x) => `${x} dBA`} lastLevel={lv('cabin_noise')} /></Section>
+            <Section indicator="temperature temperature_humidity" title="Temperature"><TrendChart records={ctx.series('temperature')} refs={COMFORT.temperature.map((y: number) => ({ y, label: `${y} °C`, color: '#94A3B8' }))} fmt={(x) => `${x} °C`} lastLevel={lv('temperature_humidity')} /></Section>
+            <Section indicator="relative_humidity" title="Relative humidity"><TrendChart records={ctx.series('relative_humidity')} refs={COMFORT.humidity.map((y: number) => ({ y, label: `${y}%`, color: '#94A3B8' }))} fmt={(x) => `${x}%`} lastLevel={lv('temperature_humidity')} /></Section>
+            <Section indicator="cabin_noise" title="Noise"><TrendChart records={ctx.series('cabin_noise')} refs={NOISE_REFS} fmt={(x) => `${x} dBA`} lastLevel={lv('cabin_noise')} /></Section>
           </>)}
-          {t === 'eva' && <Section title="Post-EVA checklist"><PostEvaForm /></Section>}
+          {t === 'eva' && <Section indicator="post_eva_symptoms reported_symptoms" title="Post-EVA checklist"><PostEvaForm /></Section>}
           <p className="text-xs text-slate-500 mt-4">{info(t === 'air' ? 'co2_partial_pressure' : t === 'comfort' ? 'cabin_noise' : 'post_eva_symptoms').why}</p>
         </>)}
       </TopicDetail>
