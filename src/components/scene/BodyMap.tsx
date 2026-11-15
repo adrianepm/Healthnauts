@@ -8,18 +8,20 @@ import { useNavigate } from 'react-router-dom';
 import { ChevronRight, HeartPulse } from 'lucide-react';
 import { LEVEL_UI } from '../../lib/levels';
 import { StatusPill } from '../ui';
-import { BODY_LEVELS, bodyRegions, indicatorHref, regionOfMuscle, type BodyRegion, type SceneState } from './sceneMapping';
+import { BODY_LEVELS, bodyRegions, indicatorHref, regionOfMuscle, type BodyRegion, type BodyRegionKey, type SceneState } from './sceneMapping';
+import { cn } from '../../lib/utils';
 
 /** Corpo sem área ligada e regiões sem alerta: tons neutros do tema. */
 const BODY_COLOR = '#10131C';
 const NEUTRAL_FILL = '#232838';
 const COLORS = BODY_LEVELS.map((l) => (l === 'normal' || l === 'unavailable' ? NEUTRAL_FILL : LEVEL_UI[l].color));
 
-export function BodyMap({ scene }: { scene: SceneState }) {
+export function BodyMap({ scene, focus = null }: { scene: SceneState; focus?: BodyRegionKey | null }) {
   const nav = useNavigate();
   const regions = bodyRegions(scene);
   // Abre a área já no parâmetro da manchete (ou o parâmetro-chave da região) dentro do tópico.
   const open = (r: BodyRegion) => nav(indicatorHref(r.element.route, r.indicator));
+  const hi = (r: BodyRegion) => focus === r.key && r.element.level !== 'normal' && r.element.level !== 'unavailable';
   const onClick = (stats: IMuscleStats) => { const r = regionOfMuscle(regions, stats.muscle); if (r) open(r); };
   const data = regions.map((r) => ({ name: r.element.area, muscles: r.muscles as any[], frequency: r.frequency }));
 
@@ -50,8 +52,8 @@ export function BodyMap({ scene }: { scene: SceneState }) {
         <ul className="space-y-2">
           {regions.map((r) => (
             <li key={r.key}>
-              <button type="button" onClick={() => open(r)}
-                className="tap w-full text-left rounded-md border border-space-line bg-space-card2/60 hover:border-space-strong hover:bg-space-card2 px-3 py-2 transition-colors flex items-start gap-3">
+              <button type="button" onClick={() => open(r)} style={hi(r) ? { ['--attention' as string]: LEVEL_UI[r.element.level].color } : undefined}
+                className={cn('tap w-full text-left rounded-md border border-space-line bg-space-card2/60 hover:border-space-strong hover:bg-space-card2 px-3 py-2 transition-colors flex items-start gap-3', hi(r) && 'region-focus')}>
                 <span className="min-w-0 flex-1">
                   <span className="flex flex-wrap items-center gap-x-2 gap-y-1">
                     <span className="text-sm font-semibold">{r.label}</span>

@@ -2,19 +2,19 @@
 export const DAY_MS = 86400000;
 
 export function fmtHours(h: number) {
-  if (!Number.isFinite(h)) return '—';
+  if (!Number.isFinite(h)) return '–';
   const m = Math.round(h * 60);
   return `${Math.floor(m / 60)}h${String(m % 60).padStart(2, '0')}`;
 }
 // Textos da tela em inglês, mesmo com o navegador em outro idioma.
 export const LOCALE = 'en-GB';
-export const fmtTime = (iso: string | null | undefined) => iso ? new Date(iso).toLocaleTimeString(LOCALE, { hour: '2-digit', minute: '2-digit' }) : '—';
+export const fmtTime = (iso: string | null | undefined) => iso ? new Date(iso).toLocaleTimeString(LOCALE, { hour: '2-digit', minute: '2-digit' }) : '–';
 export const fmtDateTime = (iso: string | null | undefined) => iso
-  ? new Date(iso).toLocaleString(LOCALE, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '—';
+  ? new Date(iso).toLocaleString(LOCALE, { month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' }) : '–';
 export const fmtDay = (iso: string) => new Date(iso).toLocaleDateString(LOCALE, { month: 'short', day: 'numeric' });
 
 export function fmtDuration(seconds: number | null | undefined) {
-  if (seconds === null || seconds === undefined || !Number.isFinite(seconds)) return '—';
+  if (seconds === null || seconds === undefined || !Number.isFinite(seconds)) return '–';
   if (seconds < 60) return `${Math.round(seconds * 10) / 10} s`;
   const min = Math.round(seconds / 60);
   return min < 120 ? `${min} min` : `${Math.round(min / 6) / 10} h`;
@@ -35,9 +35,24 @@ export const startOfToday = () => { const d = new Date(); d.setHours(0, 0, 0, 0)
 
 /** Texto da diferença, ex.: "−1h05" ou "+12". */
 export function deltaText(today: number, avg: number, kind: 'hours' | 'number' | 'ms' = 'number', digits = 1) {
-  if (!Number.isFinite(today) || !Number.isFinite(avg)) return '—';
+  if (!Number.isFinite(today) || !Number.isFinite(avg)) return '–';
   const d = today - avg; const sign = d > 0 ? '+' : d < 0 ? '−' : '±'; const a = Math.abs(d);
   if (kind === 'hours') return `${sign}${fmtHours(a)}`;
   if (kind === 'ms') return `${sign}${Math.round(a)} ms`;
   return `${sign}${a >= 10 ? Math.round(a) : a.toFixed(digits)}`;
+}
+
+const UNIT_TEXT: Record<string, string> = { Cel: '°C', 'breaths/min': '/min' };
+/** Valor de um alerta para a tela (número, escore ou par temperatura/umidade). Sem valor: null. */
+export function fmtReading(value: unknown, unit: unknown, indicator?: string): { value: string; unit: string } | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    const digits = Math.abs(value) >= 100 ? 0 : Math.abs(value) >= 10 ? 1 : 2;
+    const u = typeof unit === 'string' ? UNIT_TEXT[unit] ?? unit : indicator === 'news2' ? 'points' : '';
+    return { value: String(Number(value.toFixed(digits))), unit: u };
+  }
+  if (value && typeof value === 'object') {
+    const v = value as { temperature?: number; humidity?: number };
+    if (typeof v.temperature === 'number' && typeof v.humidity === 'number') return { value: `${v.temperature.toFixed(1)} °C · ${Math.round(v.humidity)}`, unit: '% RH' };
+  }
+  return null;
 }

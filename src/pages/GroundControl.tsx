@@ -27,7 +27,7 @@ function Pipeline({ r }: { r: GroundReport }) {
         <li key={s} className="relative flex flex-col items-center text-center gap-1">
           <span className={`z-10 grid place-items-center w-6 h-6 rounded-full border-2 ${i <= at ? 'border-slate-300 bg-slate-300 text-space-bg' : 'border-dashed border-space-strong bg-space-card'}`} aria-hidden="true">{i <= at && <Check size={13} strokeWidth={3} />}</span>
           <span className={`text-xs font-semibold ${i <= at ? 'text-slate-50' : 'text-slate-300'}`}>{s[0] + s.slice(1).toLowerCase()}<span className="sr-only">{i <= at ? ' (done)' : ' (pending)'}</span></span>
-          <span className="text-xs font-mono text-slate-300">{when[i] ? `${i > at ? 'exp. ' : ''}${fmtTime(when[i])}` : '—'}</span>
+          <span className="text-xs font-mono text-slate-300">{when[i] ? `${i > at ? 'exp. ' : ''}${fmtTime(when[i])}` : '–'}</span>
         </li>
       ))}
     </ol>
@@ -59,10 +59,10 @@ export default function GroundControl() {
       <Card title="Earth link" sub="Simulation in the same browser: GitHub Pages does not send real telemetry between devices." icon={<SatelliteDish size={18} />}
         right={<button onClick={toggle} disabled={busy} className="btn-ghost text-xs">{link.status === 'unavailable' ? <><Radio size={14} aria-hidden="true" />Restore Earth link</> : <><WifiOff size={14} aria-hidden="true" />Simulate link loss</>}</button>}>
         <dl className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-          <div className="rounded-md border border-space-line bg-space-card2 px-3 py-2.5"><dt className="text-xs text-slate-300">Mission</dt><dd className="text-lg font-semibold">{link.destination ?? "—"}</dd></div>
+          <div className="rounded-md border border-space-line bg-space-card2 px-3 py-2.5"><dt className="text-xs text-slate-300">Mission</dt><dd className="text-lg font-semibold">{link.destination ?? "–"}</dd></div>
           <div className="rounded-md border border-space-line bg-space-card2 px-3 py-2.5"><dt className="text-xs text-slate-300">Link status</dt><dd className="text-lg font-semibold capitalize">{link.status}</dd></div>
-          <div className="rounded-md border border-space-line bg-space-card2 px-3 py-2.5"><dt className="text-xs text-slate-300">One-way delay</dt><dd className="text-lg font-semibold">{link.status === "unavailable" ? "—" : <TickerValue value={fmtDuration(link.oneWaySeconds)} />}</dd></div>
-          <div className="rounded-md border border-space-line bg-space-card2 px-3 py-2.5"><dt className="text-xs text-slate-300">Expected reply</dt><dd className="text-lg font-semibold">{link.status === "unavailable" ? "—" : <TickerValue value={fmtDuration(link.estimatedResponseSeconds)} />}</dd></div>
+          <div className="rounded-md border border-space-line bg-space-card2 px-3 py-2.5"><dt className="text-xs text-slate-300">One-way delay</dt><dd className="text-lg font-semibold">{link.status === "unavailable" ? "–" : <TickerValue value={fmtDuration(link.oneWaySeconds)} />}</dd></div>
+          <div className="rounded-md border border-space-line bg-space-card2 px-3 py-2.5"><dt className="text-xs text-slate-300">Expected reply</dt><dd className="text-lg font-semibold">{link.status === "unavailable" ? "–" : <TickerValue value={fmtDuration(link.estimatedResponseSeconds)} />}</dd></div>
         </dl>
         {link.message && <p className="mt-3 text-sm rounded-md border border-space-line p-3 text-slate-100">{link.message}</p>}
         <p className="text-xs text-slate-300 mt-2">Reply = sent + 2 × one-way delay + 15 min to review (team proposal).</p>
@@ -79,7 +79,7 @@ export default function GroundControl() {
                 {r.level ? <StatusPill level={r.level} small /> : <span className="chip">Manual</span>}
                 {r.immediate && <span className="chip text-slate-100">Immediate</span>}
                 {r.notAcknowledged && <span className="chip font-semibold text-slate-50 border-slate-300">Not acknowledged</span>}
-                <span className="text-slate-300">Occurred <span className="font-mono">{fmtDateTime(r.createdAt)}</span> · {r.mission.destination ?? '—'}</span>
+                <span className="text-slate-300">Occurred <span className="font-mono">{fmtDateTime(r.createdAt)}</span> · {r.mission.destination ?? '–'}</span>
                 <span className="font-mono text-slate-300 ml-auto">{r.id.slice(0, 14)}</span>
               </div>
               <Pipeline r={r} />

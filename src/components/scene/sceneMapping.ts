@@ -177,5 +177,15 @@ export function todaySummary(o: Overview, areaLabel: (id: string) => string): To
   return { level, message: o.headline.message ?? '', indicator: o.headline.indicator, also: [] };
 }
 
+/**
+ * Região do corpo ligada a um alerta (para destacar na cor do nível): Isolation = cabeça e pescoço;
+ * Gravity, grupo de sinais vitais = peito; resto de Gravity = braços e pernas. Cabine, radiação e distância: nenhuma.
+ */
+export function alertRegion(areaId: string, group: string | null | undefined): BodyRegionKey | null {
+  if (areaId === AREA.isolation) return 'head';
+  if (areaId === AREA.gravity) return group === 'vital_signs' ? 'chest' : 'limbs';
+  return null;
+}
+
 /** Região de um músculo clicado (null = parte do corpo sem área ligada). */
 export const regionOfMuscle = (regions: BodyRegion[], muscle: string) => regions.find((r) => r.muscles.includes(muscle)) ?? null;

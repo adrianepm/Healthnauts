@@ -41,7 +41,7 @@ export function VitalsCard({ detailed }: { detailed?: boolean }) {
       {vital?.message && <p className="text-sm text-slate-200 mt-3">{vital.message}</p>}
       {news2 && (
         <div className="mt-3 rounded-md border border-space-line p-3">
-          <p className="text-xs text-slate-300 inline-flex flex-wrap items-center gap-1.5"><Activity size={14} aria-hidden="true" />Early warning score (terrestrial reference, experimental): <b className="font-mono text-slate-50">{news2.score ?? '—'}</b></p>
+          <p className="text-xs text-slate-300 inline-flex flex-wrap items-center gap-1.5"><Activity size={14} aria-hidden="true" />Early warning score (terrestrial reference, experimental): <b className="font-mono text-slate-50">{news2.score ?? '–'}</b></p>
           {detailed && news2.components && (
             <dl className="grid grid-cols-2 sm:grid-cols-4 lg:grid-cols-7 gap-x-4 gap-y-1 mt-2">
               {Object.entries(news2.components as Record<string, number>).map(([k, pts]) => (

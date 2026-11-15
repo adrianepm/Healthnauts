@@ -1,9 +1,9 @@
 // Casca do app. Desktop (≥ 1024 px): barra lateral com marca, navegação, Demo e o aviso fixo; cabeçalho de uma linha.
-// Celular: cabeçalho de uma linha (missão, atraso, Demo, sino) e barra inferior (Overview, Areas, Ground, Profile).
+// Celular: cabeçalho de uma linha (missão, atraso, Demo, sino) e barra inferior (Overview, Journey, Areas, Ground, Profile).
 // O nível de cada área aparece sempre com ícone + nome (StatusPill). Nada aqui decide nível.
 import { useEffect, useState, type ReactNode } from 'react';
 import { NavLink, useLocation } from 'react-router-dom';
-import { Brain, ChevronRight, FlaskConical, LayoutGrid, Orbit, Radiation, Radio, SatelliteDish, Shapes, User, Wind, type LucideIcon } from 'lucide-react';
+import { Brain, ChevronRight, FlaskConical, LayoutGrid, Orbit, Radiation, Radio, SatelliteDish, Shapes, TreeDeciduous, User, Wind, type LucideIcon } from 'lucide-react';
 import { useStore } from '../store/useStore';
 import { AREA } from '../config/api';
 import { worstLevel } from '../../shared/config/levels.js';
@@ -15,12 +15,14 @@ import { Modal, StatusPill } from './ui';
 import { MorningCheckin } from './MorningCheckin';
 import { PvtTest } from './PvtTest';
 import { Toaster } from './Toaster';
-import { useIndicatorFocus } from './lean/TopicDetail';
+import { useIndicatorFocus, useIndicatorParam } from './lean/TopicDetail';
+import { AREA_PATH } from '../lib/content';
 import { BrandMark, BrandName } from './Brand';
 import { cn } from '../lib/utils';
 
 interface Tab { to: string; label: string; icon: LucideIcon; area: string | null }
 const OVERVIEW: Tab = { to: '/', label: 'Overview', icon: LayoutGrid, area: null };
+const JOURNEY: Tab = { to: '/journey', label: 'Journey', icon: TreeDeciduous, area: null };
 const AREAS: Tab[] = [
   { to: '/isolation', label: 'Isolation', icon: Brain, area: AREA.isolation },
   { to: '/environment', label: 'Environment', icon: Wind, area: AREA.cabin },
@@ -47,7 +49,7 @@ function useLevelOf() {
 function SideItem({ tab, level }: { tab: Tab; level: DisplayLevel | null }) {
   const Icon = tab.icon;
   return (
-    <NavLink to={tab.to} end={tab.to === '/'} className={({ isActive }) => cn('relative flex flex-wrap items-center gap-x-3 gap-y-1 rounded-md px-3 py-2.5 text-sm transition-colors',
+    <NavLink to={tab.to} end={tab.to === '/'} className={({ isActive }) => cn('relative flex flex-wrap items-center gap-x-2.5 gap-y-1 rounded-md px-2.5 py-2.5 text-sm transition-colors',
       isActive ? 'bg-space-card2 text-slate-50' : 'text-slate-300 hover:text-slate-50 hover:bg-space-card')}>
       {({ isActive }) => (<>
         {isActive && <span className={cn('absolute left-0 inset-y-2 w-[3px] rounded-r', level === 'emergency' ? 'bg-slate-50' : 'bg-brand')} aria-hidden="true" />}
@@ -76,6 +78,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [demo, setDemo] = useState(false);
   const [areasOpen, setAreasOpen] = useState(false);
   useIndicatorFocus();
+  // Detalhe de um indicador com alerta aberto por qualquer caminho (alerta, corpo, painel): o pulso do "Needs attention" para.
+  const wanted = useIndicatorParam(); const markSeen = useStore((s) => s.markSeen);
+  useEffect(() => {
+    if (!wanted) return;
+    const ids = active.filter((a) => a.indicator === wanted && AREA_PATH[a.areaId] === pathname).map((a) => a.id);
+    if (ids.length) markSeen(ids);
+  }, [wanted, pathname, active]);
   useEffect(() => { setAreasOpen(false); setDemo(false); }, [pathname]);
 
   // Emergency ativa: a marca vira neutra em todo o app (src/index.css, :root[data-emergency]).
@@ -95,10 +104,10 @@ export function AppShell({ children }: { children: ReactNode }) {
       <EmergencyOverlay />
 
       {/* Barra lateral (desktop) */}
-      <aside className="hidden lg:flex fixed inset-y-0 left-0 z-30 w-64 flex-col border-r border-space-line bg-space-bg">
+      <aside className="hidden lg:flex fixed inset-y-0 left-0 z-30 w-[17rem] flex-col border-r border-space-line bg-space-bg">
         <div className="flex items-center gap-3 px-5 h-16 border-b border-space-line"><BrandMark /><BrandName /></div>
         <nav aria-label="Main" className="flex-1 overflow-y-auto px-3 py-4 space-y-5">
-          <div className="space-y-0.5"><SideItem tab={OVERVIEW} level={null} /></div>
+          <div className="space-y-0.5"><SideItem tab={OVERVIEW} level={null} /><SideItem tab={JOURNEY} level={null} /></div>
           <div>
             <p className="eyebrow px-3 mb-1.5">Hazards (RIDGE)</p>
             <div className="space-y-0.5">{AREAS.map((t) => <SideItem key={t.to} tab={t} level={levelOf(t.area)} />)}</div>
@@ -111,7 +120,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
       </aside>
 
-      <div className="lg:pl-64">
+      <div className="lg:pl-[17rem]">
         {/* Cabeçalho de uma linha */}
         <header className="sticky top-0 z-40 h-14 border-b border-space-line bg-space-bg/95 backdrop-blur-sm">
           <div className="max-w-[1200px] mx-auto h-full px-4 md:px-6 flex items-center gap-3">
@@ -137,6 +146,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <nav aria-label="Main" className="lg:hidden fixed bottom-0 inset-x-0 z-40 border-t border-space-line bg-space-bg/95 backdrop-blur-sm pb-[env(safe-area-inset-bottom)]">
         <div className="flex">
           <BottomItem to="/" label="Overview" icon={LayoutGrid} active={pathname === '/'} />
+          <BottomItem to="/journey" label="Journey" icon={TreeDeciduous} active={pathname === '/journey'} />
           <BottomItem label="Areas" icon={Shapes} active={inArea} onClick={() => setAreasOpen(true)} />
           <BottomItem to="/ground" label="Ground" icon={SatelliteDish} active={pathname === '/ground'} />
           <BottomItem to="/profile" label="Profile" icon={User} active={pathname === '/profile'} />

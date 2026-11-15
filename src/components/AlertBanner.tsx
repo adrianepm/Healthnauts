@@ -1,6 +1,7 @@
 // Alertas ativos (Caution ou acima) no topo de todas as telas, com Acknowledge em Warning e Emergency (2.3).
 // Tudo vem de GET /alerts: prazo, escalonamento e resolução são calculados pela API a cada consulta.
 import { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Siren } from 'lucide-react';
 import { useStore } from '../store/useStore';
@@ -8,7 +9,10 @@ import { toast } from '../store/toast';
 import type { Alert } from '../services/api';
 import { LEVEL_UI, severity } from '../lib/levels';
 import { acknowledgement } from '../../shared/config/levels.js';
-import { AREA_LABEL, info } from '../lib/content';
+import { AREA_LABEL, AREA_PATH, info } from '../lib/content';
+import { actionsFor } from '../lib/actions';
+import { indicatorHref } from './scene/sceneMapping';
+import { OpenDetails, WhatToDo } from './AlertActions';
 import { fmtTime } from '../lib/format';
 import { StatusPill } from './ui';
 
@@ -16,7 +20,7 @@ import { StatusPill } from './ui';
 export const NO_ACK_TEXT = 'No acknowledgement does not mean loss of consciousness.';
 const NOT_ACK_TEXT = 'Not acknowledged in time · sent to the Crew Medical Officer and a second crew member';
 
-function useNow(ms = 1000) {
+export function useNow(ms = 1000) {
   const [now, setNow] = useState(Date.now());
   useEffect(() => { const t = setInterval(() => setNow(Date.now()), ms); return () => clearInterval(t); }, [ms]);
   return now;
@@ -30,7 +34,7 @@ const countdown = (iso: string | null, now: number) => {
   return s <= 0 ? 'deadline passed' : `${clock(s)} left`;
 };
 
-function AckStatus({ a, now }: { a: Alert; now: number }) {
+export function AckStatus({ a, now }: { a: Alert; now: number }) {
   const ack = useStore((s) => s.acknowledge); const [busy, setBusy] = useState(false);
   if (!a.requiresAcknowledgement) return null;
   const go = async () => { setBusy(true); try { await ack(a.id); toast.success('Alert acknowledged'); } catch (e) { toast.error(e); } finally { setBusy(false); } };
@@ -49,10 +53,17 @@ function AckStatus({ a, now }: { a: Alert; now: number }) {
   );
 }
 
+/** Endereço do detalhe do indicador de um alerta (um clique do alerta até a informação). */
+export const alertHref = (a: Pick<Alert, 'areaId' | 'indicator'>) => indicatorHref(AREA_PATH[a.areaId] ?? '/', a.indicator);
+
+/** Na Overview o cartão "Needs attention" mostra os mesmos alertas (com os mesmos botões), então a faixa some ali. */
 export function AlertBanner() {
   const active = useStore((s) => s.alerts?.active ?? []);
+  const { pathname } = useLocation();
+  const areas = useStore((s) => s.overview?.areas);
+  const headline = (areaId: string) => areas?.find((x) => x.areaId === areaId)?.headline.indicator;
   const now = useNow();
-  if (!active.length) return null;
+  if (!active.length || pathname === '/') return null;
   const sorted = [...active].sort((a, b) => severity(b.level) - severity(a.level));
   const needsAck = sorted.some((a) => a.requiresAcknowledgement);
   return (
@@ -62,11 +73,16 @@ export function AlertBanner() {
         return (
           <div key={a.id} className="relative overflow-hidden rounded-lg border bg-space-card pl-5 pr-4 py-3 flex flex-wrap items-start justify-between gap-3" style={{ borderColor: c + '80' }}>
             <span className="absolute inset-y-0 left-0 w-[3px]" style={{ background: c }} aria-hidden="true" />
-            <div className="min-w-0 flex-1">
+            <div className="min-w-[min(100%,24rem)] flex-1">
               <div className="flex flex-wrap items-center gap-2 text-xs"><StatusPill level={a.level} small /><span className="text-slate-300">{AREA_LABEL[a.areaId]} · {info(a.indicator).label} · since <span className="font-mono">{fmtTime(a.shownAt)}</span></span></div>
               <p className="text-sm text-slate-50 mt-1">{a.message}</p>
+              {/* Na página da própria área os passos já estão no cartão do topo: aqui só o link. */}
+              {!(AREA_PATH[a.areaId] === pathname && headline(a.areaId) === a.indicator) && <WhatToDo plan={actionsFor(a.indicator, a.level)} className="mt-2" />}
             </div>
-            <AckStatus a={a} now={now} />
+            <div className="flex flex-col items-start sm:items-end gap-2 max-w-[22rem]">
+              <OpenDetails to={alertHref(a)} alertIds={[a.id]} className="!py-1.5" />
+              <AckStatus a={a} now={now} />
+            </div>
           </div>
         );
       })}

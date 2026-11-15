@@ -1,9 +1,11 @@
-// Overview, nesta ordem: resumo do dia (TodayHero compacto), barra da rotina, corpo clicável à esquerda e
+// Overview, nesta ordem: "Needs attention" (só com alerta ativo), resumo do dia (TodayHero compacto), barra da rotina, corpo clicável à esquerda e
 // "My panels" à direita, e os cartões de Radiation, Environment e Distance. Nada aqui decide nível.
 // Os cartões de área só mostram o valor principal quando ele não está em "My panels" (sem informação repetida).
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ChevronRight } from 'lucide-react';
+import { ChevronRight, Flame, TreeDeciduous } from 'lucide-react';
+import { useJourney } from './Journey';
+import { STAGE_COUNT } from '../lib/journey';
 import { useStore } from '../store/useStore';
 import { useSim } from '../components/DemoPanel';
 import { TodayHero } from '../components/lean/Home';
@@ -12,7 +14,8 @@ import { RoutineBar } from '../components/TodayRoutine';
 import { MyPanels, useAllAreas } from '../components/MyPanels';
 import { Num, StatusPill } from '../components/ui';
 import { MagicCard } from '../components/magic/magic-card';
-import { indicatorHref, sceneState, todaySummary } from '../components/scene/sceneMapping';
+import { alertRegion, indicatorHref, sceneState, todaySummary } from '../components/scene/sceneMapping';
+import { NeedsAttention, sortAlerts } from '../components/NeedsAttention';
 import { AREA } from '../config/api';
 import { AREA_LABEL, AREA_PATH, info } from '../lib/content';
 import { ago, fmtDuration } from '../lib/format';
@@ -24,6 +27,7 @@ const num = (v: unknown, digits: number) => (typeof v === 'number' && Number.isF
 export default function Overview() {
   const o = useStore((s) => s.overview);
   const reports = useStore((s) => s.ground?.reports);
+  const active = useStore((s) => s.alerts?.active ?? []);
   const details = useAllAreas();
   const sim = useSim();
   const [chosen, setChosen] = useState<string[]>(() => loadPanels());
@@ -34,6 +38,8 @@ export default function Overview() {
   const scene = sceneState({ overview: o, reports, now: Date.now(),
     live: m ? { heartRate: Number(m.heart_rate.value), respiratoryRate: Number(m.respiratory_rate.value) } : null });
   const today = todaySummary(o, (id) => AREA_LABEL[id] ?? id);
+  // Região do corpo do alerta mais grave que tem região (cabine, radiação e distância não têm).
+  const focus = sortAlerts(active).map((a) => alertRegion(a.areaId, a.group)).find(Boolean) ?? null;
 
   const find = (id: string, indicator: string) => details[id as keyof typeof details]?.assessments.find((x) => x.indicator === indicator);
   const career = find(AREA.radiation, 'career_effective_dose');
@@ -50,17 +56,36 @@ export default function Overview() {
   return (
     <div className="space-y-3">
       <h1 className="sr-only">Overview</h1>
-      <TodayHero compact level={today.level} message={today.message} sub={today.indicator ? info(today.indicator).label : undefined}
+      <NeedsAttention />
+      <TodayHero compact quiet={active.length > 0} level={today.level} message={today.message} sub={today.indicator ? info(today.indicator).label : undefined}
         also={today.also.map((i) => ({ label: i.label, level: i.level, message: i.message }))} />
       <RoutineBar />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-start [&>*]:min-w-0">
-        <BodyView scene={scene} />
+        <BodyView scene={scene} focus={focus} />
         <MyPanels chosen={chosen} onChange={choose} />
       </div>
-      <section aria-label="Other areas" className="grid sm:grid-cols-3 gap-3">
+      <section aria-label="Other areas" className="grid sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {cards.map((c) => { const a = area(c.id); return a ? <AreaCard key={c.id} a={a} {...c} inPanels={chosen.includes(panelId(c.id, c.indicator))} /> : null; })}
+        <JourneyCard />
       </section>
     </div>
+  );
+}
+
+/** Mini cartão da árvore (estágio e sequência). Gamificação, não nível: cor da marca e neutros. */
+function JourneyCard() {
+  const { st, stage, ui } = useJourney();
+  return (
+    <MagicCard as={Link} to="/journey" className="!p-4 flex flex-col gap-2">
+      <div className="flex items-center justify-between gap-2">
+        <h3 className="text-sm font-semibold inline-flex items-center gap-2"><TreeDeciduous size={16} aria-hidden="true" className="text-brand-soft" />Journey</h3>
+        <ChevronRight size={16} className="text-slate-300" aria-hidden="true" />
+      </div>
+      <span className="text-xs text-slate-300">Health tree</span>
+      <span className="text-2xl font-medium tracking-tight text-slate-50">{stage.name}</span>
+      <span className="text-xs text-slate-300">Stage <span className="font-mono">{stage.index + 1}</span> of <span className="font-mono">{STAGE_COUNT}</span> · <span className="font-mono">{ui.xp}</span> XP</span>
+      <p className="text-xs text-slate-300 mt-auto inline-flex items-center gap-1"><Flame size={13} aria-hidden="true" />Streak <span className="font-mono text-slate-100">{st.days}</span> {st.days === 1 ? 'day' : 'days'}</p>
+    </MagicCard>
   );
 }
 

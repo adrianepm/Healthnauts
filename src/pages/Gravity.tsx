@@ -6,9 +6,10 @@ import { Bone, Dumbbell, HeartPulse, Scale, Activity, Eye } from 'lucide-react';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { AREA } from '../config/api';
 import { api } from '../services/api';
-import { useStore } from '../store/useStore';
+import { XP_PER_EXERCISE, XP_PER_WEIGH, useStore } from '../store/useStore';
 import { toast } from '../store/toast';
 import { useArea } from './useArea';
+import { AreaActions } from '../components/AlertActions';
 import { KeyTiles, TodayHero, TopicLinks } from '../components/lean/Home';
 import { CompareRow, TopicDetail, compareItem, useTopicState, type TopicDef } from '../components/lean/TopicDetail';
 import { BarsChart, TrendChart } from '../components/charts';
@@ -23,7 +24,7 @@ const TOPICS: TopicDef[] = [
   { id: 'balance', label: 'Balance & vision', indicators: ['motion_sickness', 'headache', 'dizziness', 'vision_change', 'amsler_change'] },
   { id: 'vitals', label: 'Vital signs', indicators: ['news2'], also: ['heart_rate', 'respiratory_rate', 'spo2', 'body_temperature', 'blood_pressure_systolic', 'blood_pressure_diastolic', 'supplemental_oxygen', 'consciousness'] },
 ];
-const pctNum = (x: any) => (typeof x?.percentOfReference === 'number' ? String(Math.round(x.percentOfReference)) : '—');
+const pctNum = (x: any) => (typeof x?.percentOfReference === 'number' ? String(Math.round(x.percentOfReference)) : '–');
 /** Régua de 60% a 110% do pré-voo, com o mínimo de 80% da NASA (aeróbico e força). Só leitura: o nível vem da API. */
 const pctRuler = (x: any, name: string, minimum = true) => ({
   min: 60, max: 110, value: typeof x?.percentOfReference === 'number' ? x.percentOfReference : null, range: minimum ? [80, 110] as [number, number] : null,
@@ -32,14 +33,15 @@ const pctRuler = (x: any, name: string, minimum = true) => ({
 });
 
 function LogForms() {
-  const refresh = useStore((s) => s.refresh); const mission = useStore((s) => s.mission);
+  const refresh = useStore((s) => s.refresh); const mission = useStore((s) => s.mission); const award = useStore((s) => s.award);
   const [minutes, setMinutes] = useState(30); const [mass, setMass] = useState('');
   const [ms, setMs] = useState(0); const [headache, setHeadache] = useState(0);
   const [flags, setFlags] = useState({ dizziness: false, near_fainting: false, vision_change: false, amsler_change: false });
   const [busy, setBusy] = useState<string | null>(null);
-  const run = async (k: string, fn: () => Promise<unknown>, done: string) => {
+  // XP só por registrar (fazer), nunca pelo valor; uma vez por dia por tarefa (store.award).
+  const run = async (k: string, fn: () => Promise<unknown>, done: string, after?: () => void) => {
     setBusy(k);
-    try { await fn(); await refresh(); toast.success(done); } catch (e) { toast.error(e); } finally { setBusy(null); }
+    try { await fn(); after?.(); await refresh(); toast.success(done); } catch (e) { toast.error(e); } finally { setBusy(null); }
   };
   const now = () => new Date().toISOString();
   // Vindo do "Start" da rotina na Overview: rola até o campo e põe o foco nele.
@@ -54,11 +56,11 @@ function LogForms() {
     <div className="grid lg:grid-cols-3 gap-3 items-start">
       <Card title="Log exercise" sub={`Plan: about ${REFERENCE.exercisePlanMin} min a day, 6-7 days a week`} icon={<Dumbbell size={18} aria-hidden="true" />}>
         <div className="flex gap-2"><input ref={exRef} aria-label="Exercise minutes" type="number" min={1} max={600} value={minutes} onChange={(e) => setMinutes(Math.max(1, +e.target.value))} className="field" /><span className="self-center text-sm text-slate-300" aria-hidden="true">min</span></div>
-        <button disabled={!!busy} onClick={() => run('ex', () => api.records(AREA.gravity, [{ indicator: 'exercise_duration', value: minutes, unit: 'min', recordedAt: now() }]), 'Exercise session saved')} className="btn-primary mt-3 w-full">Save session</button>
+        <button disabled={!!busy} onClick={() => run('ex', () => api.records(AREA.gravity, [{ indicator: 'exercise_duration', value: minutes, unit: 'min', recordedAt: now() }]), 'Exercise session saved', () => award('exercise', XP_PER_EXERCISE))} className="btn-primary mt-3 w-full">Save session</button>
       </Card>
       <Card title="Weekly weigh-in" sub="Compared with your pre-flight body mass by the onboard service" icon={<Scale size={18} aria-hidden="true" />}>
         <div className="flex gap-2"><input ref={massRef} aria-label="Body mass in kg" type="number" step="0.1" min={30} max={200} value={mass} placeholder="kg" onChange={(e) => setMass(e.target.value)} className="field" /><span className="self-center text-sm text-slate-300" aria-hidden="true">kg</span></div>
-        <button disabled={!!busy || !mass || !mission} onClick={() => run('mass', () => api.records(AREA.gravity, [{ indicator: 'body_mass', value: Number(mass), unit: 'kg', recordedAt: now(), context: ctx }]), 'Weight saved')} className="btn-primary mt-3 w-full">Save weight</button>
+        <button disabled={!!busy || !mass || !mission} onClick={() => run('mass', () => api.records(AREA.gravity, [{ indicator: 'body_mass', value: Number(mass), unit: 'kg', recordedAt: now(), context: ctx }]), 'Weight saved', () => award('weigh', XP_PER_WEIGH))} className="btn-primary mt-3 w-full">Save weight</button>
       </Card>
       <Card title="Balance & vision report" sub="Prototype scales, not validated instruments" icon={<Eye size={18} aria-hidden="true" />}>
         <label className="block text-xs text-slate-300">Motion sickness: <b className="font-mono text-slate-100">{ms}</b> (0 feeling fine · 20 vomiting)<input type="range" min={0} max={20} value={ms} onChange={(e) => setMs(+e.target.value)} className="w-full accent-brand" /></label>
@@ -123,12 +125,12 @@ export default function Gravity() {
   return (
     <div className="space-y-5">
       <PageHeader title="Gravity" sub="Gravity fields · vital signs, fitness, balance and bone" />
-      <TodayHero level={d.summary!.displayLevel} label="Body today" message={d.summary!.headline.message ?? ''} sub="Vital signs are shown separately below" also={d.also(d.summary!.headline.indicator).filter((x) => x.label !== info('news2').label)} />
+      <TodayHero extra={<AreaActions areaId={AREA.gravity} indicator={d.summary!.headline.indicator} level={d.summary!.displayLevel} />} level={d.summary!.displayLevel} label="Body today" message={d.summary!.headline.message ?? ''} sub="Vital signs are shown separately below" also={d.also(d.summary!.headline.indicator).filter((x) => x.label !== info('news2').label)} />
       <VitalsCard detailed />
       <KeyTiles tiles={[
         { key: 'aer', indicator: 'aerobic_capacity', title: 'Aerobic capacity', icon: HeartPulse, value: pctNum(d.newest('aerobic_capacity')), unit: '%', level: d.newest('aerobic_capacity')?.displayLevel ?? 'unavailable', compare: 'of pre-flight (NASA minimum 80%)', onClick: () => setTopic('fitness'), ruler: pctRuler(d.newest('aerobic_capacity'), 'Aerobic capacity') },
         { key: 'str', indicator: 'muscle_strength', title: 'Muscle strength', icon: Dumbbell, value: pctNum(d.a('muscle_strength')), unit: '%', level: lv('muscle_strength'), compare: 'of pre-flight (NASA minimum 80%)', onClick: () => setTopic('fitness'), ruler: pctRuler(d.a('muscle_strength'), 'Muscle strength') },
-        { key: 'mass', indicator: 'body_mass', title: 'Body mass', icon: Scale, value: pctNum(d.a('body_mass')), unit: '%', level: lv('body_mass'), compare: `of pre-flight · ${d.a('body_mass')?.observedValue ?? '—'} kg`, onClick: () => setTopic('fitness'), ruler: pctRuler(d.a('body_mass'), 'Body mass', false) },
+        { key: 'mass', indicator: 'body_mass', title: 'Body mass', icon: Scale, value: pctNum(d.a('body_mass')), unit: '%', level: lv('body_mass'), compare: `of pre-flight · ${d.a('body_mass')?.observedValue ?? '–'} kg`, onClick: () => setTopic('fitness'), ruler: pctRuler(d.a('body_mass'), 'Body mass', false) },
         { key: 'ex', indicator: 'exercise_duration', title: 'Exercise today', icon: Activity, value: String(Math.round(today)), unit: 'min', compare: `Plan ~${REFERENCE.exercisePlanMin} min · ${daysOnPlan} of 7 days on plan`, onClick: () => setTopic('fitness'),
           ruler: { min: 0, max: REFERENCE.exercisePlanMin * 1.5, value: today, marks: [{ at: REFERENCE.exercisePlanMin, label: String(REFERENCE.exercisePlanMin) }], label: `Exercise today on a scale to ${REFERENCE.exercisePlanMin * 1.5} min; plan ${REFERENCE.exercisePlanMin} min` } },
       ]} />

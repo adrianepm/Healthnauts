@@ -203,6 +203,6 @@ export function compareItem(ctx: TopicCtx, indicator: string, label: string, fmt
   const last = all.at(-1);
   const prev = ctx.series(indicator, ctx.compare).filter((r) => r !== last).map((r) => map(Number(r.value)));
   const today = last ? map(Number(last.value)) : NaN; const avg = mean(prev);
-  return { label, indicator, today: last ? fmt(today) : '—', avg: prev.length ? fmt(avg) : '—', diff: deltaText(today, avg, kind),
+  return { label, indicator, today: last ? fmt(today) : '–', avg: prev.length ? fmt(avg) : '–', diff: deltaText(today, avg, kind),
     level: ctx.assessment(indicator)?.displayLevel, note: !prev.length ? 'No other value in this period.' : undefined };
 }

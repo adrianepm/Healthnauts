@@ -48,7 +48,7 @@ export function BarsChart({ records, unit, refs = [], lastLevel, domain, fmt = (
 }
 
 export const sleepRefs = (planned: number, advisory: number, warning: number): RefLine[] => [
-  { y: planned, label: `NASA plan ${planned} h`, color: '#7DD3FC' },
+  { y: planned, label: `NASA plan ${planned} h`, color: '#C9CFDB' }, // meta, não corte: neutro claro (o azul fica só para o Advisory)
   { y: advisory, label: `${advisory} h`, color: LEVEL_UI.advisory.color },
   { y: warning, label: `${warning} h`, color: LEVEL_UI.warning.color },
 ];

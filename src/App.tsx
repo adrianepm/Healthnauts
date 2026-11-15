@@ -13,6 +13,7 @@ import Radiation from './pages/Radiation';
 import Gravity from './pages/Gravity';
 import Distance from './pages/Distance';
 import Profile from './pages/Profile';
+import Journey from './pages/Journey';
 
 /** Transição suave entre páginas (só opacidade: transform criaria contêiner para a gaveta fixa do detalhe). Desligada com prefers-reduced-motion. */
 function PageTransition({ children }: { children: ReactNode }) {
@@ -54,6 +55,7 @@ export default function App() {
           <Route path="/radiation" element={<Radiation />} />
           <Route path="/gravity" element={<Gravity />} />
           <Route path="/distance" element={<Distance />} />
+          <Route path="/journey" element={<Journey />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>

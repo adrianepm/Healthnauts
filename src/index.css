@@ -70,7 +70,21 @@
 @keyframes signal-run { from { left: 0%; } to { left: 100%; } }
 .signal-dot { animation: signal-run 3.2s linear infinite; }
 
+/* Cartão "Needs attention": borda de 2 px na cor do nível (--attention). Pulso lento, um ciclo a cada 1,8 s
+   (menos de 1 piscada por segundo), só até o astronauta abrir o detalhe ou confirmar o alerta. */
+.attention-card { border-width: 2px; }
+@keyframes attention-pulse {
+  0%, 100% { box-shadow: 0 0 0 0 transparent; }
+  50% { box-shadow: 0 0 0 4px color-mix(in srgb, var(--attention) 35%, transparent); }
+}
+.attention-pulse { animation: attention-pulse 1.8s ease-in-out infinite; }
+/* Região do corpo ligada ao alerta mais grave: contorno na cor do nível. */
+.region-focus { outline: 2px solid var(--attention); outline-offset: 2px; }
+
 @media (prefers-reduced-motion: reduce) {
+  /* Sem pulso: borda fixa mais grossa. */
+  .attention-card { border-width: 3px; }
+  .attention-pulse { animation: none !important; }
   *, *::before, *::after { animation-duration: 0.01ms !important; animation-iteration-count: 1 !important; transition-duration: 0.01ms !important; }
   .signal-dot { display: none; }
 }

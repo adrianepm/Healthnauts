@@ -5,6 +5,7 @@ import { Package, Radio, SatelliteDish } from 'lucide-react';
 import { AREA } from '../config/api';
 import { useStore } from '../store/useStore';
 import { useArea } from './useArea';
+import { AreaActions } from '../components/AlertActions';
 import { KeyTiles, TodayHero } from '../components/lean/Home';
 import { Card, More, PageHeader, SourcesList, StatusPill, WhyBlock } from '../components/ui';
 import { TickerValue } from '../components/magic/number-ticker';
@@ -32,14 +33,14 @@ export default function Distance() {
   return (
     <div className="space-y-5">
       <PageHeader title="Distance" sub="Distance from Earth · communication and autonomy" />
-      <TodayHero level={d.summary!.displayLevel} label="Earth link" message={link.message ?? d.summary!.headline.message ?? ''} also={d.also(d.summary!.headline.indicator)} />
+      <TodayHero extra={<AreaActions areaId={AREA.distance} indicator={d.summary!.headline.indicator} level={d.summary!.displayLevel} />} level={d.summary!.displayLevel} label="Earth link" message={link.message ?? d.summary!.headline.message ?? ''} also={d.also(d.summary!.headline.indicator)} />
 
       {/* Linha nave → Terra com o tempo de luz de ida e a resposta esperada. */}
       <section className="card" data-indicator="communication_delay" aria-labelledby="link-title">
         <div className="flex flex-wrap items-start justify-between gap-3">
           <div>
             <h2 id="link-title" className="card-title">One-way delay</h2>
-            <p className="card-sub mt-0.5">Mission {link.destination ?? '—'}{current ? ` · range ${current.delay}` : ''}</p>
+            <p className="card-sub mt-0.5">Mission {link.destination ?? '–'}{current ? ` · range ${current.delay}` : ''}</p>
           </div>
           <StatusPill level={comm?.displayLevel ?? 'unavailable'} />
         </div>
@@ -68,9 +69,9 @@ export default function Distance() {
       </section>
 
       <KeyTiles tiles={[
-        { key: 'reply', title: 'Expected ground reply', icon: Radio, value: off ? '—' : fmtDuration(link.estimatedResponseSeconds), compare: '2 × delay + 15 min to review' },
+        { key: 'reply', title: 'Expected ground reply', icon: Radio, value: off ? '–' : fmtDuration(link.estimatedResponseSeconds), compare: '2 × delay + 15 min to review' },
         { key: 'queue', title: 'Reports waiting', icon: SatelliteDish, value: String(queued), compare: queued ? 'Queued until the link returns' : 'Nothing queued' },
-        { key: 'kit', indicator: 'onboard_medical_resources', title: 'Onboard resources', icon: Package, value: <span className="block text-base font-normal leading-snug text-slate-100">{mission?.input.medicalResources ?? '—'}</span>, compare: 'Operational context, not a clinical measure' },
+        { key: 'kit', indicator: 'onboard_medical_resources', title: 'Onboard resources', icon: Package, value: <span className="block text-base font-normal leading-snug text-slate-100">{mission?.input.medicalResources ?? '–'}</span>, compare: 'Operational context, not a clinical measure' },
       ]} />
       <Card title="Destinations" sub="One-way delay and evacuation, section 3.7 of the specification">
         <div className="overflow-x-auto">
