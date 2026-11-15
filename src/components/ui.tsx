@@ -10,17 +10,13 @@ import type { DisplayLevel } from '../services/api';
 export function StatusPill({ level, small }: { level: DisplayLevel; small?: boolean }) {
   const ui = LEVEL_UI[level] ?? LEVEL_UI.unavailable; const Icon = ui.Icon;
   return (
-    <span className={`inline-flex items-center gap-1 rounded-full border font-medium whitespace-nowrap ${small ? 'text-[10px] px-1.5 py-0.5' : 'text-xs px-2 py-0.5'}`}
-      style={{ color: ui.color, borderColor: ui.color + '55', background: ui.color + '14' }}>
-      <Icon size={small ? 11 : 13} strokeWidth={2.4} />{ui.label}
+    <span className={`inline-flex items-center gap-1 rounded-full border font-medium whitespace-nowrap ${small ? 'text-xs px-1.5 py-0.5' : 'text-sm px-2.5 py-0.5'}`}
+      style={{ color: ui.text, borderColor: ui.color + '88', background: ui.color + '14' }}>
+      <Icon size={small ? 13 : 15} strokeWidth={2.4} aria-hidden="true" style={{ color: ui.color }} />{ui.label}
     </span>
   );
 }
 
-export function LevelDot({ level }: { level: DisplayLevel }) {
-  const c = level === 'normal' ? '#64748B' : LEVEL_UI[level]?.color ?? '#64748B';
-  return <span className="w-2 h-2 rounded-full inline-block" style={{ background: c }} />;
-}
 
 export function Card({ title, sub, icon, right, children, className = '' }: {
   title?: string; sub?: string; icon?: ReactNode; right?: ReactNode; children: ReactNode; className?: string;
@@ -89,7 +85,7 @@ export function SourcesList({ ids }: { ids: string[] }) {
       {ids.map((s) => {
         const src = SOURCES[s]; if (!src) return null;
         return <li key={s} className="text-xs">{src.url
-          ? <a className="text-info hover:underline inline-flex items-center gap-1" href={src.url} target="_blank" rel="noreferrer">{src.label}<ExternalLink size={11} /></a>
+          ? <a className="text-slate-100 underline underline-offset-2 decoration-slate-400 hover:decoration-slate-100 inline-flex items-center gap-1" href={src.url} target="_blank" rel="noreferrer">{src.label}<ExternalLink size={11} /></a>
           : <span className="text-slate-400">{src.label}</span>}</li>;
       })}
     </ul>
@@ -104,7 +100,7 @@ export function WhyBlock({ ids }: { ids: string[] }) {
         <div key={id}>
           <p className="text-sm font-semibold text-slate-200">{i.label}</p>
           {i.why && <p className="text-sm text-slate-300 mt-1">{i.why}</p>}
-          {i.team && <p className="text-[11px] text-amber-300/90 mt-1">Team rule (no source): {i.team}</p>}
+          {i.team && <p className="text-xs text-slate-300 mt-1">Team rule (no source): {i.team}</p>}
           <SourcesList ids={i.sources} />
         </div>
       ); })}
@@ -113,8 +109,8 @@ export function WhyBlock({ ids }: { ids: string[] }) {
 }
 
 export const Stat = ({ label, value, sub }: { label: string; value: ReactNode; sub?: ReactNode }) => (
-  <div className="rounded-xl border border-space-line p-3"><p className="text-[11px] text-slate-400">{label}</p><p className="text-xl font-semibold mt-1">{value}</p>{sub && <p className="text-[11px] text-slate-500 mt-0.5">{sub}</p>}</div>
+  <div className="rounded-xl border border-space-line p-3"><p className="text-xs text-slate-400">{label}</p><p className="text-xl font-semibold mt-1">{value}</p>{sub && <p className="text-xs text-slate-500 mt-0.5">{sub}</p>}</div>
 );
 
 /** Cores de dado nos gráficos: normal neutro, só a exceção ganha cor. */
-export const axisProps = { stroke: '#475569', tick: { fill: '#94A3B8', fontSize: 11 }, tickLine: false } as const;
+export const axisProps = { stroke: '#24324D', tick: { fill: '#A7B4C8', fontSize: 12 }, tickLine: false } as const;

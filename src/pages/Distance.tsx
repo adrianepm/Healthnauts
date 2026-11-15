@@ -31,11 +31,11 @@ export default function Distance() {
           <table className="w-full text-sm">
             <thead><tr className="text-left text-slate-400 text-xs"><th className="py-1">Destination</th><th>One-way delay</th><th>Evacuation</th></tr></thead>
             <tbody>{DESTINATIONS.map((x) => (
-              <tr key={x.name} className={`border-t border-space-line ${x.name === link.destination ? 'text-sky-200' : 'text-slate-300'}`}><td className="py-2 font-semibold">{x.name}{x.name === link.destination ? ' (current)' : ''}</td><td>{x.delay}</td><td>{x.evacuation}</td></tr>
+              <tr key={x.name} className={`border-t border-space-line ${x.name === link.destination ? 'text-brand-soft' : 'text-slate-300'}`}><td className="py-2 font-semibold">{x.name}{x.name === link.destination ? ' (current)' : ''}</td><td>{x.delay}</td><td>{x.evacuation}</td></tr>
             ))}</tbody>
           </table>
         </div>
-        <p className="text-[11px] text-slate-500 mt-2">Mars solar conjunction: about 2 weeks without contact every ~2 years. NASA needs medical decision support that works without contact with Earth; this module is a prototype of that.</p>
+        <p className="text-xs text-slate-500 mt-2">Mars solar conjunction: about 2 weeks without contact every ~2 years. NASA needs medical decision support that works without contact with Earth; this module is a prototype of that.</p>
         <SourcesList ids={['s14', 's16', 's17']} />
       </Card>
       <Link to="/ground" className="btn-ghost w-fit"><SatelliteDish size={14} />Open Ground Control</Link>

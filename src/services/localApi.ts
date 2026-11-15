@@ -3,7 +3,8 @@
 import { createRouter } from '../../shared/router.js';
 import { registerRoutes } from '../../shared/routes.js';
 import { createStore, parseStored } from '../../shared/store-core.js';
-import { STORAGE_KEY } from '../config/api';
+import { STORAGE_KEY, ASTRONAUT_ID, DATASET, AREA } from '../config/api';
+import { demoSeedStart, isolationFollowUp } from './demoSeed';
 
 type Handle = (method: string, path: string, opts: { query?: Record<string, string>; body?: unknown }) => Promise<{ status: number; body: any }>;
 
@@ -17,15 +18,25 @@ function save(payload: unknown) {
 let ready: Promise<Handle> | null = null;
 
 async function boot(): Promise<Handle> {
-  // A demonstração nova é semeada à meia-noite local: os 7 dias de exemplo terminam ontem,
-  // então o check-in de hoje fica pendente e o que o astronauta registrar hoje é o dado mais recente.
-  const seedAt = new Date(); seedAt.setHours(0, 0, 0, 0);
-  let initial;
-  try { initial = parseStored(readSaved() as any, seedAt); } catch { initial = parseStored(null, seedAt); }
+  // A demonstração nova é semeada a partir da meia-noite local de ontem (src/services/demoSeed.ts):
+  // os 7 dias da faixa pessoal terminam anteontem e o check-in de ontem à noite já é comparado com ela.
+  // O check-in de hoje continua pendente.
+  const today = new Date(); today.setHours(0, 0, 0, 0);
+  const seedAt = demoSeedStart(today);
+  const saved = readSaved();
+  let initial; let fresh = !saved;
+  try { initial = parseStored(saved as any, seedAt); } catch { initial = parseStored(null, seedAt); fresh = true; }
   const store = await createStore(initial, async (payload: unknown) => save(payload), seedAt);
   const router = createRouter();
   registerRoutes(router, store, () => new Date());
-  return (method, path, opts) => router.handle(method, path, opts);
+  const handle: Handle = (method, path, opts) => router.handle(method, path, opts as any);
+  if (fresh) {
+    for (const batch of isolationFollowUp(today)) {
+      await handle('POST', `/api/v1/areas/${AREA.isolation}/records`,
+        { body: { astronautId: ASTRONAUT_ID, records: batch.map((r) => ({ source: DATASET, ...r })) } });
+    }
+  }
+  return handle;
 }
 
 export function localHandle(): Promise<Handle> {

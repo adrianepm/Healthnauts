@@ -4,7 +4,7 @@ import { ChevronRight, type LucideIcon } from 'lucide-react';
 import type { ReactNode } from 'react';
 import { LEVEL_UI } from '../../lib/levels';
 import type { DisplayLevel } from '../../services/api';
-import { LevelDot, StatusPill } from '../ui';
+import { StatusPill } from '../ui';
 
 export interface AlsoItem { label: string; level: DisplayLevel; message: string }
 
@@ -12,15 +12,15 @@ export function TodayHero({ level, message, label = 'Today', sub, also = [], act
   level: DisplayLevel; message: string; label?: string; sub?: string; also?: AlsoItem[]; action?: ReactNode;
 }) {
   const ui = LEVEL_UI[level]; const Icon = ui.Icon;
-  const color = level === 'normal' ? LEVEL_UI.normal.color : ui.color;
+  const color = ui.color; const text = ui.text;
   return (
     <section className="card relative overflow-hidden !p-6" style={{ borderColor: color + '55' }}>
       <span className="absolute inset-y-0 left-0 w-1.5" style={{ background: color }} />
       <div className="flex flex-wrap items-start justify-between gap-4">
         <div className="max-w-3xl">
           <div className="flex flex-wrap items-center gap-2">
-            <Icon size={18} style={{ color }} />
-            <span className="text-sm font-semibold" style={{ color }}>{level === 'normal' ? `${label}: within expected` : `${label}: ${ui.label}`}</span>
+            <Icon size={18} style={{ color }} aria-hidden="true" />
+            <span className="text-sm font-semibold" style={{ color: text }}>{level === 'normal' ? `${label}: within expected` : `${label}: ${ui.label}`}</span>
             {sub && <span className="text-xs text-slate-500">· {sub}</span>}
           </div>
           <p className="text-xl md:text-2xl font-semibold mt-2 leading-snug">{message}</p>
@@ -67,7 +67,7 @@ export function TopicLinks({ topics, onOpen }: { topics: { id: string; label: st
       <span className="text-slate-400 mr-1">See details:</span>
       {topics.map(({ id, label, level }) => (
         <button key={id} onClick={() => onOpen(id)} className="inline-flex items-center gap-2 rounded-full border border-space-line hover:border-slate-500 px-3 py-1.5">
-          <LevelDot level={level} />{label}<ChevronRight size={14} className="text-slate-500" />
+          {label}<StatusPill level={level} small /><ChevronRight size={14} className="text-slate-500" />
         </button>
       ))}
     </div>

@@ -6,7 +6,7 @@ import { atmosphereReading, climateRecords, noiseReading, vitalsReading, type Ca
 
 export const TICK_MS = 2 * 60000; // dentro da validade de 5 min da cabine e do intervalo máximo de 10 min do CO2
 const BACKFILL_STEP_MS = 10 * 60000; // o CO2 de 1 h precisa de uma hora coberta, com intervalos de até 10 min
-const SIM_KEY = 'astrovida-v2:sim';
+const SIM_KEY = 'healthnauts:sim';
 
 export interface SimState { on: boolean; cabin: CabinMode; vitals: VitalsMode; lastCabinAt: number | null; lastVitals: ReturnType<typeof vitalsReading> | null }
 

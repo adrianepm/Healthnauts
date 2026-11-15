@@ -2,8 +2,8 @@
 export const API_BASE_URL: string | undefined = import.meta.env.VITE_API_BASE_URL || undefined;
 export const ASTRONAUT_ID = 'astro_demo_001';
 export const DATASET = 'simulated' as const;
-export const STORAGE_KEY = 'astrovida-v2:store';
-export const UI_KEY = 'astrovida-v2:ui';
+export const STORAGE_KEY = 'healthnauts:store';
+export const UI_KEY = 'healthnauts:ui';
 
 export const AREA = {
   radiation: 'radiation',

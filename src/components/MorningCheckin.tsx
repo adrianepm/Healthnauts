@@ -10,12 +10,15 @@ import { fmtHours } from '../lib/format';
 import { KSS_LABELS, SP_LABELS } from '../lib/content';
 import { Modal } from './ui';
 
-function Slider({ label, value, onChange, left, right }: { label: string; value: number; onChange: (v: number) => void; left: string; right: string }) {
+/** Escala visual analógica: 0 a 100 por baixo, mas sem número na tela; só os rótulos das pontas. */
+function Slider({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
   return (
     <label className="block">
-      <div className="flex justify-between text-xs"><span className="text-slate-300">{label}</span><span className="font-mono text-slate-200">{value}</span></div>
-      <input type="range" min={0} max={100} value={value} onChange={(e) => onChange(+e.target.value)} className="w-full mt-1.5 accent-sky-400 h-2" />
-      <div className="flex justify-between text-[10px] text-slate-500"><span>{left}</span><span>{right}</span></div>
+      <span className="text-sm text-slate-200">{label}</span>
+      <input type="range" min={0} max={100} value={value} onChange={(e) => onChange(+e.target.value)}
+        aria-valuetext={`${value}% of the way from Very low to Very high`}
+        className="w-full mt-1 accent-brand" />
+      <div className="flex justify-between text-xs text-slate-400" aria-hidden="true"><span>Very low</span><span>Very high</span></div>
     </label>
   );
 }
@@ -72,10 +75,10 @@ function CheckinForm({ onSaved }: { onSaved: () => void }) {
   return (
     <div>
       <div className="grid grid-cols-[repeat(auto-fit,minmax(125px,1fr))] gap-2">
-        <label className="text-[11px] text-slate-400">Went to bed<input className="field mt-1" type="time" value={bed} onChange={(e) => setBed(e.target.value)} /></label>
-        <label className="text-[11px] text-slate-400">Got up<input className="field mt-1" type="time" value={wake} onChange={(e) => setWake(e.target.value)} /></label>
-        <label className="text-[11px] text-slate-400">Min. to fall asleep<input className="field mt-1" type="number" min={0} value={lat} onChange={(e) => setLat(Math.max(0, +e.target.value))} /></label>
-        <label className="text-[11px] text-slate-400">Min. awake at night<input className="field mt-1" type="number" min={0} value={awake} onChange={(e) => setAwake(Math.max(0, +e.target.value))} /></label>
+        <label className="text-xs text-slate-400">Went to bed<input className="field mt-1" type="time" value={bed} onChange={(e) => setBed(e.target.value)} /></label>
+        <label className="text-xs text-slate-400">Got up<input className="field mt-1" type="time" value={wake} onChange={(e) => setWake(e.target.value)} /></label>
+        <label className="text-xs text-slate-400">Min. to fall asleep<input className="field mt-1" type="number" min={0} value={lat} onChange={(e) => setLat(Math.max(0, +e.target.value))} /></label>
+        <label className="text-xs text-slate-400">Min. awake at night<input className="field mt-1" type="number" min={0} value={awake} onChange={(e) => setAwake(Math.max(0, +e.target.value))} /></label>
       </div>
       <p className="mt-2 text-xs text-slate-400">Time asleep: <b className="text-slate-100 font-mono">{fmtHours(preview)}</b> <span className="text-slate-500">(NASA plan: 8h30)</span></p>
 
@@ -85,10 +88,10 @@ function CheckinForm({ onSaved }: { onSaved: () => void }) {
           {KSS_LABELS.map((label, i) => {
             const v = i + 1; const sel = v === kss;
             return <button key={v} title={label} onClick={() => setKss(v)}
-              className={`h-11 rounded-lg border text-sm font-semibold transition ${sel ? 'text-white border-sky-400 bg-sky-400/20' : 'text-slate-400 border-space-line hover:border-slate-500'}`}>{v}</button>;
+              className={`h-11 rounded-lg border text-sm font-semibold transition ${sel ? 'text-white border-brand bg-brand/20' : 'text-slate-400 border-space-line hover:border-slate-500'}`}>{v}</button>;
           })}
         </div>
-        <p className="text-[11px] text-slate-400 mt-1.5">{kss}: {KSS_LABELS[kss - 1]}</p>
+        <p className="text-xs text-slate-400 mt-1.5">{kss}: {KSS_LABELS[kss - 1]}</p>
       </div>
 
       <div className="mt-4">
@@ -99,16 +102,16 @@ function CheckinForm({ onSaved }: { onSaved: () => void }) {
       </div>
 
       <div className="grid grid-cols-[repeat(auto-fit,minmax(150px,1fr))] gap-4 mt-5">
-        <Slider label="Stress" value={stress} onChange={setStress} left="Not stressed" right="Very stressed" />
-        <Slider label="Mood" value={mood} onChange={setMood} left="Very bad" right="Very good" />
-        <Slider label="Sleep quality" value={q} onChange={setQ} left="Very poor" right="Excellent" />
+        <Slider label="Stress" value={stress} onChange={setStress} />
+        <Slider label="Mood" value={mood} onChange={setMood} />
+        <Slider label="Sleep quality" value={q} onChange={setQ} />
       </div>
-      <p className="text-[10px] text-slate-500 mt-2">Stress, mood and sleep quality are compared with your own usual range, not with a fixed cut-off. Prototype scales, not validated instruments.</p>
+      <p className="text-xs text-slate-500 mt-2">Stress, mood and sleep quality are compared with your own usual range, not with a fixed cut-off. Prototype scales, not validated instruments.</p>
       {error && <p className="text-xs text-red-300 mt-2">{error}</p>}
 
       <footer className="flex flex-wrap items-center justify-between gap-3 mt-5 pt-4 border-t border-space-line">
-        <span className="text-[11px] text-amber-300/90 inline-flex items-center gap-1"><Sparkles size={12} />{done ? 'Check-in already saved today' : `+${XP_PER_CHECKIN} XP for completing it, whatever your answers`}</span>
-        <button onClick={save} disabled={busy} className="bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold rounded-xl px-5 py-2.5 disabled:opacity-60">{busy ? 'Saving…' : done ? 'Save new check-in' : 'Save check-in'}</button>
+        <span className="text-xs text-slate-300 inline-flex items-center gap-1"><Sparkles size={12} />{done ? 'Check-in already saved today' : `+${XP_PER_CHECKIN} XP for completing it, whatever your answers`}</span>
+        <button onClick={save} disabled={busy} className="bg-brand hover:bg-brand-soft text-space-bg text-sm font-semibold rounded-xl px-5 py-2.5 disabled:opacity-60">{busy ? 'Saving…' : done ? 'Save new check-in' : 'Save check-in'}</button>
       </footer>
     </div>
   );

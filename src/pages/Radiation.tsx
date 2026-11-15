@@ -36,9 +36,9 @@ export default function Radiation() {
           <div className="absolute inset-y-0 left-0" style={{ width: `${Math.min(100, pct ?? 0)}%`, background: color }} />
           {BANDS.map((b) => <span key={b} className="absolute inset-y-0 w-px bg-slate-400/70" style={{ left: `${b}%` }} />)}
         </div>
-        <div className="relative h-4 text-[10px] text-slate-400 mt-1">{BANDS.map((b) => <span key={b} className="absolute -translate-x-1/2" style={{ left: `${Math.min(b, 97)}%` }}>{b}%</span>)}</div>
+        <div className="relative h-4 text-xs text-slate-400 mt-1">{BANDS.map((b) => <span key={b} className="absolute -translate-x-1/2" style={{ left: `${Math.min(b, 97)}%` }}>{b}%</span>)}</div>
         <p className="text-sm text-slate-300 mt-3">{career?.message}</p>
-        {career?.limitation && <p className="text-[11px] text-slate-500 mt-1">{career.limitation}</p>}
+        {career?.limitation && <p className="text-xs text-slate-500 mt-1">{career.limitation}</p>}
       </Card>
 
       <div className="grid lg:grid-cols-2 gap-5">
@@ -49,7 +49,7 @@ export default function Radiation() {
             <li><b>Sv and mSv</b> · effective dose, estimates the risk for the whole body.</li>
             <li><b>Dose rate</b> · mSv per day.</li>
           </ul>
-          <p className="text-[11px] text-slate-500 mt-3">Radiation risk is mainly long term. No symptom is attributed to radiation automatically.</p>
+          <p className="text-xs text-slate-500 mt-3">Radiation risk is mainly long term. No symptom is attributed to radiation automatically.</p>
         </Card>
         <Card title="Organ limits (reference only)" sub="mGy-Eq · NASA-STD-3001 Vol. 1 Table 4.8-1. The app does not calculate organ dose.">
           <div className="overflow-x-auto">

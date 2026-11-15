@@ -11,6 +11,7 @@ import type { DisplayLevel } from '../services/api';
 import { Notifications } from './Notifications';
 import { AlertBanner, EmergencyOverlay } from './AlertBanner';
 import { DemoPanel, useSim } from './DemoPanel';
+import { StatusPill } from './ui';
 import { MorningCheckin } from './MorningCheckin';
 import { PvtTest } from './PvtTest';
 
@@ -45,17 +46,17 @@ export function AppShell({ children }: { children: ReactNode }) {
         <div className="max-w-[1280px] mx-auto px-4 md:px-6 pt-4">
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div className="flex items-center gap-3">
-              <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-sky-400 to-violet-600 grid place-items-center"><Compass size={20} /></div>
+              <div className="w-10 h-10 rounded-xl bg-brand text-space-bg grid place-items-center" aria-hidden="true"><Compass size={20} /></div>
               <div>
-                <p className="font-bold tracking-wide">ASTRO<span className="text-sky-400">VIDA</span> <span className="chip border-sky-500/40 text-sky-300 ml-1">Onboard</span></p>
-                <p className="text-[11px] text-slate-400">Autonomous crew health monitor</p>
+                <p className="font-bold tracking-wide text-lg">Health<span className="text-brand-soft">nauts</span> <span className="chip border-brand/40 text-brand-soft ml-1">Onboard</span></p>
+                <p className="text-xs text-slate-400">Autonomous crew health monitor</p>
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-2 text-xs">
-              {mission && <span className="chip border-space-line text-slate-300 normal-case text-xs py-1"><span className="text-emerald-400">●</span> Mission {mission.input.destination} · Day {day}</span>}
-              <span className={`chip normal-case text-xs py-1 ${s.on ? 'border-emerald-500/40 text-emerald-300' : 'border-space-line text-slate-400'}`}>Live sensor {s.on ? 'on' : 'off'}</span>
-              <span className="chip border-violet-500/40 text-violet-300 normal-case text-xs py-1 inline-flex items-center gap-1"><Award size={12} />Level {levelOfXp(xp)}</span>
-              <span className="w-20 h-1.5 rounded bg-space-line overflow-hidden"><span className="block h-full bg-teal-400" style={{ width: `${xp % 100}%` }} /></span>
+              {mission && <span className="chip border-space-line text-slate-300 normal-case text-xs py-1">Mission {mission.input.destination} · Day {day}</span>}
+              <span className={`chip normal-case text-xs py-1 ${s.on ? 'border-space-line text-slate-200' : 'border-space-line text-slate-400'}`}>Live sensor {s.on ? 'on' : 'off'}</span>
+              <span className="chip border-brand/40 text-brand-soft normal-case text-xs py-1 inline-flex items-center gap-1"><Award size={12} />Level {levelOfXp(xp)}</span>
+              <span className="w-20 h-1.5 rounded bg-space-line overflow-hidden"><span className="block h-full bg-brand" style={{ width: `${xp % 100}%` }} /></span>
               <span className="text-slate-400 font-mono">{xp} XP</span>
               <Notifications />
             </div>
@@ -63,16 +64,16 @@ export function AppShell({ children }: { children: ReactNode }) {
           {link && (
             <div className="flex flex-wrap items-center gap-2 mt-3">
               <span className="chip border-space-line text-slate-300 normal-case text-xs py-1.5 inline-flex items-center gap-1"><Gauge size={12} />Current one-way delay: <b>{link.status === 'unavailable' ? 'no link' : fmtDuration(link.oneWaySeconds)}</b></span>
-              {link.status === 'unavailable' && <span className="chip normal-case text-xs py-1.5" style={{ color: LEVEL_UI.advisory.color, borderColor: LEVEL_UI.advisory.color + '66' }}>No contact with Earth</span>}
+              {link.status === 'unavailable' && <span className="chip normal-case text-xs py-1.5 border-space-line text-slate-100">No contact with Earth</span>}
             </div>
           )}
           <nav className="flex gap-1 mt-3 overflow-x-auto">
             {TABS.map(({ to, label, icon: Icon, area }) => {
               const lv = levelOf(area);
               return (
-                <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => `inline-flex items-center gap-2 px-3 md:px-4 py-3 text-sm border-b-2 whitespace-nowrap ${isActive ? 'border-sky-400 text-sky-300' : 'border-transparent text-slate-400 hover:text-slate-200'}`}>
-                  <Icon size={15} />{label}
-                  {lv && lv !== 'normal' && <span className="chip text-[9px]" style={{ color: LEVEL_UI[lv].color, borderColor: LEVEL_UI[lv].color + '66' }}>{LEVEL_UI[lv].label}</span>}
+                <NavLink key={to} to={to} end={to === '/'} className={({ isActive }) => `inline-flex items-center gap-2 px-3 md:px-4 py-3 text-sm border-b-2 whitespace-nowrap ${isActive ? 'border-brand text-brand-soft' : 'border-transparent text-slate-400 hover:text-slate-200'}`}>
+                  <Icon size={16} aria-hidden="true" />{label}
+                  {lv && lv !== 'normal' && <StatusPill level={lv} small />}
                 </NavLink>
               );
             })}
@@ -84,7 +85,7 @@ export function AppShell({ children }: { children: ReactNode }) {
         {children}
       </main>
       <footer className="fixed bottom-0 inset-x-0 z-30 border-t border-space-line bg-space-bg/95 backdrop-blur">
-        <p className="max-w-[1280px] mx-auto px-4 md:px-6 py-2.5 pr-28 text-[11px] text-slate-400">
+        <p className="max-w-[1280px] mx-auto px-4 md:px-6 py-2.5 pr-28 text-xs text-slate-400">
           {overview?.footer ?? 'This tool supports self-monitoring and crew medical decisions. It does not diagnose any condition.'} Simulated data · Space Apps 2026.
         </p>
       </footer>

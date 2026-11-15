@@ -19,7 +19,7 @@ export function VitalsCard({ detailed }: { detailed?: boolean }) {
     <Card title="Vital signs" sub={`Simulated wrist sensor · ${s.lastVitals ? 'updated ' + ago(s.lastVitals.recordedAt) : 'waiting for a reading'}${s.lastVitals?.activity === 'exercise' ? ' · exercising' : ''}`}
       icon={<HeartPulse size={18} />} right={vital && <StatusPill level={vital.displayLevel} />}>
       <div className="grid grid-cols-2 sm:grid-cols-5 gap-2">
-        {items.map(([k, v]) => <div key={k} className="rounded-xl border border-space-line p-3"><p className="text-[11px] text-slate-400">{k}</p><p className="text-lg font-semibold mt-0.5">{v}</p></div>)}
+        {items.map(([k, v]) => <div key={k} className="rounded-xl border border-space-line p-3"><p className="text-xs text-slate-400">{k}</p><p className="text-lg font-semibold mt-0.5">{v}</p></div>)}
       </div>
       {vital?.message && <p className="text-sm text-slate-200 mt-3">{vital.message}</p>}
       {news2 && (
@@ -32,7 +32,7 @@ export function VitalsCard({ detailed }: { detailed?: boolean }) {
               ))}
             </div>
           )}
-          <p className="text-[10px] text-slate-500 mt-1.5">{news2.limitation}</p>
+          <p className="text-xs text-slate-500 mt-1.5">{news2.limitation}</p>
         </div>
       )}
     </Card>

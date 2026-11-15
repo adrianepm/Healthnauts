@@ -53,13 +53,13 @@ function PostEvaForm() {
         <input type="number" min={0} max={1440} value={ended} onChange={(e) => setEnded(Math.max(0, +e.target.value))} className="field !w-20 !py-1" /> min ago</label>
       <div className="grid sm:grid-cols-2 gap-1.5 mt-3">
         {EVA_SYMPTOMS.map(([id, label]) => (
-          <label key={id} className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm cursor-pointer ${picked.includes(id) ? 'border-sky-400 bg-sky-400/10' : 'border-space-line'}`}>
-            <input type="checkbox" checked={picked.includes(id)} onChange={() => toggle(id)} className="accent-sky-400" />{label}
+          <label key={id} className={`flex items-center gap-2 rounded-lg border px-3 py-2 text-sm cursor-pointer ${picked.includes(id) ? 'border-brand bg-brand/10' : 'border-space-line'}`}>
+            <input type="checkbox" checked={picked.includes(id)} onChange={() => toggle(id)} className="accent-brand" />{label}
           </label>
         ))}
       </div>
       <button onClick={send} disabled={busy} className="btn-primary mt-3">{picked.length ? `Report ${picked.length} symptom${picked.length > 1 ? 's' : ''}` : 'No symptoms'}</button>
-      <p className="text-[11px] text-slate-500 mt-2">Most decompression sickness cases appear 60 to 240 minutes after decompression. Check again every hour.</p>
+      <p className="text-xs text-slate-500 mt-2">Most decompression sickness cases appear 60 to 240 minutes after decompression. Check again every hour.</p>
     </div>
   );
 }
@@ -90,7 +90,7 @@ export default function Environment() {
         <p className="text-sm text-slate-300 mb-3">{d.a('post_eva_symptoms')?.message}</p>
         <PostEvaForm />
       </Card>
-      <p className="text-[11px] text-slate-500">Limits marked NASA come from NASA-STD-3001 Vol. 2 Rev. D (PIO₂ from the Rev. B table). The temperature/humidity box and noise in dBA are prototype simplifications. Rev. E was not checked.</p>
+      <p className="text-xs text-slate-500">Limits marked NASA come from NASA-STD-3001 Vol. 2 Rev. D (PIO₂ from the Rev. B table). The temperature/humidity box and noise in dBA are prototype simplifications. Rev. E was not checked.</p>
 
       <TopicDetail areaId={AREA.cabin} topics={TOPICS} topic={topic} onTopic={setTopic} assessments={d.assessments}>
         {(t, ctx) => (<>
@@ -101,7 +101,7 @@ export default function Environment() {
               { ...compareItem(ctx, 'inspired_oxygen_pressure', 'Inspired O₂', (x) => `${Math.round(x)} mmHg`), level: lv('inspired_oxygen_pressure') },
             ]} />
             <Section title="CO₂ partial pressure (each reading)"><TrendChart records={ctx.series('co2_partial_pressure')} refs={CO2_REFS} unit="" fmt={(x) => `${x.toFixed(2)} mmHg`} lastLevel={lv('co2_partial_pressure')} /></Section>
-            <p className="text-[11px] text-slate-500">The level uses the time-weighted 1-hour average ({n(co2?.value, 2)} mmHg). 7-day average: {d.a('co2_partial_pressure_7d')?.message}</p>
+            <p className="text-xs text-slate-500">The level uses the time-weighted 1-hour average ({n(co2?.value, 2)} mmHg). 7-day average: {d.a('co2_partial_pressure_7d')?.message}</p>
             <div className="mt-3 rounded-xl border border-space-line p-3 text-xs text-slate-300">
               Reported headache (shown side by side, no cause is inferred): <b>{headache ? `${headache.value}/10 · ${fmtDateTime(headache.recordedAt)}` : 'none reported'}</b>
             </div>
@@ -119,7 +119,7 @@ export default function Environment() {
             <Section title="Noise"><TrendChart records={ctx.series('cabin_noise')} refs={NOISE_REFS} fmt={(x) => `${x} dBA`} lastLevel={lv('cabin_noise')} /></Section>
           </>)}
           {t === 'eva' && <Section title="Post-EVA checklist"><PostEvaForm /></Section>}
-          <p className="text-[11px] text-slate-500 mt-4">{info(t === 'air' ? 'co2_partial_pressure' : t === 'comfort' ? 'cabin_noise' : 'post_eva_symptoms').why}</p>
+          <p className="text-xs text-slate-500 mt-4">{info(t === 'air' ? 'co2_partial_pressure' : t === 'comfort' ? 'cabin_noise' : 'post_eva_symptoms').why}</p>
         </>)}
       </TopicDetail>
     </div>

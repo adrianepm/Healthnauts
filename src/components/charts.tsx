@@ -9,7 +9,7 @@ import { axisProps } from './ui';
 
 const tipBox = 'recharts-default-tooltip px-3 py-2 text-xs';
 const tickEvery = (n: number) => (n > 16 ? Math.ceil(n / 8) - 1 : 0);
-const lastColor = (level?: DisplayLevel) => level && level !== 'normal' && level !== 'unavailable' ? LEVEL_UI[level].color : '#CBD5E1';
+const lastColor = (level?: DisplayLevel) => level && level !== 'normal' && level !== 'unavailable' ? LEVEL_UI[level].color : '#E6EDF7';
 
 export interface RefLine { y: number; label: string; color?: string }
 
@@ -34,7 +34,7 @@ export function BarsChart({ records, unit, refs = [], lastLevel, domain, fmt = (
           <CartesianGrid stroke="#1F2A40" vertical={false} />
           <XAxis dataKey="label" {...axisProps} fontSize={10} interval={tickEvery(data.length)} />
           <YAxis domain={domain ?? ['auto', 'auto']} {...axisProps} unit={unit} />
-          {refs.map((r) => <ReferenceLine key={r.label} y={r.y} stroke={r.color ?? '#94A3B8'} strokeDasharray="4 4" label={{ value: r.label, position: 'right', fill: r.color ?? '#94A3B8', fontSize: 10 }} />)}
+          {refs.map((r) => <ReferenceLine key={r.label} y={r.y} stroke={r.color ?? '#A7B4C8'} strokeDasharray="4 4" label={{ value: r.label, position: 'right', fill: r.color ?? '#A7B4C8', fontSize: 12 }} />)}
           <Tooltip cursor={{ fill: '#ffffff08' }} content={({ active, payload }) => {
             if (!active || !payload?.length) return null; const p = payload[0].payload;
             return <div className={tipBox}><b>{fmtDateTime(p.at)}</b><br />{fmt(p.v)}</div>;
@@ -64,10 +64,10 @@ export function ScaleHeat({ records, max, labels, lastLevel }: { records: ApiRec
         {records.map((r, i) => {
           const v = Number(r.value); const last = i === n - 1 && lastLevel && lastLevel !== 'normal' && lastLevel !== 'unavailable';
           return <div key={r.id} title={`${fmtDay(r.recordedAt)} · ${v}: ${labels[v - 1] ?? ''}`} className="h-9 rounded-md grid place-items-center text-xs font-semibold"
-            style={last ? { background: LEVEL_UI[lastLevel!].color, color: '#0B1120' } : { background: `rgba(91,127,166,${0.25 + (v / max) * 0.45})`, color: '#E2E8F0' }}>{v}</div>;
+            style={last ? { background: LEVEL_UI[lastLevel!].color, color: '#0B1220' } : { background: `rgba(91,127,166,${0.25 + (v / max) * 0.45})`, color: '#E6EDF7' }}>{last && (() => { const I = LEVEL_UI[lastLevel!].Icon; return <span className="inline-flex items-center gap-0.5"><I size={12} aria-label={LEVEL_UI[lastLevel!].label} />{v}</span>; })()}{!last && v}</div>;
         })}
       </div>
-      <div className="grid mt-1 text-[9px] text-slate-500" style={{ gridTemplateColumns: `repeat(${n}, minmax(0,1fr))` }}>
+      <div className="grid mt-1 text-xs text-slate-500" style={{ gridTemplateColumns: `repeat(${n}, minmax(0,1fr))` }}>
         {records.map((r, i) => <span key={r.id} className="text-center truncate">{n <= 10 || i === n - 1 || i % Math.ceil(n / 8) === 0 ? fmtDay(r.recordedAt) : ''}</span>)}
       </div>
     </div>
@@ -93,7 +93,7 @@ export function TrendChart({ records, band, refs = [], lastLevel, domain, unit, 
           <XAxis dataKey="label" {...axisProps} fontSize={9} interval={tickEvery(data.length)} />
           <YAxis domain={domain ?? ['auto', 'auto']} {...axisProps} fontSize={9} unit={unit} />
           {band && <Area dataKey="band" fill={NEUTRAL} fillOpacity={0.3} stroke="none" isAnimationActive={false} />}
-          {refs.map((r) => <ReferenceLine key={r.label} y={r.y} stroke={r.color ?? '#94A3B8'} strokeDasharray="4 4" label={{ value: r.label, position: 'right', fill: r.color ?? '#94A3B8', fontSize: 10 }} />)}
+          {refs.map((r) => <ReferenceLine key={r.label} y={r.y} stroke={r.color ?? '#A7B4C8'} strokeDasharray="4 4" label={{ value: r.label, position: 'right', fill: r.color ?? '#A7B4C8', fontSize: 12 }} />)}
           <Line dataKey="v" stroke="#CBD5E1" strokeWidth={1.8} isAnimationActive={false}
             dot={(p: any) => {
               const last = p.index === data.length - 1;

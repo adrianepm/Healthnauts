@@ -19,7 +19,7 @@ function Pipeline({ r }: { r: GroundReport }) {
   return (
     <ol className="grid grid-cols-4 gap-1 mt-3">
       {STEPS.map((s, i) => (
-        <li key={s} className={`rounded-lg border px-2 py-1.5 text-[11px] ${i <= at ? 'border-sky-400/60 bg-sky-400/10 text-sky-200' : 'border-space-line text-slate-500'}`}>
+        <li key={s} className={`rounded-lg border px-2 py-1.5 text-xs ${i <= at ? 'border-brand/60 bg-brand/10 text-brand-soft' : 'border-space-line text-slate-500'}`}>
           <span className="flex items-center gap-1 font-semibold">{i <= at && <Check size={11} />}{s}</span>
           <span className="block font-mono">{when[i] ? `${i > at ? 'exp. ' : ''}${fmtTime(when[i])}` : '—'}</span>
         </li>
@@ -51,13 +51,13 @@ export default function GroundControl() {
       <Card title="Earth link" sub="Simulation in the same browser: GitHub Pages does not send real telemetry between devices." icon={<SatelliteDish size={18} />}
         right={<button onClick={toggle} disabled={busy} className="btn-ghost text-xs">{link.status === 'unavailable' ? <><Radio size={13} />Restore link</> : <><WifiOff size={13} />No Earth link</>}</button>}>
         <div className="grid sm:grid-cols-4 gap-3">
-          <div className="rounded-xl border border-space-line p-3"><p className="text-[11px] text-slate-400">Mission</p><p className="text-lg font-semibold">{link.destination ?? '—'}</p></div>
-          <div className="rounded-xl border border-space-line p-3"><p className="text-[11px] text-slate-400">Link status</p><p className="text-lg font-semibold capitalize">{link.status}</p></div>
-          <div className="rounded-xl border border-space-line p-3"><p className="text-[11px] text-slate-400">Current one-way delay</p><p className="text-lg font-semibold">{fmtDuration(link.oneWaySeconds)}</p></div>
-          <div className="rounded-xl border border-space-line p-3"><p className="text-[11px] text-slate-400">Expected reply</p><p className="text-lg font-semibold">{link.status === 'unavailable' ? '—' : fmtDuration(link.estimatedResponseSeconds)}</p></div>
+          <div className="rounded-xl border border-space-line p-3"><p className="text-xs text-slate-400">Mission</p><p className="text-lg font-semibold">{link.destination ?? '—'}</p></div>
+          <div className="rounded-xl border border-space-line p-3"><p className="text-xs text-slate-400">Link status</p><p className="text-lg font-semibold capitalize">{link.status}</p></div>
+          <div className="rounded-xl border border-space-line p-3"><p className="text-xs text-slate-400">Current one-way delay</p><p className="text-lg font-semibold">{fmtDuration(link.oneWaySeconds)}</p></div>
+          <div className="rounded-xl border border-space-line p-3"><p className="text-xs text-slate-400">Expected reply</p><p className="text-lg font-semibold">{link.status === 'unavailable' ? '—' : fmtDuration(link.estimatedResponseSeconds)}</p></div>
         </div>
-        {link.message && <p className="mt-3 text-sm rounded-xl border p-3" style={{ color: LEVEL_UI.advisory.color, borderColor: LEVEL_UI.advisory.color + '55' }}>{link.message}</p>}
-        <p className="text-[11px] text-slate-500 mt-2">Reply = sent + 2 × one-way delay + 15 min to review (team proposal).</p>
+        {link.message && <p className="mt-3 text-sm rounded-xl border border-space-line p-3 text-slate-100">{link.message}</p>}
+        <p className="text-xs text-slate-500 mt-2">Reply = sent + 2 × one-way delay + 15 min to review (team proposal).</p>
         <SourcesList ids={['s15', 's16']} />
       </Card>
 
@@ -97,7 +97,7 @@ export default function GroundControl() {
           <input value={note} onChange={(e) => setNote(e.target.value)} placeholder="Describe an action taken on board…" className="field flex-1 min-w-[12rem]" maxLength={2000} />
           <button onClick={manual} disabled={busy || !note.trim()} className="btn-primary">Send manual report</button>
         </div>
-        <p className="text-[11px] text-slate-500 mt-2">Reports carry only parameters at Caution or above. Mood and stress are never sent.</p>
+        <p className="text-xs text-slate-500 mt-2">Reports carry only parameters at Caution or above. Mood and stress are never sent.</p>
       </Card>
     </div>
   );

@@ -38,14 +38,14 @@ export function Notifications() {
     <div className="relative">
       <button onClick={() => setOpen(!open)} className="relative w-10 h-10 rounded-xl border border-space-line grid place-items-center hover:border-slate-500" aria-label={`Reminders: ${pending.length} pending`}>
         <Bell size={18} />
-        {pending.length > 0 && <span className="absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1 rounded-full bg-red-500 text-[11px] font-bold grid place-items-center text-white">{pending.length}</span>}
+        {pending.length > 0 && <span className="absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1 rounded-full bg-red-500 text-xs font-bold grid place-items-center text-white">{pending.length}</span>}
       </button>
       {open && (
         <div className="absolute right-0 mt-2 w-72 rounded-xl border border-space-line bg-space-deep shadow-xl p-2 z-50">
           {pending.length === 0 ? <p className="text-sm text-slate-400 p-3">You're all caught up.</p> : pending.map(({ id, icon: Icon, title, sub, go }) => (
             <button key={id} onClick={() => { go(); setOpen(false); }} className="w-full flex items-center gap-3 rounded-lg p-3 hover:bg-space-card text-left">
               <span className="relative"><Icon size={18} className="text-slate-300" /><span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500" /></span>
-              <span><span className="block text-sm">{title}</span><span className="block text-[11px] text-slate-400">{sub}</span></span>
+              <span><span className="block text-sm">{title}</span><span className="block text-xs text-slate-400">{sub}</span></span>
             </button>
           ))}
         </div>
@@ -63,7 +63,7 @@ export function RoutineList() {
         <li key={id}>
           <button onClick={go} className="w-full flex items-center gap-3 rounded-xl border border-space-line bg-space-deep/60 hover:border-slate-500 p-3 text-left">
             <span className="relative w-9 h-9 rounded-lg bg-space-card grid place-items-center text-slate-300"><Icon size={16} />{!done && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500" />}</span>
-            <span className="flex-1"><span className="block text-sm text-slate-100">{title}</span><span className="block text-[11px] text-slate-400">{sub}</span></span>
+            <span className="flex-1"><span className="block text-sm text-slate-100">{title}</span><span className="block text-xs text-slate-400">{sub}</span></span>
             <span className={`chip normal-case ${done ? 'border-space-line text-slate-500' : 'border-red-500/40 text-red-300'}`}>{done ? 'Done' : 'To do'}</span>
           </button>
         </li>

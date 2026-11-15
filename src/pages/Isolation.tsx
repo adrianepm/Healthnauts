@@ -42,8 +42,8 @@ export default function Isolation() {
         action={!checkinDone && (
           <button onClick={() => setCheckinOpen(true)} className="relative inline-flex items-center gap-2 rounded-xl border border-space-line bg-space-deep hover:border-slate-500 px-4 py-3 text-sm">
             <BellRing size={16} className="text-slate-300" />
-            <span className="text-left"><span className="block font-semibold">Morning check-in</span><span className="block text-[11px] text-slate-400">Pending · about 1 min</span></span>
-            <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-[11px] font-bold grid place-items-center text-white">1</span>
+            <span className="text-left"><span className="block font-semibold">Morning check-in</span><span className="block text-xs text-slate-400">Pending · about 1 min</span></span>
+            <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-xs font-bold grid place-items-center text-white">1</span>
           </button>
         )} />
       <KeyTiles tiles={[
@@ -68,7 +68,7 @@ export default function Isolation() {
             ]} />
             <Section title="Hours of sleep"><BarsChart records={ctx.series('sleep_duration')} unit="h" domain={[0, 10]} refs={SLEEP_REFS} fmt={hoursFmt} lastLevel={ctx.assessment('sleep_duration')?.displayLevel} /></Section>
             <Section title="Sleep quality"><TrendChart records={ctx.series('sleep_quality')} band={band('sleep_quality')} domain={[0, 100]} lastLevel={ctx.assessment('sleep_quality')?.displayLevel} /></Section>
-            <p className="text-[11px] text-slate-500 mt-1">Bars: neutral; the latest night takes the colour of its level. Lines: NASA plan 8.5 h (a goal, not a cut-off), 6 h and 4 h.</p>
+            <p className="text-xs text-slate-500 mt-1">Bars: neutral; the latest night takes the colour of its level. Lines: NASA plan 8.5 h (a goal, not a cut-off), 6 h and 4 h.</p>
           </>)}
           {t === 'alertness' && (<>
             <CompareRow periodLabel={ctx.periodLabel} items={[
@@ -79,9 +79,9 @@ export default function Isolation() {
             <Section title="Sleepiness · KSS (1-9)"><ScaleHeat records={ctx.series('sleepiness_kss')} max={9} labels={KSS_LABELS} lastLevel={ctx.assessment('sleepiness_kss')?.displayLevel} /></Section>
             <Section title="Fatigue · Samn-Perelli (1-7)"><ScaleHeat records={ctx.series('fatigue_samn_perelli')} max={7} labels={SP_LABELS} lastLevel={ctx.assessment('fatigue_samn_perelli')?.displayLevel} /></Section>
             <Section title="Reaction check (PVT-B, every 4 days)"
-              right={<button onClick={() => setPvtOpen(true)} className="inline-flex items-center gap-1.5 bg-sky-500 hover:bg-sky-400 text-slate-950 text-xs font-semibold rounded-lg px-3 py-1.5"><Play size={12} />Start 3-min check</button>}>
+              right={<button onClick={() => setPvtOpen(true)} className="inline-flex items-center gap-1.5 bg-brand hover:bg-brand-soft text-space-bg text-xs font-semibold rounded-lg px-3 py-1.5"><Play size={12} />Start 3-min check</button>}>
               <TrendChart records={ctx.series('pvt_response_speed')} band={band('pvt_response_speed')} fmt={(x) => `${x.toFixed(2)} /s (≈ ${Math.round(rtMs(x))} ms)`} lastLevel={ctx.assessment('pvt_response_speed')?.displayLevel} />
-              <p className="text-[11px] text-slate-400 mt-1">Line: mean response speed (higher is faster){band('pvt_response_speed') ? ' · shaded: your usual range' : ''}.</p>
+              <p className="text-xs text-slate-400 mt-1">Line: mean response speed (higher is faster){band('pvt_response_speed') ? ' · shaded: your usual range' : ''}.</p>
             </Section>
           </>)}
           {t === 'mind' && (<>
@@ -91,7 +91,7 @@ export default function Isolation() {
             ]} />
             <Section title="Stress"><TrendChart records={ctx.series('stress')} band={band('stress')} domain={[0, 100]} lastLevel={ctx.assessment('stress')?.displayLevel} /></Section>
             <Section title="Mood"><TrendChart records={ctx.series('mood_score')} band={band('mood_score')} domain={[0, 100]} lastLevel={ctx.assessment('mood_score')?.displayLevel} /></Section>
-            <p className="text-[11px] text-slate-500 mt-1">Shaded band: your usual range (mission days 1-7), when ready. No validated cut-off exists for these ratings. Mood and stress are visible only to you and your Crew Medical Officer.</p>
+            <p className="text-xs text-slate-500 mt-1">Shaded band: your usual range (mission days 1-7), when ready. No validated cut-off exists for these ratings. Mood and stress are visible only to you and your Crew Medical Officer.</p>
             <div className="mt-6"><SupportTools /></div>
           </>)}
         </>)}

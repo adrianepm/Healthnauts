@@ -31,7 +31,7 @@ export default function Overview() {
             <div className="flex items-center justify-between"><span className="text-sm font-semibold">{AREA_LABEL[a.areaId]}</span><ChevronRight size={15} className="text-slate-500" /></div>
             <StatusPill level={a.displayLevel} />
             <p className="text-xs text-slate-300 line-clamp-3">{a.headline.message}</p>
-            <p className="text-[10px] text-slate-500 mt-auto">{a.summary} · last data {ago(a.lastRecordedAt)}</p>
+            <p className="text-xs text-slate-500 mt-auto">{a.summary} · last data {ago(a.lastRecordedAt)}</p>
           </Link>
         ))}
       </div>

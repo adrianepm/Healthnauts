@@ -66,7 +66,7 @@ export function AlertBanner() {
           </div>
         );
       })}
-      {needsAck && <p className="text-[11px] text-slate-400">{NO_ACK_TEXT} The device may be far away, switched off or offline.</p>}
+      {needsAck && <p className="text-xs text-slate-400">{NO_ACK_TEXT} The device may be far away, switched off or offline.</p>}
     </div>
   );
 }

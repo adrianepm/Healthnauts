@@ -71,9 +71,9 @@ function PreFlight() {
     <div className="grid sm:grid-cols-3 gap-3">
       {refs.map((r: any) => (
         <div key={r.id} className="rounded-xl border border-space-line p-3">
-          <p className="text-[11px] text-slate-400">Pre-flight · {info(r.input.indicator).label.replace(/ \(.*\)/, '')}</p>
+          <p className="text-xs text-slate-400">Pre-flight · {info(r.input.indicator).label.replace(/ \(.*\)/, '')}</p>
           <p className="text-lg font-semibold">{r.input.value} {r.input.unit}</p>
-          <p className="text-[10px] text-slate-500">{r.input.method} · {fmtDateTime(r.input.recordedAt)}</p>
+          <p className="text-xs text-slate-500">{r.input.method} · {fmtDateTime(r.input.recordedAt)}</p>
         </div>
       ))}
     </div>

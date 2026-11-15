@@ -20,13 +20,13 @@ export function SupportTools() {
         {tools.map(({ icon: Icon, title, sub, tag }) => (
           <li key={title} className="w-full flex items-center gap-3 rounded-xl border border-space-line bg-space-deep/60 p-3">
             <span className="w-9 h-9 rounded-lg bg-space-card grid place-items-center text-slate-300"><Icon size={16} /></span>
-            <span className="flex-1"><span className="block text-sm text-slate-100">{title}</span><span className="block text-[11px] text-slate-400">{sub}</span></span>
+            <span className="flex-1"><span className="block text-sm text-slate-100">{title}</span><span className="block text-xs text-slate-400">{sub}</span></span>
             <span className="chip border-space-line text-slate-400 normal-case">{tag}</span>
             <ChevronRight size={16} className="text-slate-500" />
           </li>
         ))}
       </ul>
-      <p className="text-[11px] text-slate-500 mt-3">Flight surgeon reply time = 2 × one-way delay + about 15 min to review. Prototype: these tools are placeholders.</p>
+      <p className="text-xs text-slate-500 mt-3">Flight surgeon reply time = 2 × one-way delay + about 15 min to review. Prototype: these tools are placeholders.</p>
       <SourcesList ids={['s33', 's15']} />
     </Card>
   );

@@ -43,11 +43,11 @@ function LogForms() {
         <button disabled={!!busy || !mass || !mission} onClick={() => run('mass', () => api.records(AREA.gravity, [{ indicator: 'body_mass', value: Number(mass), unit: 'kg', recordedAt: now(), context: ctx }]))} className="btn-primary mt-3 w-full">Save weight</button>
       </Card>
       <Card title="Balance & vision report" sub="Prototype scales, not validated instruments" icon={<Eye size={18} />}>
-        <label className="block text-xs text-slate-400">Motion sickness: <b className="text-slate-200">{ms}</b> (0 feeling fine · 20 vomiting)<input type="range" min={0} max={20} value={ms} onChange={(e) => setMs(+e.target.value)} className="w-full accent-sky-400" /></label>
-        <label className="block text-xs text-slate-400 mt-2">Headache: <b className="text-slate-200">{headache}</b> / 10<input type="range" min={0} max={10} value={headache} onChange={(e) => setHeadache(+e.target.value)} className="w-full accent-sky-400" /></label>
+        <label className="block text-xs text-slate-400">Motion sickness: <b className="text-slate-200">{ms}</b> (0 feeling fine · 20 vomiting)<input type="range" min={0} max={20} value={ms} onChange={(e) => setMs(+e.target.value)} className="w-full accent-brand" /></label>
+        <label className="block text-xs text-slate-400 mt-2">Headache: <b className="text-slate-200">{headache}</b> / 10<input type="range" min={0} max={10} value={headache} onChange={(e) => setHeadache(+e.target.value)} className="w-full accent-brand" /></label>
         <div className="grid grid-cols-2 gap-1.5 mt-2 text-xs">
           {([['dizziness', 'Dizziness'], ['near_fainting', 'Near fainting'], ['vision_change', 'Vision changed since yesterday'], ['amsler_change', 'Amsler grid looks different']] as const).map(([k, l]) => (
-            <label key={k} className="flex items-center gap-1.5"><input type="checkbox" checked={flags[k]} onChange={(e) => setFlags({ ...flags, [k]: e.target.checked })} className="accent-sky-400" />{l}</label>
+            <label key={k} className="flex items-center gap-1.5"><input type="checkbox" checked={flags[k]} onChange={(e) => setFlags({ ...flags, [k]: e.target.checked })} className="accent-brand" />{l}</label>
           ))}
         </div>
         <button disabled={!!busy} onClick={() => run('sym', () => api.records(AREA.gravity, [
@@ -67,7 +67,7 @@ function BoneSimulation({ startedAt }: { startedAt?: string }) {
   const now = startedAt ? (Date.now() - Date.parse(startedAt)) / (30 * DAY_MS) : null;
   return (
     <Card title="Bone loss · educational simulation" sub={`100 − rate × months, with ${lo}% to ${hi}% per month`} icon={<Bone size={18} />}
-      right={<span className="chip border-amber-500/50 text-amber-300 normal-case">Illustrative projection, not an actual bone density measurement.</span>}>
+      right={<span className="chip border-space-line text-slate-200 normal-case">Illustrative projection, not an actual bone density measurement.</span>}>
       <div className="h-48">
         <ResponsiveContainer>
           <LineChart data={data} margin={{ top: 8, right: 8, left: -18, bottom: 0 }}>
@@ -80,7 +80,7 @@ function BoneSimulation({ startedAt }: { startedAt?: string }) {
           </LineChart>
         </ResponsiveContainer>
       </div>
-      <p className="text-[11px] text-slate-500 mt-1">Bone density is only measured before and after flight (DXA). {now !== null && `Mission month ${now.toFixed(1)}.`} No alert comes from this curve.</p>
+      <p className="text-xs text-slate-500 mt-1">Bone density is only measured before and after flight (DXA). {now !== null && `Mission month ${now.toFixed(1)}.`} No alert comes from this curve.</p>
       <SourcesList ids={['s22']} />
     </Card>
   );
@@ -118,11 +118,11 @@ export default function Gravity() {
         <BoneSimulation startedAt={mission?.input.startedAt} />
         <Card title="Bone protection tracker" sub="Resistance exercise done vs. plan · prevention, not diagnosis" icon={<Bone size={18} />}>
           <BarsChart records={d.week.filter((r) => r.indicator === 'exercise_duration')} unit="m" refs={[{ y: REFERENCE.exercisePlanMin, label: `${REFERENCE.exercisePlanMin} min plan` }]} fmt={(x) => `${x} min`} />
-          <p className="text-[11px] text-slate-500 mt-1">On the ISS crews exercise about 1.5 h a day, 6 to 7 days a week, with loads of 2 to 3 times body weight for bone.</p>
+          <p className="text-xs text-slate-500 mt-1">On the ISS crews exercise about 1.5 h a day, 6 to 7 days a week, with loads of 2 to 3 times body weight for bone.</p>
           <SourcesList ids={['s22']} />
         </Card>
       </div>
-      <p className="text-[11px] text-slate-500">Post-landing stand test appears only after landing (phase POST_LANDING): standing is not possible in microgravity.</p>
+      <p className="text-xs text-slate-500">Post-landing stand test appears only after landing (phase POST_LANDING): standing is not possible in microgravity.</p>
 
       <TopicDetail areaId={AREA.gravity} topics={TOPICS} topic={topic} onTopic={setTopic} assessments={d.assessments}>
         {(t, ctx) => (<>
@@ -150,7 +150,7 @@ export default function Gravity() {
             <Section title="Heart rate"><TrendChart records={ctx.series('heart_rate')} fmt={(x) => `${x} bpm`} dayTicks={false} /></Section>
             <Section title="Body temperature"><TrendChart records={ctx.series('body_temperature')} fmt={(x) => `${x} °C`} dayTicks={false} /></Section>
             <Section title="Systolic blood pressure"><TrendChart records={ctx.series('blood_pressure_systolic')} fmt={(x) => `${x} mmHg`} dayTicks={false} /></Section>
-            <p className="text-[11px] text-slate-500 mt-2">In microgravity 24-hour blood pressure drops about 8 to 10 mmHg and heart rate does not change (Norsk et al. 2015).</p>
+            <p className="text-xs text-slate-500 mt-2">In microgravity 24-hour blood pressure drops about 8 to 10 mmHg and heart rate does not change (Norsk et al. 2015).</p>
           </>)}
         </>)}
       </TopicDetail>

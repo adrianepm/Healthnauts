@@ -50,7 +50,7 @@ export function DemoPanel() {
 
   return (
     <>
-      <button onClick={() => setOpen(!open)} className="fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 rounded-full bg-violet-600 hover:bg-violet-500 text-white text-sm font-semibold px-4 py-2.5 shadow-lg">
+      <button onClick={() => setOpen(!open)} className="fixed bottom-5 right-5 z-40 inline-flex items-center gap-2 rounded-full bg-brand hover:bg-brand-soft text-space-bg text-sm font-semibold px-4 py-2.5 shadow-lg">
         <FlaskConical size={16} />Demo
       </button>
       {open && (
@@ -59,8 +59,8 @@ export function DemoPanel() {
           <p className="card-sub mt-1">Simulated data only. Each scenario is written through the onboard API.</p>
 
           <div className="mt-3 rounded-xl border border-space-line p-3 flex items-center justify-between gap-3">
-            <div><p className="text-sm">Simulated live sensor</p><p className="text-[11px] text-slate-400">Cabin: {s.cabin} · Vitals: {s.vitals} · every 2 min</p></div>
-            <button onClick={() => (s.on ? sim.stop() : sim.start(refresh))} className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold ${s.on ? 'bg-emerald-500/20 text-emerald-300 border border-emerald-500/40' : 'border border-space-line text-slate-300'}`}>
+            <div><p className="text-sm">Simulated live sensor</p><p className="text-xs text-slate-400">Cabin: {s.cabin} · Vitals: {s.vitals} · every 2 min</p></div>
+            <button onClick={() => (s.on ? sim.stop() : sim.start(refresh))} className={`inline-flex items-center gap-1 rounded-lg px-3 py-1.5 text-xs font-semibold ${s.on ? 'bg-brand/15 text-brand-soft border border-brand/50' : 'border border-space-line text-slate-300'}`}>
               <Power size={12} />{s.on ? 'On' : 'Off'}
             </button>
           </div>
@@ -70,13 +70,13 @@ export function DemoPanel() {
               <li key={sc.id}>
                 <button disabled={!!busy} onClick={() => scenario(sc.id)} className="w-full text-left rounded-lg border border-space-line hover:border-slate-500 px-3 py-2 disabled:opacity-50">
                   <span className="block text-sm text-slate-100">{busy === sc.id ? 'Running…' : sc.label}</span>
-                  <span className="block text-[10px] text-slate-500">{AREA_LABEL[sc.areaId]}{sc.id === 'sensor-fault' ? ' · readings stop; Unavailable once the last one is older than 5 min' : ''}</span>
+                  <span className="block text-xs text-slate-500">{AREA_LABEL[sc.areaId]}{sc.id === 'sensor-fault' ? ' · readings stop; Unavailable once the last one is older than 5 min' : ''}</span>
                 </button>
               </li>
             ))}
             <li>
               <button disabled={!!busy} onClick={() => run('exercise', () => sim.setMode({ vitals: 'exercise' }, refresh))} className="w-full text-left rounded-lg border border-space-line hover:border-slate-500 px-3 py-2 disabled:opacity-50">
-                <span className="block text-sm text-slate-100">Exercising (live sensor)</span><span className="block text-[10px] text-slate-500">Gravity · vital signs with activity = exercise</span>
+                <span className="block text-sm text-slate-100">Exercising (live sensor)</span><span className="block text-xs text-slate-500">Gravity · vital signs with activity = exercise</span>
               </button>
             </li>
           </ul>
@@ -85,7 +85,7 @@ export function DemoPanel() {
             <button disabled={!!busy} onClick={nominal} className="btn-ghost text-xs"><Undo2 size={13} />Back to nominal</button>
             <button onClick={reset} className="btn-ghost text-xs"><RotateCcw size={13} />Reset demo</button>
           </div>
-          <p className="text-[10px] text-slate-500 mt-2">Back to nominal: the live sensor sends normal readings again and the Earth link returns. Alerts close only when a valid reading is back in range (the CO₂ 1-hour average takes up to an hour).</p>
+          <p className="text-xs text-slate-500 mt-2">Back to nominal: the live sensor sends normal readings again and the Earth link returns. Alerts close only when a valid reading is back in range (the CO₂ 1-hour average takes up to an hour).</p>
         </div>
       )}
     </>

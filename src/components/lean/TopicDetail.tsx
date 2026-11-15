@@ -62,7 +62,7 @@ export function TopicDetail({ areaId, topics, topic, onTopic, assessments, child
   const def = topics.find((x) => x.id === topic);
   const flagged = def ? assessments.filter((a) => def.indicators.includes(a.indicator) && isFlagged(a.displayLevel)) : [];
   const unavailable = def ? assessments.filter((a) => def.indicators.includes(a.indicator) && a.displayLevel === 'unavailable' && a.status !== 'not_applicable') : [];
-  const btn = (on: boolean) => `rounded-lg px-3 py-1.5 border ${on ? 'border-sky-400 text-sky-300 bg-sky-400/10' : 'border-space-line text-slate-300'}`;
+  const btn = (on: boolean) => `rounded-lg px-3 py-1.5 border ${on ? 'border-brand text-brand-soft bg-brand/10' : 'border-space-line text-slate-300'}`;
 
   return (
     <AnimatePresence>
@@ -136,7 +136,7 @@ export function CompareRow({ items, periodLabel }: { items: Cmp[]; periodLabel: 
             <span className="text-xs text-slate-400">{c.label}</span>
             <div className="flex items-center justify-between gap-2 mt-1"><p className="text-2xl font-semibold">{c.today}</p>{c.level && <StatusPill level={c.level} small />}</div>
             <p className="text-xs text-slate-400 mt-1"><span className="font-mono text-slate-200">{c.diff}</span> vs {periodLabel} <span className="text-slate-500">(avg {c.avg})</span></p>
-            {c.note && <p className="text-[10px] text-slate-500 mt-1">{c.note}</p>}
+            {c.note && <p className="text-xs text-slate-500 mt-1">{c.note}</p>}
           </div>
         ))}
       </div>
