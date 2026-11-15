@@ -26,7 +26,7 @@ const pctNum = (x: any) => (typeof x?.percentOfReference === 'number' ? String(M
 /** Régua de 60% a 110% do pré-voo, com o mínimo de 80% da NASA (aeróbico e força). Só leitura: o nível vem da API. */
 const pctRuler = (x: any, name: string, minimum = true) => ({
   min: 60, max: 110, value: typeof x?.percentOfReference === 'number' ? x.percentOfReference : null, range: minimum ? [80, 110] as [number, number] : null,
-  marks: minimum ? [{ at: 80, label: '80% min', priority: 2 }, { at: 100, label: '100%', priority: 1 }] : [{ at: 100, label: '100%' }],
+  marks: minimum ? [{ at: 80, label: '80%', priority: 2 }, { at: 100, label: '100%', priority: 1 }] : [{ at: 100, label: '100%' }],
   label: `${name} on a 60 to 110% of pre-flight scale${minimum ? '; NASA minimum 80%' : ''}`,
 });
 
@@ -126,7 +126,7 @@ export default function Gravity() {
         { key: 'str', indicator: 'muscle_strength', title: 'Muscle strength', icon: Dumbbell, value: pctNum(d.a('muscle_strength')), unit: '%', level: lv('muscle_strength'), compare: 'of pre-flight (NASA minimum 80%)', onClick: () => setTopic('fitness'), ruler: pctRuler(d.a('muscle_strength'), 'Muscle strength') },
         { key: 'mass', indicator: 'body_mass', title: 'Body mass', icon: Scale, value: pctNum(d.a('body_mass')), unit: '%', level: lv('body_mass'), compare: `of pre-flight · ${d.a('body_mass')?.observedValue ?? '—'} kg`, onClick: () => setTopic('fitness'), ruler: pctRuler(d.a('body_mass'), 'Body mass', false) },
         { key: 'ex', indicator: 'exercise_duration', title: 'Exercise today', icon: Activity, value: String(Math.round(today)), unit: 'min', compare: `Plan ~${REFERENCE.exercisePlanMin} min · ${daysOnPlan} of 7 days on plan`, onClick: () => setTopic('fitness'),
-          ruler: { min: 0, max: REFERENCE.exercisePlanMin * 1.5, value: today, marks: [{ at: REFERENCE.exercisePlanMin, label: `${REFERENCE.exercisePlanMin} plan` }], label: `Exercise today on a scale to ${REFERENCE.exercisePlanMin * 1.5} min; plan ${REFERENCE.exercisePlanMin} min` } },
+          ruler: { min: 0, max: REFERENCE.exercisePlanMin * 1.5, value: today, marks: [{ at: REFERENCE.exercisePlanMin, label: String(REFERENCE.exercisePlanMin) }], label: `Exercise today on a scale to ${REFERENCE.exercisePlanMin * 1.5} min; plan ${REFERENCE.exercisePlanMin} min` } },
       ]} />
       <TopicLinks topics={TOPICS.map((t) => ({ id: t.id, label: t.label, level: d.worst(t.indicators) }))} onOpen={setTopic} />
       <LogForms />

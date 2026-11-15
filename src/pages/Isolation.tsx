@@ -52,16 +52,19 @@ export default function Isolation() {
       <KeyTiles tiles={[
         { key: 'sleep', indicator: 'sleep_duration', title: 'Sleep last night', icon: Moon, value: fmtHours(v('sleep_duration')), level: d.a('sleep_duration')?.displayLevel ?? 'unavailable',
           compare: `${deltaText(v('sleep_duration'), d.avg7('sleep_duration'), 'hours')} vs 7-day avg`, onClick: () => setTopic('sleep'),
-          ruler: { min: 0, max: 10, value: num(v('sleep_duration')), band: rng(band('sleep_duration')), marks: [{ at: four, label: `${four} h`, priority: 3 }, { at: six, label: `${six} h`, priority: 2 }, { at: REFERENCE.sleepPlanH, label: `${REFERENCE.sleepPlanH} h plan`, priority: 1 }],
+          note: `NASA plan ${REFERENCE.sleepPlanH} h · lines at ${six} h and ${four} h`,
+          ruler: { min: 0, max: 10, value: num(v('sleep_duration')), band: rng(band('sleep_duration')), marks: [{ at: four, label: `${four} h`, priority: 3 }, { at: six, label: `${six} h`, priority: 2 }, { at: REFERENCE.sleepPlanH, label: `${REFERENCE.sleepPlanH} h`, priority: 1 }],
             label: `Sleep on a 0 to 10 hour scale with marks at ${four} h, ${six} h and the ${REFERENCE.sleepPlanH} h plan` } },
         { key: 'kss', indicator: 'sleepiness_kss', title: 'Sleepiness', icon: Gauge, value: Number.isFinite(v('sleepiness_kss')) ? v('sleepiness_kss') : '—', unit: 'KSS 1-9', level: d.a('sleepiness_kss')?.displayLevel ?? 'unavailable',
           compare: `${deltaText(v('sleepiness_kss'), d.avg7('sleepiness_kss'))} vs 7-day avg`, onClick: () => setTopic('alertness'),
+          note: `Karolinska scale, 1 (very alert) to 9${band('sleepiness_kss') ? ' · shaded: your usual range' : ''}`,
           ruler: { min: 1, max: 9, value: num(v('sleepiness_kss')), band: rng(band('sleepiness_kss')), marks: [{ at: 1, label: '1' }, { at: 9, label: '9' }], label: 'Sleepiness on the 1 to 9 Karolinska scale' } },
         { key: 'pvt', indicator: 'pvt_response_speed', title: 'Reaction time', icon: Timer, value: Number.isFinite(v('pvt_response_speed')) ? String(Math.round(rtMs(v('pvt_response_speed')))) : '—', unit: Number.isFinite(v('pvt_response_speed')) ? 'ms' : undefined,
           level: d.a('pvt_response_speed')?.displayLevel ?? 'unavailable',
           compare: `≈ from mean speed · test ${ago(d.latest('pvt_response_speed')?.recordedAt)}`, onClick: () => setTopic('alertness') },
         { key: 'stress', indicator: 'stress', title: 'Stress', icon: Brain, value: Number.isFinite(v('stress')) ? Math.round(v('stress')) : '—', unit: '0-100', level: d.a('stress')?.displayLevel ?? 'unavailable',
           compare: `${deltaText(v('stress'), d.avg7('stress'))} vs 7-day avg`, onClick: () => setTopic('mind'),
+          note: `Scale 0 to 100${band('stress') ? ' · shaded: your usual range' : ''}`,
           ruler: { min: 0, max: 100, value: num(v('stress')), band: rng(band('stress')), marks: [{ at: 0, label: '0' }, { at: 100, label: '100' }], label: 'Stress on a 0 to 100 scale; shaded: your usual range' } },
       ]} />
       <TopicLinks topics={TOPICS.map((t) => ({ id: t.id, label: t.label, level: d.worst(t.indicators) }))} onOpen={setTopic} />

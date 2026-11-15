@@ -52,6 +52,8 @@ export interface Tile {
   /** Valor como texto ("2.19", "7h15", "No event") ou nó React. */
   value: ReactNode; unit?: string;
   level?: DisplayLevel; compare?: string; onClick?: () => void;
+  /** Significado dos traços da régua (ex.: "Plan 8.5 h (NASA)"): a régua mostra só os valores. */
+  note?: string;
   ruler?: Omit<RulerProps, 'level'>;
 }
 
@@ -68,7 +70,7 @@ function layout(n: number, i: number) {
 export function KeyTiles({ tiles }: { tiles: Tile[]; cols?: number }) {
   return (
     <div className={cn('grid grid-cols-1 gap-3', layout(tiles.length, 0).grid)}>
-      {tiles.map(({ key, indicator, title, icon: Icon, value, unit, level, compare, onClick, ruler }, i) => {
+      {tiles.map(({ key, indicator, title, icon: Icon, value, unit, level, compare, onClick, ruler, note }, i) => {
         const body = (<>
           <span className="flex items-center justify-between gap-2">
             <span className="inline-flex items-center gap-2 text-sm text-slate-200"><Icon size={16} aria-hidden="true" className="text-slate-300" />{title}</span>
@@ -81,6 +83,7 @@ export function KeyTiles({ tiles }: { tiles: Tile[]; cols?: number }) {
             {level && <StatusPill level={level} small />}
           </span>
           {ruler && <Ruler {...ruler} level={level} />}
+          {note && <span className="text-xs text-slate-300 -mb-2">{note}</span>}
           {compare && <span className="text-xs text-slate-300">{compare}</span>}
         </>);
         const cls = cn('text-left flex flex-col gap-3 !p-4', layout(tiles.length, i).span);

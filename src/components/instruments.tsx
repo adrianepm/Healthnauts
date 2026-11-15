@@ -99,7 +99,7 @@ export function Ruler({ min, max, value, range, band, marks = [], level, label }
         {band && <span className="absolute inset-y-0" style={{ ...seg(band), background: NEUTRAL, opacity: 0.55 }} />}
         {marks.map((m) => <Tick key={m.label} p={pos(m.at)} className="-top-1 -bottom-1" />)}
         {value !== null && Number.isFinite(value) && (
-          <span className="absolute -top-1.5 h-4 w-[3px] -translate-x-1/2 rounded-sm" style={{ left: `${pos(value)}%`, background: marker }} />
+          <span className="absolute -top-1.5 h-4 w-[3px] rounded-sm" style={{ left: `${pos(value)}%`, background: marker, transform: pos(value) <= 0 ? "none" : pos(value) >= 100 ? "translateX(-100%)" : "translateX(-50%)" }} />
         )}
       </div>
       {marks.length > 0 && <RulerLabels marks={marks} pos={pos} />}

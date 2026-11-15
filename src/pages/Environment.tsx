@@ -83,7 +83,7 @@ export default function Environment() {
       <PageHeader title="Environment" sub="Hostile closed environment · cabin air, pressure, comfort and noise" />
       <TodayHero level={d.summary!.displayLevel} label="Cabin now" message={d.summary!.headline.message ?? ''} sub={`Last reading ${ago(d.latest('cabin_pressure')?.recordedAt ?? d.summary!.lastRecordedAt)}`} also={d.also(d.summary!.headline.indicator)} />
       <KeyTiles tiles={[
-        { key: 'co2', indicator: 'co2_partial_pressure', title: 'CO₂ · 1 h avg', icon: Wind, value: n(co2?.value, 2), unit: 'mmHg', level: lv('co2_partial_pressure'), compare: `Limit ${rules.co2.limit} mmHg (NASA, 1 h)`, onClick: () => setTopic('air'),
+        { key: 'co2', indicator: 'co2_partial_pressure', title: 'CO₂ · 1 h avg', icon: Wind, value: n(co2?.value, 2), unit: 'mmHg', level: lv('co2_partial_pressure'), compare: `Limit ${rules.co2.limit} mmHg (NASA, 1 h) · ${rules.co2.warningAbove} team warning level`, onClick: () => setTopic('air'),
           ruler: { min: 0, max: 6, value: val(co2?.value), range: [0, rules.co2.limit], marks: [{ at: rules.co2.limit, label: String(rules.co2.limit), priority: 2 }, { at: rules.co2.warningAbove, label: String(rules.co2.warningAbove), priority: 1 }],
             label: `CO2 on a 0 to 6 mmHg scale; limit ${rules.co2.limit} mmHg` } },
         { key: 'p', indicator: 'cabin_pressure', title: 'Cabin pressure', icon: Gauge, value: n(psia, 1), unit: 'psia', level: lv('cabin_pressure'), compare: `Safe ${rules.pressure.minimumPsia}-${rules.pressure.maximumPsia} psia (ISS 14.7)`, onClick: () => setTopic('air'),
