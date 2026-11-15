@@ -202,7 +202,8 @@ export default function Journey() {
 }
 
 const nz = (f: (x: number) => number) => (x: number | null) => (x === null ? null : f(x));
-function fmtLast(series: (number | null)[], fmt: (x: number) => string) { const x = series.at(-1); return x === null || x === undefined ? null : fmt(x); }
+/** Último valor dos 7 dias (hoje ou o dia mais recente com dado). */
+function fmtLast(series: (number | null)[], fmt: (x: number) => string) { const x = [...series].reverse().find((v) => v !== null); return x === null || x === undefined ? null : fmt(x); }
 
 const Big = ({ children }: { children: ReactNode }) => <span className="font-mono text-3xl font-medium text-slate-50 leading-none">{children}</span>;
 
