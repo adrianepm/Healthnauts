@@ -6,6 +6,7 @@ import { pvtProtocol } from '../../shared/calculations.js';
 import { api } from '../services/api';
 import { useStore, XP_PER_PVT } from '../store/useStore';
 import { Modal, Stat } from './ui';
+import { toast } from '../store/toast';
 
 const ISI_MIN_MS = 1000, ISI_MAX_MS = 4000, FEEDBACK_MS = 1000; // espera de 1 a 4 s, contando 1 s de feedback [31]
 const DEMO_MS = 30000;
@@ -90,8 +91,8 @@ export function PvtTest() {
     api.pvtSession({ startedAt: d.startedAt.toISOString(), endedAt: new Date(d.startedAt.getTime() + Math.max(1, Math.ceil(durationMs))).toISOString(),
       // Toque sem estímulo só conta dentro da janela de 3 min do protocolo.
       durationMs, completed, events: d.events.filter((x) => x.atMs <= durationMs && (x.kind !== 'false_start' || x.atMs < pvtProtocol.durationMs)) })
-      .then(async (res) => { setResult(res.operation); if (res.operation.status === 'completed') addXp(XP_PER_PVT); await refresh(); })
-      .catch((err) => setError(err?.message ?? 'Could not save.'));
+      .then(async (res) => { setResult(res.operation); if (res.operation.status === 'completed') addXp(XP_PER_PVT); await refresh(); toast.success('Reaction test saved'); })
+      .catch((err) => { setError(err?.message ?? 'Could not save.'); toast.error(err); });
   }, [e.phase]);
 
   const c = result?.calculation;

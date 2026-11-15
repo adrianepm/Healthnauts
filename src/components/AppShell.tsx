@@ -14,6 +14,7 @@ import { DemoPanel, useSim } from './DemoPanel';
 import { Modal, StatusPill } from './ui';
 import { MorningCheckin } from './MorningCheckin';
 import { PvtTest } from './PvtTest';
+import { Toaster } from './Toaster';
 import { useIndicatorFocus } from './lean/TopicDetail';
 import { BrandMark, BrandName } from './Brand';
 import { cn } from '../lib/utils';
@@ -158,6 +159,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <DemoPanel open={demo} onClose={() => setDemo(false)} />
       <MorningCheckin />
       <PvtTest />
+      <Toaster />
     </div>
   );
 }

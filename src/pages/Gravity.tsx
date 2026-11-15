@@ -7,6 +7,7 @@ import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YA
 import { AREA } from '../config/api';
 import { api } from '../services/api';
 import { useStore } from '../store/useStore';
+import { toast } from '../store/toast';
 import { useArea } from './useArea';
 import { KeyTiles, TodayHero, TopicLinks } from '../components/lean/Home';
 import { CompareRow, TopicDetail, compareItem, useTopicState, type TopicDef } from '../components/lean/TopicDetail';
@@ -36,7 +37,10 @@ function LogForms() {
   const [ms, setMs] = useState(0); const [headache, setHeadache] = useState(0);
   const [flags, setFlags] = useState({ dizziness: false, near_fainting: false, vision_change: false, amsler_change: false });
   const [busy, setBusy] = useState<string | null>(null);
-  const run = async (k: string, fn: () => Promise<unknown>) => { setBusy(k); try { await fn(); await refresh(); } finally { setBusy(null); } };
+  const run = async (k: string, fn: () => Promise<unknown>, done: string) => {
+    setBusy(k);
+    try { await fn(); await refresh(); toast.success(done); } catch (e) { toast.error(e); } finally { setBusy(null); }
+  };
   const now = () => new Date().toISOString();
   // Vindo do "Start" da rotina na Overview: rola até o campo e põe o foco nele.
   const focus = (useLocation().state as { focus?: string } | null)?.focus;
@@ -50,11 +54,11 @@ function LogForms() {
     <div className="grid lg:grid-cols-3 gap-3 items-start">
       <Card title="Log exercise" sub={`Plan: about ${REFERENCE.exercisePlanMin} min a day, 6-7 days a week`} icon={<Dumbbell size={18} aria-hidden="true" />}>
         <div className="flex gap-2"><input ref={exRef} aria-label="Exercise minutes" type="number" min={1} max={600} value={minutes} onChange={(e) => setMinutes(Math.max(1, +e.target.value))} className="field" /><span className="self-center text-sm text-slate-300" aria-hidden="true">min</span></div>
-        <button disabled={!!busy} onClick={() => run('ex', () => api.records(AREA.gravity, [{ indicator: 'exercise_duration', value: minutes, unit: 'min', recordedAt: now() }]))} className="btn-primary mt-3 w-full">Save session</button>
+        <button disabled={!!busy} onClick={() => run('ex', () => api.records(AREA.gravity, [{ indicator: 'exercise_duration', value: minutes, unit: 'min', recordedAt: now() }]), 'Exercise session saved')} className="btn-primary mt-3 w-full">Save session</button>
       </Card>
       <Card title="Weekly weigh-in" sub="Compared with your pre-flight body mass by the onboard service" icon={<Scale size={18} aria-hidden="true" />}>
         <div className="flex gap-2"><input ref={massRef} aria-label="Body mass in kg" type="number" step="0.1" min={30} max={200} value={mass} placeholder="kg" onChange={(e) => setMass(e.target.value)} className="field" /><span className="self-center text-sm text-slate-300" aria-hidden="true">kg</span></div>
-        <button disabled={!!busy || !mass || !mission} onClick={() => run('mass', () => api.records(AREA.gravity, [{ indicator: 'body_mass', value: Number(mass), unit: 'kg', recordedAt: now(), context: ctx }]))} className="btn-primary mt-3 w-full">Save weight</button>
+        <button disabled={!!busy || !mass || !mission} onClick={() => run('mass', () => api.records(AREA.gravity, [{ indicator: 'body_mass', value: Number(mass), unit: 'kg', recordedAt: now(), context: ctx }]), 'Weight saved')} className="btn-primary mt-3 w-full">Save weight</button>
       </Card>
       <Card title="Balance & vision report" sub="Prototype scales, not validated instruments" icon={<Eye size={18} aria-hidden="true" />}>
         <label className="block text-xs text-slate-300">Motion sickness: <b className="font-mono text-slate-100">{ms}</b> (0 feeling fine · 20 vomiting)<input type="range" min={0} max={20} value={ms} onChange={(e) => setMs(+e.target.value)} className="w-full accent-brand" /></label>
@@ -67,7 +71,7 @@ function LogForms() {
         <button disabled={!!busy} onClick={() => run('sym', () => api.records(AREA.gravity, [
           { indicator: 'motion_sickness', value: ms, unit: null, recordedAt: now() }, { indicator: 'headache', value: headache, unit: null, recordedAt: now() },
           ...Object.entries(flags).map(([indicator, v]) => ({ indicator, value: v ? 1 : 0, unit: null, recordedAt: now() })),
-        ]))} className="btn-primary mt-3 w-full">Save report</button>
+        ]), 'Balance and vision report saved')} className="btn-primary mt-3 w-full">Save report</button>
       </Card>
     </div>
   );

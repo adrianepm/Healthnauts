@@ -9,6 +9,7 @@ import { useStore, XP_PER_CHECKIN, dayKey } from '../store/useStore';
 import { fmtHours } from '../lib/format';
 import { KSS_LABELS, SP_LABELS } from '../lib/content';
 import { Modal } from './ui';
+import { toast } from '../store/toast';
 
 /** Escala visual analógica: 0 a 100 por baixo, mas sem número na tela; só os rótulos das pontas. */
 function Slider({ label, value, onChange }: { label: string; value: number; onChange: (v: number) => void }) {
@@ -68,8 +69,8 @@ function CheckinForm({ onSaved }: { onSaved: () => void }) {
         { indicator: 'mood_score', value: mood, unit: null, recordedAt },
       ]);
       if (!done) addXp(XP_PER_CHECKIN, true);
-      await refresh(); onSaved();
-    } catch (e: any) { setError(e?.message ?? 'Could not save.'); } finally { setBusy(false); }
+      await refresh(); onSaved(); toast.success('Morning check-in saved');
+    } catch (e: any) { setError(e?.message ?? 'Could not save.'); toast.error(e); } finally { setBusy(false); }
   };
 
   return (

@@ -8,6 +8,7 @@ import { ArrowDownRight, ArrowRight, ArrowUpRight, ChevronRight, LayoutGrid, Sli
 import { api, type ApiRecord, type AreaDetail, type Assessment, type DisplayLevel, type Overview } from '../services/api';
 import { AREA, type AreaId } from '../config/api';
 import { useStore } from '../store/useStore';
+import { toast } from '../store/toast';
 import { AREA_LABEL, AREA_PATH, info } from '../lib/content';
 import { DAY_MS, deltaText, fmtDuration, fmtHours, startOfToday } from '../lib/format';
 import { weekCompare, type WeekCompare } from '../lib/compare';
@@ -136,7 +137,7 @@ export function MyPanels({ chosen, onChange }: { chosen: string[]; onChange: (ne
           ))}
         </ul>
       )}
-      <Customize open={open} onClose={() => setOpen(false)} list={list} chosen={chosen} onSave={(next) => { onChange(next); setOpen(false); }} />
+      <Customize open={open} onClose={() => setOpen(false)} list={list} chosen={chosen} onSave={(next) => { onChange(next); setOpen(false); toast.success('Panels saved'); }} />
     </section>
   );
 }

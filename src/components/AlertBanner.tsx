@@ -4,6 +4,7 @@ import { useEffect, useRef, useState } from 'react';
 import { AnimatePresence, motion, useReducedMotion } from 'framer-motion';
 import { Siren } from 'lucide-react';
 import { useStore } from '../store/useStore';
+import { toast } from '../store/toast';
 import type { Alert } from '../services/api';
 import { LEVEL_UI, severity } from '../lib/levels';
 import { acknowledgement } from '../../shared/config/levels.js';
@@ -32,7 +33,7 @@ const countdown = (iso: string | null, now: number) => {
 function AckStatus({ a, now }: { a: Alert; now: number }) {
   const ack = useStore((s) => s.acknowledge); const [busy, setBusy] = useState(false);
   if (!a.requiresAcknowledgement) return null;
-  const go = async () => { setBusy(true); try { await ack(a.id); } finally { setBusy(false); } };
+  const go = async () => { setBusy(true); try { await ack(a.id); toast.success('Alert acknowledged'); } catch (e) { toast.error(e); } finally { setBusy(false); } };
   return (
     <div className="flex flex-wrap items-center gap-2 text-xs">
       {a.acknowledgementStatus === 'acknowledged'
@@ -117,7 +118,10 @@ export function EmergencyOverlay() {
     return () => { window.clearTimeout(t); html.style.overflow = prev; };
   }, [isOpen]);
   const report = ground?.reports.find((r) => r.id === open[0]?.groundReportId);
-  const go = async () => { setBusy(true); try { for (const a of open) await ack(a.id); } finally { setBusy(false); } };
+  const go = async () => {
+    setBusy(true);
+    try { for (const a of open) await ack(a.id); toast.success(open.length > 1 ? 'Alerts acknowledged' : 'Alert acknowledged'); } catch (e) { toast.error(e); } finally { setBusy(false); }
+  };
   const red = LEVEL_UI.emergency.color;
   const left = secondsLeft(open[0]?.acknowledgeBy ?? null, now);
   const late = open[0]?.acknowledgementStatus === 'not_acknowledged';

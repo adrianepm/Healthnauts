@@ -5,6 +5,7 @@ import { gas, rules } from '../../shared/config/research.js';
 import { AREA } from '../config/api';
 import { api } from '../services/api';
 import { useStore } from '../store/useStore';
+import { toast } from '../store/toast';
 import { useArea } from './useArea';
 import { KeyTiles, TodayHero, TopicLinks } from '../components/lean/Home';
 import { CompareRow, TopicDetail, compareItem, useTopicState, type TopicDef } from '../components/lean/TopicDetail';
@@ -44,7 +45,8 @@ function PostEvaForm() {
   const toggle = (id: string) => setPicked((p) => (p.includes(id) ? p.filter((x) => x !== id) : [...p, id]));
   const send = async () => {
     setBusy(true);
-    try { await api.operation(AREA.cabin, 'post_eva', { evaEndedAt: new Date(Date.now() - ended * 60000).toISOString(), recordedAt: new Date().toISOString(), symptoms: picked }); setPicked([]); await refresh(); }
+    try { await api.operation(AREA.cabin, 'post_eva', { evaEndedAt: new Date(Date.now() - ended * 60000).toISOString(), recordedAt: new Date().toISOString(), symptoms: picked }); setPicked([]); await refresh(); toast.success('Post-EVA check saved'); }
+    catch (err) { toast.error(err); }
     finally { setBusy(false); }
   };
   return (

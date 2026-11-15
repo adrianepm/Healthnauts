@@ -3,6 +3,7 @@
 import { useState } from 'react';
 import { Check, Radio, SatelliteDish, Send, WifiOff } from 'lucide-react';
 import { useStore } from '../store/useStore';
+import { toast } from '../store/toast';
 import { api, type GroundReport } from '../services/api';
 import { setEarthLink } from '../sim/link';
 import { Card, PageHeader, StatusPill, SourcesList } from '../components/ui';
@@ -47,7 +48,9 @@ export default function GroundControl() {
   const manual = async () => {
     if (!note.trim()) return;
     setBusy(true);
-    try { await api.groundReport([{ recordedAt: new Date().toISOString(), description: note.trim() }]); setNote(''); await refresh(); } finally { setBusy(false); }
+    try { await api.groundReport([{ recordedAt: new Date().toISOString(), description: note.trim() }]); setNote(''); await refresh(); toast.success('Report queued for Earth'); }
+    catch (e) { toast.error(e); } // o texto digitado continua no campo
+    finally { setBusy(false); }
   };
 
   return (
