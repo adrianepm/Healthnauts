@@ -7,7 +7,7 @@ export default {
   theme: {
     extend: {
       colors: {
-        space: { bg: token('bg'), deep: token('bg'), card: token('card'), card2: token('card'), line: token('border') },
+        space: { bg: token('bg'), deep: token('bg'), card: token('card'), card2: token('card-2'), line: token('border'), strong: token('border-strong') },
         brand: { DEFAULT: token('brand'), soft: token('brand-soft') },
         slate: {
           50: token('text'), 100: token('text'), 200: token('text'),
@@ -21,10 +21,10 @@ export default {
         sm: ['1rem', { lineHeight: '1.5rem' }],
         base: ['1.0625rem', { lineHeight: '1.6rem' }],
       },
-      // Geist (texto) e Geist Mono (números), instaladas por @fontsource-variable (sem CDN).
+      // Instrument Sans (interface) e JetBrains Mono (todos os números), instaladas por @fontsource-variable (sem CDN).
       fontFamily: {
-        sans: ['"Geist Variable"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
-        mono: ['"Geist Mono Variable"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
+        sans: ['"Instrument Sans Variable"', 'ui-sans-serif', 'system-ui', 'sans-serif'],
+        mono: ['"JetBrains Mono Variable"', 'ui-monospace', 'SFMono-Regular', 'Menlo', 'monospace'],
       },
     },
   },

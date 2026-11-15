@@ -151,7 +151,7 @@ docs/      Specification, verification audit, API notes.
 
 In the published site, the rules run in the browser through a small local router, so the app works as a static page. On a real vehicle this layer would run on the onboard computer, which is what the Express server represents.
 
-Main libraries: React, React Router, Vite, TypeScript, Tailwind CSS, Recharts, Framer Motion, Zustand, lucide-react, react-body-highlighter, Geist font (via Fontsource), Express.
+Main libraries: React, React Router, Vite, TypeScript, Tailwind CSS, Recharts, Framer Motion, Zustand, lucide-react, react-body-highlighter, Instrument Sans and JetBrains Mono fonts (via Fontsource), Express.
 
 ## Limitations and next steps
 
