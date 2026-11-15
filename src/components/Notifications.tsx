@@ -81,18 +81,18 @@ export function Notifications() {
   const { done, total } = routineProgress(items);
   return (
     <div className="relative">
-      <button onClick={() => setOpen(!open)} aria-expanded={open} className="relative w-10 h-10 rounded-xl border border-space-line grid place-items-center hover:border-slate-500" aria-label={`Today's routine: ${pending.length} ready`}>
-        <Bell size={18} />
-        {pending.length > 0 && <span className="absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1 rounded-full bg-red-600 text-xs font-bold grid place-items-center text-white">{pending.length}</span>}
+      <button onClick={() => setOpen(!open)} aria-expanded={open} className="relative w-11 h-11 rounded-md border border-space-line grid place-items-center hover:border-space-strong text-slate-200" aria-label={`Today's routine: ${pending.length} ready`}>
+        <Bell size={18} aria-hidden="true" />
+        {pending.length > 0 && <span className="absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1 rounded-full bg-brand text-xs font-bold grid place-items-center text-space-bg">{pending.length}</span>}
       </button>
       {open && (
-        <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-xl border border-space-line bg-space-deep shadow-xl p-2 z-50">
+        <div className="absolute right-0 mt-2 w-80 max-w-[calc(100vw-2rem)] rounded-md border border-space-line bg-space-card shadow-2xl shadow-black/60 p-2 z-50">
           <p className="px-3 pt-2 pb-1 text-xs text-slate-300">Today's routine · {done} of {total} done today</p>
           <ul>
             {items.map(({ id, icon: Icon, title, sub, moment, status, go }) => (
               <li key={id}>
-                <button onClick={() => { go(); setOpen(false); }} className="w-full flex items-center gap-3 rounded-lg p-3 hover:bg-space-card text-left">
-                  <span className="relative shrink-0"><Icon size={18} className="text-slate-300" aria-hidden="true" />{status === 'ready' && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500" aria-hidden="true" />}</span>
+                <button onClick={() => { go(); setOpen(false); }} className="w-full flex items-center gap-3 rounded-lg p-3 hover:bg-space-card2 text-left">
+                  <span className="relative shrink-0"><Icon size={18} className="text-slate-300" aria-hidden="true" />{status === 'ready' && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-brand" aria-hidden="true" />}</span>
                   <span className="flex-1 min-w-0"><span className="block text-sm">{title}</span><span className="block text-xs text-slate-300">{moment} · {sub}</span></span>
                   <StatusChip status={status} />
                 </button>
