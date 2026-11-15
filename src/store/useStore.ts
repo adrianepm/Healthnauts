@@ -7,8 +7,11 @@ import { AREA, UI_KEY, type AreaId } from '../config/api';
 export const XP_PER_CHECKIN = 30; // o XP premia FAZER o check-in, nunca a resposta
 export const XP_PER_PVT = 40;
 
-interface UiSaved { xp: number; checkins: string[] } // datas (YYYY-MM-DD) dos check-ins feitos no app
-const loadUi = (): UiSaved => { try { return { xp: 0, checkins: [], ...JSON.parse(localStorage.getItem(UI_KEY) || '{}') }; } catch { return { xp: 0, checkins: [] }; } };
+// checkins: datas (YYYY-MM-DD) dos check-ins feitos no app. seenAlerts: alertas cujo detalhe o astronauta já abriu
+// (o pulso do cartão "Needs attention" para). Só conveniência de interface: nada aqui muda o nível.
+interface UiSaved { xp: number; checkins: string[]; seenAlerts: string[] }
+const EMPTY_UI: UiSaved = { xp: 0, checkins: [], seenAlerts: [] };
+const loadUi = (): UiSaved => { try { return { ...EMPTY_UI, ...JSON.parse(localStorage.getItem(UI_KEY) || '{}') }; } catch { return { ...EMPTY_UI }; } };
 const saveUi = (u: UiSaved) => { try { localStorage.setItem(UI_KEY, JSON.stringify(u)); } catch { /* ignora */ } };
 export const dayKey = (d = new Date()) => `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
 
@@ -22,6 +25,7 @@ interface State {
   refresh: () => Promise<void>;
   loadArea: (id: AreaId) => Promise<void>;
   addXp: (n: number, checkin?: boolean) => void;
+  markSeen: (alertIds: string[]) => void;
   setCheckinOpen: (v: boolean) => void; setPvtOpen: (v: boolean) => void;
   acknowledge: (alertId: string) => Promise<void>;
 }
@@ -62,7 +66,13 @@ export const useStore = create<State>((set, get) => ({
 
   addXp(n, checkin) {
     const ui = get().ui;
-    const next = { xp: ui.xp + n, checkins: checkin && !ui.checkins.includes(dayKey()) ? [...ui.checkins, dayKey()] : ui.checkins };
+    const next = { ...ui, xp: ui.xp + n, checkins: checkin && !ui.checkins.includes(dayKey()) ? [...ui.checkins, dayKey()] : ui.checkins };
+    saveUi(next); set({ ui: next });
+  },
+  markSeen(alertIds) {
+    const ui = get().ui; const fresh = alertIds.filter((id) => !ui.seenAlerts.includes(id));
+    if (!fresh.length) return;
+    const next = { ...ui, seenAlerts: [...ui.seenAlerts, ...fresh].slice(-200) };
     saveUi(next); set({ ui: next });
   },
   setCheckinOpen: (v) => set({ checkinOpen: v }),

@@ -15,7 +15,8 @@ import { Modal, StatusPill } from './ui';
 import { MorningCheckin } from './MorningCheckin';
 import { PvtTest } from './PvtTest';
 import { Toaster } from './Toaster';
-import { useIndicatorFocus } from './lean/TopicDetail';
+import { useIndicatorFocus, useIndicatorParam } from './lean/TopicDetail';
+import { AREA_PATH } from '../lib/content';
 import { BrandMark, BrandName } from './Brand';
 import { cn } from '../lib/utils';
 
@@ -76,6 +77,13 @@ export function AppShell({ children }: { children: ReactNode }) {
   const [demo, setDemo] = useState(false);
   const [areasOpen, setAreasOpen] = useState(false);
   useIndicatorFocus();
+  // Detalhe de um indicador com alerta aberto por qualquer caminho (alerta, corpo, painel): o pulso do "Needs attention" para.
+  const wanted = useIndicatorParam(); const markSeen = useStore((s) => s.markSeen);
+  useEffect(() => {
+    if (!wanted) return;
+    const ids = active.filter((a) => a.indicator === wanted && AREA_PATH[a.areaId] === pathname).map((a) => a.id);
+    if (ids.length) markSeen(ids);
+  }, [wanted, pathname, active]);
   useEffect(() => { setAreasOpen(false); setDemo(false); }, [pathname]);
 
   // Emergency ativa: a marca vira neutra em todo o app (src/index.css, :root[data-emergency]).

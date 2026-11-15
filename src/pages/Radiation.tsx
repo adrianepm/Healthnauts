@@ -3,6 +3,7 @@ import { Sun, Atom, History } from 'lucide-react';
 import { rules } from '../../shared/config/research.js';
 import { AREA } from '../config/api';
 import { useArea } from './useArea';
+import { AreaActions } from '../components/AlertActions';
 import { KeyTiles, TodayHero } from '../components/lean/Home';
 import { Card, More, Num, PageHeader, SourcesList, StatusPill, WhyBlock } from '../components/ui';
 import { LEVEL_UI } from '../lib/levels';
@@ -26,7 +27,7 @@ export default function Radiation() {
   return (
     <div className="space-y-5">
       <PageHeader title="Radiation" sub="Space radiation · exposure, not health" />
-      <TodayHero level={d.summary!.displayLevel} label="Radiation now" message={d.summary!.headline.message ?? ''} also={d.also(d.summary!.headline.indicator)} />
+      <TodayHero extra={<AreaActions areaId={AREA.radiation} indicator={d.summary!.headline.indicator} level={d.summary!.displayLevel} />} level={d.summary!.displayLevel} label="Radiation now" message={d.summary!.headline.message ?? ''} also={d.also(d.summary!.headline.indicator)} />
 
       {/* Destaque da tela: dose de carreira em relação ao limite. */}
       <section className="card" data-indicator="career_effective_dose" aria-labelledby="career-title">

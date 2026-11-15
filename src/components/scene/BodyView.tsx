@@ -4,7 +4,10 @@
 import { lazy, Suspense, useState } from 'react';
 import { useReducedMotion } from 'framer-motion';
 import { BodyMap } from './BodyMap';
-import type { SceneState } from './sceneMapping';
+import type { BodyRegionKey, SceneState } from './sceneMapping';
+
+/** Região ligada ao alerta mais grave: fica destacada (contorno e pontos maiores) na cor do nível. */
+export type BodyFocus = BodyRegionKey | null;
 
 const Body3D = lazy(() => import('./Body3D').then((m) => ({ default: m.Body3D })));
 
@@ -17,16 +20,16 @@ export function hasWebGL() {
   return webgl;
 }
 
-export function BodyView({ scene }: { scene: SceneState }) {
+export function BodyView({ scene, focus = null }: { scene: SceneState; focus?: BodyFocus }) {
   const reduced = useReducedMotion();
   const [failed, setFailed] = useState(false);
-  if (reduced || failed || !hasWebGL()) return <BodyMap scene={scene} />;
+  if (reduced || failed || !hasWebGL()) return <BodyMap scene={scene} focus={focus} />;
   return (
     <section className="card h-full min-w-0" aria-labelledby="body-map-title" data-body="3d">
       <h2 id="body-map-title" className="card-title">Body</h2>
       <p className="card-sub mt-0.5">Areas from the onboard computer. Open a region for its detail.</p>
       <Suspense fallback={<div className="h-[520px] grid place-items-center text-sm text-slate-300">Loading the body view…</div>}>
-        <Body3D scene={scene} height={520} onFail={() => setFailed(true)} />
+        <Body3D scene={scene} focus={focus} height={520} onFail={() => setFailed(true)} />
       </Suspense>
     </section>
   );

@@ -7,6 +7,7 @@ import { api } from '../services/api';
 import { useStore } from '../store/useStore';
 import { toast } from '../store/toast';
 import { useArea } from './useArea';
+import { AreaActions } from '../components/AlertActions';
 import { KeyTiles, TodayHero, TopicLinks } from '../components/lean/Home';
 import { CompareRow, TopicDetail, compareItem, useTopicState, type TopicDef } from '../components/lean/TopicDetail';
 import { TrendChart, type RefLine } from '../components/charts';
@@ -83,7 +84,7 @@ export default function Environment() {
   return (
     <div className="space-y-5">
       <PageHeader title="Environment" sub="Hostile closed environment · cabin air, pressure, comfort and noise" />
-      <TodayHero level={d.summary!.displayLevel} label="Cabin now" message={d.summary!.headline.message ?? ''} sub={`Last reading ${ago(d.latest('cabin_pressure')?.recordedAt ?? d.summary!.lastRecordedAt)}`} also={d.also(d.summary!.headline.indicator)} />
+      <TodayHero extra={<AreaActions areaId={AREA.cabin} indicator={d.summary!.headline.indicator} level={d.summary!.displayLevel} />} level={d.summary!.displayLevel} label="Cabin now" message={d.summary!.headline.message ?? ''} sub={`Last reading ${ago(d.latest('cabin_pressure')?.recordedAt ?? d.summary!.lastRecordedAt)}`} also={d.also(d.summary!.headline.indicator)} />
       <KeyTiles tiles={[
         { key: 'co2', indicator: 'co2_partial_pressure', title: 'CO₂ · 1 h avg', icon: Wind, value: n(co2?.value, 2), unit: 'mmHg', level: lv('co2_partial_pressure'), compare: `Limit ${rules.co2.limit} mmHg (NASA, 1 h) · ${rules.co2.warningAbove} team warning level`, onClick: () => setTopic('air'),
           ruler: { min: 0, max: 6, value: val(co2?.value), range: [0, rules.co2.limit], marks: [{ at: rules.co2.limit, label: String(rules.co2.limit), priority: 2 }, { at: rules.co2.warningAbove, label: String(rules.co2.warningAbove), priority: 1 }],

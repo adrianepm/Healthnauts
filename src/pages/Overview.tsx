@@ -1,4 +1,4 @@
-// Overview, nesta ordem: resumo do dia (TodayHero compacto), barra da rotina, corpo clicável à esquerda e
+// Overview, nesta ordem: "Needs attention" (só com alerta ativo), resumo do dia (TodayHero compacto), barra da rotina, corpo clicável à esquerda e
 // "My panels" à direita, e os cartões de Radiation, Environment e Distance. Nada aqui decide nível.
 // Os cartões de área só mostram o valor principal quando ele não está em "My panels" (sem informação repetida).
 import { useState } from 'react';
@@ -12,7 +12,8 @@ import { RoutineBar } from '../components/TodayRoutine';
 import { MyPanels, useAllAreas } from '../components/MyPanels';
 import { Num, StatusPill } from '../components/ui';
 import { MagicCard } from '../components/magic/magic-card';
-import { indicatorHref, sceneState, todaySummary } from '../components/scene/sceneMapping';
+import { alertRegion, indicatorHref, sceneState, todaySummary } from '../components/scene/sceneMapping';
+import { NeedsAttention, sortAlerts } from '../components/NeedsAttention';
 import { AREA } from '../config/api';
 import { AREA_LABEL, AREA_PATH, info } from '../lib/content';
 import { ago, fmtDuration } from '../lib/format';
@@ -24,6 +25,7 @@ const num = (v: unknown, digits: number) => (typeof v === 'number' && Number.isF
 export default function Overview() {
   const o = useStore((s) => s.overview);
   const reports = useStore((s) => s.ground?.reports);
+  const active = useStore((s) => s.alerts?.active ?? []);
   const details = useAllAreas();
   const sim = useSim();
   const [chosen, setChosen] = useState<string[]>(() => loadPanels());
@@ -34,6 +36,8 @@ export default function Overview() {
   const scene = sceneState({ overview: o, reports, now: Date.now(),
     live: m ? { heartRate: Number(m.heart_rate.value), respiratoryRate: Number(m.respiratory_rate.value) } : null });
   const today = todaySummary(o, (id) => AREA_LABEL[id] ?? id);
+  // Região do corpo do alerta mais grave que tem região (cabine, radiação e distância não têm).
+  const focus = sortAlerts(active).map((a) => alertRegion(a.areaId, a.group)).find(Boolean) ?? null;
 
   const find = (id: string, indicator: string) => details[id as keyof typeof details]?.assessments.find((x) => x.indicator === indicator);
   const career = find(AREA.radiation, 'career_effective_dose');
@@ -50,11 +54,12 @@ export default function Overview() {
   return (
     <div className="space-y-3">
       <h1 className="sr-only">Overview</h1>
+      <NeedsAttention />
       <TodayHero compact level={today.level} message={today.message} sub={today.indicator ? info(today.indicator).label : undefined}
         also={today.also.map((i) => ({ label: i.label, level: i.level, message: i.message }))} />
       <RoutineBar />
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-3 items-start [&>*]:min-w-0">
-        <BodyView scene={scene} />
+        <BodyView scene={scene} focus={focus} />
         <MyPanels chosen={chosen} onChange={choose} />
       </div>
       <section aria-label="Other areas" className="grid sm:grid-cols-3 gap-3">

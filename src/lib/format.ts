@@ -41,3 +41,18 @@ export function deltaText(today: number, avg: number, kind: 'hours' | 'number' |
   if (kind === 'ms') return `${sign}${Math.round(a)} ms`;
   return `${sign}${a >= 10 ? Math.round(a) : a.toFixed(digits)}`;
 }
+
+const UNIT_TEXT: Record<string, string> = { Cel: '°C', 'breaths/min': '/min' };
+/** Valor de um alerta para a tela (número, escore ou par temperatura/umidade). Sem valor: null. */
+export function fmtReading(value: unknown, unit: unknown, indicator?: string): { value: string; unit: string } | null {
+  if (typeof value === 'number' && Number.isFinite(value)) {
+    const digits = Math.abs(value) >= 100 ? 0 : Math.abs(value) >= 10 ? 1 : 2;
+    const u = typeof unit === 'string' ? UNIT_TEXT[unit] ?? unit : indicator === 'news2' ? 'points' : '';
+    return { value: String(Number(value.toFixed(digits))), unit: u };
+  }
+  if (value && typeof value === 'object') {
+    const v = value as { temperature?: number; humidity?: number };
+    if (typeof v.temperature === 'number' && typeof v.humidity === 'number') return { value: `${v.temperature.toFixed(1)} °C · ${Math.round(v.humidity)}`, unit: '% RH' };
+  }
+  return null;
+}

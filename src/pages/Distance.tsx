@@ -5,6 +5,7 @@ import { Package, Radio, SatelliteDish } from 'lucide-react';
 import { AREA } from '../config/api';
 import { useStore } from '../store/useStore';
 import { useArea } from './useArea';
+import { AreaActions } from '../components/AlertActions';
 import { KeyTiles, TodayHero } from '../components/lean/Home';
 import { Card, More, PageHeader, SourcesList, StatusPill, WhyBlock } from '../components/ui';
 import { TickerValue } from '../components/magic/number-ticker';
@@ -32,7 +33,7 @@ export default function Distance() {
   return (
     <div className="space-y-5">
       <PageHeader title="Distance" sub="Distance from Earth · communication and autonomy" />
-      <TodayHero level={d.summary!.displayLevel} label="Earth link" message={link.message ?? d.summary!.headline.message ?? ''} also={d.also(d.summary!.headline.indicator)} />
+      <TodayHero extra={<AreaActions areaId={AREA.distance} indicator={d.summary!.headline.indicator} level={d.summary!.displayLevel} />} level={d.summary!.displayLevel} label="Earth link" message={link.message ?? d.summary!.headline.message ?? ''} also={d.also(d.summary!.headline.indicator)} />
 
       {/* Linha nave → Terra com o tempo de luz de ida e a resposta esperada. */}
       <section className="card" data-indicator="communication_delay" aria-labelledby="link-title">

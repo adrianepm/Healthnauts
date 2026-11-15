@@ -16,8 +16,10 @@ export interface AlsoItem { label: string; level: DisplayLevel; message: string 
  * Faixa de status: nível (ícone + nome), a frase da API e o contexto. Barra de 2 px à esquerda na cor do nível.
  * Em Normal a frase fica em peso normal; acima de Normal, em negrito.
  */
-export function TodayHero({ level, message, label = 'Today', sub, also = [], action }: {
+export function TodayHero({ level, message, label = 'Today', sub, also = [], action, extra }: {
   level: DisplayLevel; message: string; label?: string; sub?: string; also?: AlsoItem[]; action?: ReactNode; compact?: boolean;
+  /** Embaixo da frase: o "What to do now" da área (AreaActions). */
+  extra?: ReactNode;
 }) {
   const ui = LEVEL_UI[level];
   const calm = level === 'normal';
@@ -42,6 +44,7 @@ export function TodayHero({ level, message, label = 'Today', sub, also = [], act
         </div>
         {action}
       </div>
+      {extra}
     </section>
   );
 }

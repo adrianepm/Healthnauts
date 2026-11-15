@@ -9,6 +9,7 @@ import { api } from '../services/api';
 import { useStore } from '../store/useStore';
 import { toast } from '../store/toast';
 import { useArea } from './useArea';
+import { AreaActions } from '../components/AlertActions';
 import { KeyTiles, TodayHero, TopicLinks } from '../components/lean/Home';
 import { CompareRow, TopicDetail, compareItem, useTopicState, type TopicDef } from '../components/lean/TopicDetail';
 import { BarsChart, TrendChart } from '../components/charts';
@@ -123,7 +124,7 @@ export default function Gravity() {
   return (
     <div className="space-y-5">
       <PageHeader title="Gravity" sub="Gravity fields · vital signs, fitness, balance and bone" />
-      <TodayHero level={d.summary!.displayLevel} label="Body today" message={d.summary!.headline.message ?? ''} sub="Vital signs are shown separately below" also={d.also(d.summary!.headline.indicator).filter((x) => x.label !== info('news2').label)} />
+      <TodayHero extra={<AreaActions areaId={AREA.gravity} indicator={d.summary!.headline.indicator} level={d.summary!.displayLevel} />} level={d.summary!.displayLevel} label="Body today" message={d.summary!.headline.message ?? ''} sub="Vital signs are shown separately below" also={d.also(d.summary!.headline.indicator).filter((x) => x.label !== info('news2').label)} />
       <VitalsCard detailed />
       <KeyTiles tiles={[
         { key: 'aer', indicator: 'aerobic_capacity', title: 'Aerobic capacity', icon: HeartPulse, value: pctNum(d.newest('aerobic_capacity')), unit: '%', level: d.newest('aerobic_capacity')?.displayLevel ?? 'unavailable', compare: 'of pre-flight (NASA minimum 80%)', onClick: () => setTopic('fitness'), ruler: pctRuler(d.newest('aerobic_capacity'), 'Aerobic capacity') },

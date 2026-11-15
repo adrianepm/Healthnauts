@@ -211,7 +211,7 @@ function LabelBody({ r, hr, rr, brand }: { r: BodyRegion; hr: number | null; rr:
   </>);
 }
 
-export function Body3D({ scene, height = 560, onFail }: { scene: SceneState; height?: number; onFail?: () => void }) {
+export function Body3D({ scene, focus = null, height = 560, onFail }: { scene: SceneState; focus?: BodyRegionKey | null; height?: number; onFail?: () => void }) {
   const nav = useNavigate();
   const wrap = useRef<HTMLDivElement>(null);
   const svg = useRef<SVGSVGElement>(null);
@@ -220,8 +220,8 @@ export function Body3D({ scene, height = 560, onFail }: { scene: SceneState; hei
   const [compact, setCompact] = useState(false);
   const brand = useBrandHex();
   const regions = bodyRegions(scene);
-  const live = useRef({ regions, hover, compact, beat: scene.vitals.beatSeconds, breath: scene.vitals.breathSeconds });
-  live.current = { regions, hover, compact, beat: scene.vitals.beatSeconds, breath: scene.vitals.breathSeconds };
+  const live = useRef({ regions, hover, compact, focus, beat: scene.vitals.beatSeconds, breath: scene.vitals.breathSeconds });
+  live.current = { regions, hover, compact, focus, beat: scene.vitals.beatSeconds, breath: scene.vitals.breathSeconds };
   const data = useMemo(() => sample(bodyParts()), []);
   const open = (r: BodyRegion) => nav(indicatorHref(r.element.route, r.indicator));
   const openRef = useRef(open); openRef.current = open;
@@ -327,7 +327,7 @@ export function Body3D({ scene, height = 560, onFail }: { scene: SceneState; hei
       if (!visible || document.hidden) return;
       const dt = Math.min(0.05, (now - last) / 1000); last = now;
       const t = (now - t0) / 1000;
-      const { regions: regs, hover: hv, beat, breath, compact: cpt } = live.current;
+      const { regions: regs, hover: hv, beat, breath, compact: cpt, focus: fc } = live.current;
       u.uTime.value = t;
       if (!reduced) {
         u.uAssemble.value = Math.min(1.2, u.uAssemble.value + dt / 1.9);
@@ -348,7 +348,8 @@ export function Body3D({ scene, height = 560, onFail }: { scene: SceneState; hei
         const base = flagged(lv) ? 1 : lv === 'unavailable' ? 0.4 : 0.7;
         const on = hv === r.key; const dim = hv && !on;
         (u as any)[`uA${i}`].value += ((on ? 1 : dim ? base * 0.45 : base) - (u as any)[`uA${i}`].value) * Math.min(1, dt * 8);
-        (u as any)[`uG${i}`].value += ((on ? 0.55 : 0) - (u as any)[`uG${i}`].value) * Math.min(1, dt * 8);
+        // Região do alerta mais grave: pontos um pouco maiores (destaque fixo, sem piscar).
+        (u as any)[`uG${i}`].value += ((on ? 0.55 : fc === r.key && flagged(lv) ? 0.3 : 0) - (u as any)[`uG${i}`].value) * Math.min(1, dt * 8);
       }
       u.uA0.value += ((hv ? 0.18 : 0.4) - u.uA0.value) * Math.min(1, dt * 8);
       renderer.render(scn, cam);
@@ -401,8 +402,8 @@ export function Body3D({ scene, height = 560, onFail }: { scene: SceneState; hei
         className={cn('text-left rounded-md border px-3 py-2 transition-colors duration-200',
           side ? 'absolute left-0 top-0' : 'w-full',
           on ? 'bg-space-card2 border-space-strong' : 'bg-space-card border-space-line',
-          flagged(lv) && 'border-l-[3px]')}
-        style={{ ...(side ? { width: LABEL_W } : null), ...(flagged(lv) ? { borderLeftColor: LEVEL_UI[lv].color } : null) }}>
+          flagged(lv) && 'border-l-[3px]', focus === r.key && flagged(lv) && 'region-focus')}
+        style={{ ...(side ? { width: LABEL_W } : null), ...(flagged(lv) ? { borderLeftColor: LEVEL_UI[lv].color, ['--attention' as string]: LEVEL_UI[lv].color } : null) }}>
         <LabelBody r={r} hr={hr} rr={rr} brand={brand} />
       </button>
     );
@@ -418,8 +419,8 @@ export function Body3D({ scene, height = 560, onFail }: { scene: SceneState; hei
               const on = hover === r.key;
               return (
                 <g key={r.key} style={{ transition: 'opacity .3s', opacity: hover && !on ? 0.35 : 1 }}>
-                  <path data-k={r.key} fill="none" stroke={c} strokeOpacity={on ? 0.9 : 0.45} strokeWidth={1} />
-                  <circle data-d={r.key} r={on ? 4 : 3} fill={c} />
+                  <path data-k={r.key} fill="none" stroke={c} strokeOpacity={on || focus === r.key ? 0.9 : 0.45} strokeWidth={focus === r.key ? 1.5 : 1} />
+                  <circle data-d={r.key} r={on || focus === r.key ? 4 : 3} fill={c} />
                 </g>
               );
             })}

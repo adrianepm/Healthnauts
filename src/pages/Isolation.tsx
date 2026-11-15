@@ -5,6 +5,7 @@ import { isolationMonitoring } from '../../shared/config/isolation.js';
 import { AREA } from '../config/api';
 import { useStore, dayKey } from '../store/useStore';
 import { useArea } from './useArea';
+import { AreaActions } from '../components/AlertActions';
 import { KeyTiles, TodayHero, TopicLinks } from '../components/lean/Home';
 import { CompareRow, TopicDetail, compareItem, useTopicState, type TopicDef } from '../components/lean/TopicDetail';
 import { BarsChart, ScaleHeat, TrendChart, hoursFmt, sleepRefs } from '../components/charts';
@@ -40,7 +41,7 @@ export default function Isolation() {
   return (
     <div className="space-y-5">
       <PageHeader title="Isolation" sub="Isolation and confinement · mind and sleep" />
-      <TodayHero level={d.summary!.displayLevel} message={d.summary!.headline.message ?? ''} sub={`Last check-in ${ago(lastCheckin)}`}
+      <TodayHero extra={<AreaActions areaId={AREA.isolation} indicator={d.summary!.headline.indicator} level={d.summary!.displayLevel} />} level={d.summary!.displayLevel} message={d.summary!.headline.message ?? ''} sub={`Last check-in ${ago(lastCheckin)}`}
         also={d.also(d.summary!.headline.indicator)}
         action={!checkinDone && (
           <button onClick={() => setCheckinOpen(true)} className="btn-ghost relative !py-2.5 !px-4">
