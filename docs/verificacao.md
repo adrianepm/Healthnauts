@@ -113,3 +113,27 @@ Mantidos do backend, sem nível próprio: validade de 14 dias para testes de con
 - Distance: não há seletor "Mission: ISS · Moon · Mars".
 - Mensagens de erro de validação da API (`shared/validation.js`, `calculations.js`) estão em português e podem aparecer no check-in e no PVT quando o envio falha.
 - Notas internas de `shared/config/isolation.js` (campo `note`) estão em português; não aparecem na tela.
+
+## Corrigido nesta etapa
+
+- Contraste: o número do sino (`Notifications.tsx`) e o do cartão "Morning check-in" (`Isolation.tsx`) eram texto branco sobre `red-500` (3,76:1). Passaram para `red-600` (4,83:1). Nenhum outro texto visível ficou abaixo de 4,5:1 nas 8 rotas, no HUD, no Simple view, no painel Demo, no sino e no detalhe de tópico (botões desabilitados não contam).
+
+## Teste no navegador (`npm run preview`, Chrome)
+
+| Item | Resultado |
+|---|---|
+| Estado inicial | Tudo Normal; dose de carreira avaliada (195 de 600 mSv, 32,5%, Normal); estresse e PVT-B avaliados (Normal); sino com 2 pendências |
+| One hour of elevated cabin CO₂ | Caution, mensagem da 3.6 + sufixos; faixa no topo sem Acknowledge |
+| Simulated solar event | Advisory, mensagem de SPE; sem notificação |
+| A week of short sleep | Warning (sono ≤ 4 h); Acknowledge funciona e o alerta continua ativo; relatório SENT |
+| Fitness change and reported symptoms | Caution (aeróbico 76%) e Advisory (tontura); ver item listado sobre o cartão |
+| Mars communication outage | Advisory, "No contact with Earth…"; Warning disparado sem link fica QUEUED e vira SENT ao restaurar o link (resposta em 55 min = 2 × 20 + 15) |
+| Cabin pressure loss | Emergency em tela cheia (pressão e O2), contagem de 2 min, texto obrigatório, Acknowledge fecha a tela, relatório imediato |
+| Cabin sensor offline | Cabine inteira Unavailable depois de 5 min sem leitura |
+| Fever with a high early warning score | Warning (nunca Emergency), Acknowledge e relatório |
+| Exercising (live sensor) | NEWS2 6, Caution (pulso e respiração pontuam: exceção do plano) |
+| Back to nominal | Alertas de Emergency fecham com a leitura normal |
+| Reset demo | Volta ao estado inicial em todas as vezes |
+| Ciclo do relatório com link | QUEUED 01:00 → SENT 01:00 → RECEIVED 01:08 → REPLIED 01:31 com a resposta padrão (atraso de 8 min) |
+| HUD ↔ Simple view | Troca nos dois sentidos e a escolha persiste ao recarregar |
+| Console | Sem erros |

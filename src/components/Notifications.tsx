@@ -38,7 +38,7 @@ export function Notifications() {
     <div className="relative">
       <button onClick={() => setOpen(!open)} className="relative w-10 h-10 rounded-xl border border-space-line grid place-items-center hover:border-slate-500" aria-label={`Reminders: ${pending.length} pending`}>
         <Bell size={18} />
-        {pending.length > 0 && <span className="absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1 rounded-full bg-red-500 text-xs font-bold grid place-items-center text-white">{pending.length}</span>}
+        {pending.length > 0 && <span className="absolute -top-1.5 -right-1.5 min-w-5 h-5 px-1 rounded-full bg-red-600 text-xs font-bold grid place-items-center text-white">{pending.length}</span>}
       </button>
       {open && (
         <div className="absolute right-0 mt-2 w-72 rounded-xl border border-space-line bg-space-deep shadow-xl p-2 z-50">

@@ -43,7 +43,7 @@ export default function Isolation() {
           <button onClick={() => setCheckinOpen(true)} className="relative inline-flex items-center gap-2 rounded-xl border border-space-line bg-space-deep hover:border-slate-500 px-4 py-3 text-sm">
             <BellRing size={16} className="text-slate-300" />
             <span className="text-left"><span className="block font-semibold">Morning check-in</span><span className="block text-xs text-slate-400">Pending · about 1 min</span></span>
-            <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-500 text-xs font-bold grid place-items-center text-white">1</span>
+            <span className="absolute -top-1.5 -right-1.5 w-5 h-5 rounded-full bg-red-600 text-xs font-bold grid place-items-center text-white">1</span>
           </button>
         )} />
       <KeyTiles tiles={[
