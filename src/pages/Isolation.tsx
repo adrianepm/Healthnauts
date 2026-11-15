@@ -1,13 +1,12 @@
 // Aba Isolation (Mind & Sleep), versão enxuta do protótipo aprovado.
 // Tela inicial: resumo do dia + 4 indicadores. Detalhe por tópico só quando o astronauta abre.
-import { useState } from 'react';
 import { BellRing, Brain, Gauge, Moon, Play, Timer } from 'lucide-react';
 import { isolationMonitoring } from '../../shared/config/isolation.js';
 import { AREA } from '../config/api';
 import { useStore, dayKey } from '../store/useStore';
 import { useArea } from './useArea';
 import { KeyTiles, TodayHero, TopicLinks } from '../components/lean/Home';
-import { CompareRow, TopicDetail, compareItem, type TopicDef } from '../components/lean/TopicDetail';
+import { CompareRow, TopicDetail, compareItem, useTopicState, type TopicDef } from '../components/lean/TopicDetail';
 import { BarsChart, ScaleHeat, TrendChart, hoursFmt, sleepRefs } from '../components/charts';
 import { Section } from '../components/ui';
 import { SupportTools } from '../components/SupportTools';
@@ -26,7 +25,7 @@ const rtMs = (speed: number) => 1000 / speed; // velocidade média 1/RT → temp
 
 export default function Isolation() {
   const d = useArea(AREA.isolation);
-  const [topic, setTopic] = useState<string | null>(null);
+  const [topic, setTopic] = useTopicState(TOPICS);
   const { ui, setCheckinOpen, setPvtOpen } = useStore();
   if (!d.ready) return <p className="text-sm text-slate-400">Loading…</p>;
   const checkinDone = ui.checkins.includes(dayKey());

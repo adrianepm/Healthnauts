@@ -1,7 +1,7 @@
 // Componentes visuais compartilhados (do protótipo): StatusPill, Card, Section, More, Modal, SourcesList.
 import { AnimatePresence, motion } from 'framer-motion';
 import { ChevronDown, ExternalLink, X } from 'lucide-react';
-import type { ReactNode } from 'react';
+import { useEffect, useId, useRef, type KeyboardEvent, type ReactNode } from 'react';
 import { LEVEL_UI } from '../lib/levels';
 import { info, SOURCES } from '../lib/content';
 import { MagicCard } from './magic/magic-card';
@@ -60,18 +60,39 @@ export function More({ title, children }: { title: string; children: ReactNode }
 }
 
 /** Janela central (check-in, teste, formulários). */
+const FOCUSABLE = 'a[href], button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), [tabindex]:not([tabindex="-1"])';
+
+/** Diálogo acessível: role="dialog", Esc fecha, Tab fica dentro dele e o foco volta para quem abriu. */
 export function Modal({ open, onClose, title, sub, icon, children, wide }: {
   open: boolean; onClose: () => void; title: string; sub?: string; icon?: ReactNode; children: ReactNode; wide?: boolean;
 }) {
+  const box = useRef<HTMLDivElement>(null);
+  const id = useId();
+  useEffect(() => {
+    if (!open) return;
+    const back = document.activeElement as HTMLElement | null;
+    const t = window.setTimeout(() => (box.current?.querySelector<HTMLElement>('[data-autofocus]') ?? box.current)?.focus(), 0);
+    return () => { window.clearTimeout(t); back?.focus?.(); };
+  }, [open]);
+  const onKey = (e: KeyboardEvent) => {
+    if (e.key === 'Escape') { e.stopPropagation(); onClose(); return; }
+    if (e.key !== 'Tab' || !box.current) return;
+    const items = [...box.current.querySelectorAll<HTMLElement>(FOCUSABLE)];
+    if (!items.length) return;
+    const first = items[0]; const last = items[items.length - 1];
+    if (e.shiftKey && (document.activeElement === first || document.activeElement === box.current)) { e.preventDefault(); last.focus(); }
+    else if (!e.shiftKey && document.activeElement === last) { e.preventDefault(); first.focus(); }
+  };
   return (
     <AnimatePresence>
       {open && (
         <motion.div className="fixed inset-0 z-50 grid place-items-center bg-black/70 p-4 overflow-y-auto" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-          <motion.div initial={{ y: 12 }} animate={{ y: 0 }} className={`w-full ${wide ? 'max-w-2xl' : 'max-w-xl'} bg-space-deep border border-space-line rounded-2xl p-6 relative my-8`}>
+          <motion.div ref={box} role="dialog" aria-modal="true" aria-labelledby={`${id}-t`} tabIndex={-1} onKeyDown={onKey}
+            initial={{ y: 12 }} animate={{ y: 0 }} className={`w-full ${wide ? 'max-w-2xl' : 'max-w-xl'} bg-space-deep border border-space-line rounded-2xl p-6 relative my-8 outline-none`}>
             <button onClick={onClose} className="absolute right-4 top-4 text-slate-400 hover:text-white" aria-label="Close"><X /></button>
             <div className="flex items-center gap-3 mb-5 pr-8">
               {icon && <div className="w-9 h-9 rounded-xl bg-space-card border border-space-line grid place-items-center">{icon}</div>}
-              <div><h2 className="card-title">{title}</h2>{sub && <p className="card-sub">{sub}</p>}</div>
+              <div><h2 id={`${id}-t`} className="card-title">{title}</h2>{sub && <p className="card-sub">{sub}</p>}</div>
             </div>
             {children}
           </motion.div>

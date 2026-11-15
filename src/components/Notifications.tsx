@@ -1,15 +1,22 @@
 // Lembretes da rotina ("caixa de remédio") e sino com bolinha vermelha (do protótipo).
-// Lembrete não é nível: só diz o que falta fazer hoje.
+// Lembrete não é nível: só diz o que falta fazer hoje. O cartão da Overview fica em TodayRoutine.tsx.
 import { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Bell, ClipboardCheck, Dumbbell, Scale, Timer, type LucideIcon } from 'lucide-react';
 import { pvtCollection } from '../../shared/config/isolation.js';
 import { dayKey, useStore } from '../store/useStore';
-import { DAY_MS } from '../lib/format';
+import { DAY_MS, startOfToday } from '../lib/format';
 import { REFERENCE } from '../lib/content';
 import { AREA } from '../config/api';
 
-export interface Reminder { id: string; icon: LucideIcon; title: string; sub: string; done: boolean; go: () => void }
+/** Status neutro da rotina: nunca "atrasado". Later = ainda não é a vez (ex.: PVT-B a cada 4 dias). */
+export type RoutineStatus = 'ready' | 'done' | 'later';
+export interface Reminder {
+  id: string; icon: LucideIcon; title: string; sub: string; status: RoutineStatus;
+  moment: 'Morning' | 'Today' | 'This week';
+  /** Tempo estimado que o app já informa (check-in ~1 min, PVT-B 3 min, plano de exercício). */
+  estimate?: string; go: () => void;
+}
 
 const PVT_EVERY_DAYS: number = (pvtCollection.schedule.find((s: any) => s.kind === 'interval') as { days?: number } | undefined)?.days ?? 4;
 const WEIGH_EVERY_DAYS = 7;
@@ -23,17 +30,26 @@ export function useReminders(): Reminder[] {
   const daysSince = (iso?: string) => iso ? (Date.now() - Date.parse(iso)) / DAY_MS : Infinity;
   const checkinDone = ui.checkins.includes(dayKey());
   const pvtDays = daysSince(lastPvt);
+  const pvtToday = !!lastPvt && Date.parse(lastPvt) >= startOfToday();
+  const pvt: RoutineStatus = pvtDays >= PVT_EVERY_DAYS ? 'ready' : pvtToday ? 'done' : 'later';
+  const plan = REFERENCE.exercisePlanMin;
+  const weighed = daysSince(lastMass) < WEIGH_EVERY_DAYS;
+  // MorningCheckin e PvtTest ficam montados no AppShell: "Start" abre a tarefa direto, sem trocar de página.
   return [
-    { id: 'checkin', icon: ClipboardCheck, title: 'Morning check-in', sub: checkinDone ? 'Done today' : 'Pending · about 1 min', done: checkinDone, go: () => { nav('/isolation'); setCheckinOpen(true); } },
-    { id: 'pvt', icon: Timer, title: 'Reaction check (PVT-B)', sub: pvtDays >= PVT_EVERY_DAYS ? `Due today · every ${PVT_EVERY_DAYS} days · 3 min` : `Next in ${Math.ceil(PVT_EVERY_DAYS - pvtDays)} days`, done: pvtDays < PVT_EVERY_DAYS, go: () => { nav('/isolation'); setPvtOpen(true); } },
-    { id: 'exercise', icon: Dumbbell, title: 'Exercise today', sub: `${Math.round(exerciseToday)} of ${REFERENCE.exercisePlanMin} min logged`, done: exerciseToday >= REFERENCE.exercisePlanMin, go: () => nav('/gravity') },
-    { id: 'weigh', icon: Scale, title: 'Weekly weigh-in', sub: daysSince(lastMass) >= WEIGH_EVERY_DAYS ? 'Due this week' : 'Done this week', done: daysSince(lastMass) < WEIGH_EVERY_DAYS, go: () => nav('/gravity') },
+    { id: 'checkin', icon: ClipboardCheck, title: 'Morning check-in', moment: 'Morning', estimate: 'About 1 min',
+      sub: checkinDone ? 'Done today' : 'Sleep, mood and stress · about 1 min', status: checkinDone ? 'done' : 'ready', go: () => setCheckinOpen(true) },
+    { id: 'pvt', icon: Timer, title: 'Reaction check (PVT-B)', moment: 'Today', estimate: '3 min',
+      sub: pvt === 'later' ? `Next in ${Math.ceil(PVT_EVERY_DAYS - pvtDays)} days · every ${PVT_EVERY_DAYS} days` : `Every ${PVT_EVERY_DAYS} days · 3 min`, status: pvt, go: () => setPvtOpen(true) },
+    { id: 'exercise', icon: Dumbbell, title: 'Exercise today', moment: 'Today', estimate: `Plan about ${plan} min`,
+      sub: `${Math.round(exerciseToday)} of ${plan} min logged`, status: exerciseToday >= plan ? 'done' : 'ready', go: () => nav('/gravity', { state: { focus: 'exercise' } }) },
+    { id: 'weigh', icon: Scale, title: 'Weekly weigh-in', moment: 'This week',
+      sub: weighed ? 'Done this week' : 'Once a week', status: weighed ? 'done' : 'ready', go: () => nav('/gravity', { state: { focus: 'weigh' } }) },
   ];
 }
 
 export function Notifications() {
   const [open, setOpen] = useState(false);
-  const pending = useReminders().filter((r) => !r.done);
+  const pending = useReminders().filter((r) => r.status === 'ready');
   return (
     <div className="relative">
       <button onClick={() => setOpen(!open)} className="relative w-10 h-10 rounded-xl border border-space-line grid place-items-center hover:border-slate-500" aria-label={`Reminders: ${pending.length} pending`}>
@@ -51,23 +67,5 @@ export function Notifications() {
         </div>
       )}
     </div>
-  );
-}
-
-/** Rotina do dia no Overview: pendente = bolinha vermelha. */
-export function RoutineList() {
-  const items = useReminders();
-  return (
-    <ul className="space-y-2">
-      {items.map(({ id, icon: Icon, title, sub, done, go }) => (
-        <li key={id}>
-          <button onClick={go} className="w-full flex items-center gap-3 rounded-xl border border-space-line bg-space-deep/60 hover:border-slate-500 p-3 text-left">
-            <span className="relative w-9 h-9 rounded-lg bg-space-card grid place-items-center text-slate-300"><Icon size={16} />{!done && <span className="absolute -top-1 -right-1 w-2.5 h-2.5 rounded-full bg-red-500" />}</span>
-            <span className="flex-1"><span className="block text-sm text-slate-100">{title}</span><span className="block text-xs text-slate-400">{sub}</span></span>
-            <span className={`chip normal-case ${done ? 'border-space-line text-slate-500' : 'border-red-500/40 text-red-300'}`}>{done ? 'Done' : 'To do'}</span>
-          </button>
-        </li>
-      ))}
-    </ul>
   );
 }

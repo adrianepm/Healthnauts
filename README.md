@@ -17,7 +17,7 @@ Requirements: Node.js 22.18 or newer (the tests import TypeScript files directly
 
 ```bash
 npm ci
-npm test          # rules, API, demo seed and Overview mapping (node --test)
+npm test          # rules, API, demo seed, Overview mapping and panels (node --test)
 npm run dev       # http://localhost:5173/NasaSpaceAppsChallenge2026/
 npm run build     # type-check + production build in dist/
 npm run preview   # serves dist/ like GitHub Pages
@@ -39,11 +39,13 @@ Every rule the team set without a published source is marked as a *team proposal
 
 ## Overview
 
-The Overview has three parts, and none of them decides a level: colours and texts come from the level and message the API returns (`src/components/scene/sceneMapping.ts`, tested in `test/scene-mapping.test.js`).
+The Overview has four parts, in this order, and none of them decides a level: colours and texts come from the level and message the API returns (`src/components/scene/sceneMapping.ts`, tested in `test/scene-mapping.test.js`).
 
 - **Today** (full width): the status sentence of the day and *What to do*, from the overall level and the API message, plus any other flagged area.
+- **Today's routine**: the same items as the bell (morning check-in, reaction check every 4 days, exercise of the day, weekly weigh-in). The next ready task is shown large as *Next up*, with the time the app already states (check-in about 1 min, reaction check 3 min, exercise plan about 90 min) and a **Start** button that opens it directly. Each item shows its moment (*Morning*, *Today*, *This week*) and a neutral status: *Ready*, *Done* (short check animation) or *Later*. Progress "x of y done today" uses the brand violet, never the alert level colours. The bell keeps its red dot for pending items.
+- **My panels**: up to 10 indicators chosen with **Customize** (an accessible dialog: checkboxes grouped by area, "x/10" counter, *Save* and *Reset to default*). The list is the onboard catalog of each area plus the indicators the API assesses outside it (career dose, NEWS2, CO₂ 7-day, temperature and humidity); legacy indicators are left out. Each panel shows the current value with unit, the level (icon + name; "–" with *Unavailable* when there is no value; *Not assessed* when the API has no rule for it) and an arrow against the mean of the last 7 days (`src/lib/compare.ts`, descriptive only). The most severe panels come first (Emergency > Warning > Caution > Unavailable > Advisory > Normal), ties in the chosen order. Default: sleep, stress, live heart rate, ppCO₂, career dose, aerobic capacity and link delay. The choice is saved in `localStorage` (`src/lib/panels.ts`, tested in `test/panels.test.js`). A click opens the topic detail of that indicator.
 - **Body** (left): a clickable human body, front view, drawn with [react-body-highlighter](https://github.com/GV79/react-body-highlighter) (MIT) in dark theme tones. Head and neck = Isolation; chest = vital signs; arms, thighs and calves = Gravity. Each region takes the colour of its area level. Next to the chest, a small badge shows live heart rate and respiratory rate from the simulated sensor ("–" when vital signs are not assessed). A list beside the body repeats each region with **icon + level name** and the API message; every row is a button (keyboard and screen reader), and clicking a region or a row opens the area detail.
-- **Cards** (right): Radiation (career dose, % of the limit), Environment (CO₂ 1 h average) and Distance (one-way delay), each with the value the API returns and the area level. A missing value shows "–" with *Unavailable*.
+- **Cards** (right of the body): Radiation (career dose, % of the limit), Environment (CO₂ 1 h average) and Distance (one-way delay), each with the value the API returns and the area level. A missing value shows "–" with *Unavailable*.
 
 On narrow screens the parts stack in that order.
 

@@ -7,7 +7,7 @@ import { api } from '../services/api';
 import { useStore } from '../store/useStore';
 import { useArea } from './useArea';
 import { KeyTiles, TodayHero, TopicLinks } from '../components/lean/Home';
-import { CompareRow, TopicDetail, compareItem, type TopicDef } from '../components/lean/TopicDetail';
+import { CompareRow, TopicDetail, compareItem, useTopicState, type TopicDef } from '../components/lean/TopicDetail';
 import { TrendChart, type RefLine } from '../components/charts';
 import { Card, Section, StatusPill } from '../components/ui';
 import { LEVEL_UI } from '../lib/levels';
@@ -67,7 +67,7 @@ function PostEvaForm() {
 export default function Environment() {
   const d = useArea(AREA.cabin);
   const grav = useStore((s) => s.details[AREA.gravity]);
-  const [topic, setTopic] = useState<string | null>(null);
+  const [topic, setTopic] = useTopicState(TOPICS);
   if (!d.ready) return <p className="text-sm text-slate-400">Loading…</p>;
   const lv = (id: string) => d.a(id)?.displayLevel ?? 'unavailable';
   const co2 = d.a('co2_partial_pressure'); const p = d.a('cabin_pressure'); const o2 = d.a('inspired_oxygen_pressure');

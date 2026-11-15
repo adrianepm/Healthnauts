@@ -1,6 +1,7 @@
 // Gravity fields: sinais vitais (NEWS2 de referência), condicionamento vs. pré-voo, equilíbrio e visão, osso.
 // Osso não gera alerta: só a curva ilustrativa com selo e o acompanhamento do exercício (especificação 3.3).
-import { useState } from 'react';
+import { useEffect, useRef, useState } from 'react';
+import { useLocation } from 'react-router-dom';
 import { Bone, Dumbbell, HeartPulse, Scale, Activity, Eye } from 'lucide-react';
 import { CartesianGrid, Line, LineChart, ResponsiveContainer, Tooltip, XAxis, YAxis } from 'recharts';
 import { AREA } from '../config/api';
@@ -8,7 +9,7 @@ import { api } from '../services/api';
 import { useStore } from '../store/useStore';
 import { useArea } from './useArea';
 import { KeyTiles, TodayHero, TopicLinks } from '../components/lean/Home';
-import { CompareRow, TopicDetail, compareItem, type TopicDef } from '../components/lean/TopicDetail';
+import { CompareRow, TopicDetail, compareItem, useTopicState, type TopicDef } from '../components/lean/TopicDetail';
 import { BarsChart, TrendChart } from '../components/charts';
 import { VitalsCard } from '../components/VitalsCard';
 import { Card, Section, SourcesList, StatusPill, axisProps } from '../components/ui';
@@ -31,15 +32,22 @@ function LogForms() {
   const [busy, setBusy] = useState<string | null>(null);
   const run = async (k: string, fn: () => Promise<unknown>) => { setBusy(k); try { await fn(); await refresh(); } finally { setBusy(null); } };
   const now = () => new Date().toISOString();
+  // Vindo do "Start" da rotina na Overview: rola até o campo e põe o foco nele.
+  const focus = (useLocation().state as { focus?: string } | null)?.focus;
+  const exRef = useRef<HTMLInputElement>(null); const massRef = useRef<HTMLInputElement>(null);
+  useEffect(() => {
+    const el = focus === 'exercise' ? exRef.current : focus === 'weigh' ? massRef.current : null;
+    if (el) { el.scrollIntoView({ block: 'center' }); el.focus(); }
+  }, [focus]);
   const ctx = { missionId: mission?.input.missionId, method: 'scale', activity: 'routine' };
   return (
     <div className="grid lg:grid-cols-3 gap-4">
       <Card title="Log exercise" sub={`Plan: about ${REFERENCE.exercisePlanMin} min a day, 6-7 days a week`} icon={<Dumbbell size={18} />}>
-        <div className="flex gap-2"><input type="number" min={1} max={600} value={minutes} onChange={(e) => setMinutes(Math.max(1, +e.target.value))} className="field" /><span className="self-center text-sm text-slate-400">min</span></div>
+        <div className="flex gap-2"><input ref={exRef} aria-label="Exercise minutes" type="number" min={1} max={600} value={minutes} onChange={(e) => setMinutes(Math.max(1, +e.target.value))} className="field" /><span className="self-center text-sm text-slate-400">min</span></div>
         <button disabled={!!busy} onClick={() => run('ex', () => api.records(AREA.gravity, [{ indicator: 'exercise_duration', value: minutes, unit: 'min', recordedAt: now() }]))} className="btn-primary mt-3 w-full">Save session</button>
       </Card>
       <Card title="Weekly weigh-in" sub="Compared with your pre-flight body mass by the onboard service" icon={<Scale size={18} />}>
-        <div className="flex gap-2"><input type="number" step="0.1" min={30} max={200} value={mass} placeholder="kg" onChange={(e) => setMass(e.target.value)} className="field" /><span className="self-center text-sm text-slate-400">kg</span></div>
+        <div className="flex gap-2"><input ref={massRef} aria-label="Body mass in kg" type="number" step="0.1" min={30} max={200} value={mass} placeholder="kg" onChange={(e) => setMass(e.target.value)} className="field" /><span className="self-center text-sm text-slate-400">kg</span></div>
         <button disabled={!!busy || !mass || !mission} onClick={() => run('mass', () => api.records(AREA.gravity, [{ indicator: 'body_mass', value: Number(mass), unit: 'kg', recordedAt: now(), context: ctx }]))} className="btn-primary mt-3 w-full">Save weight</button>
       </Card>
       <Card title="Balance & vision report" sub="Prototype scales, not validated instruments" icon={<Eye size={18} />}>
@@ -89,7 +97,7 @@ function BoneSimulation({ startedAt }: { startedAt?: string }) {
 export default function Gravity() {
   const d = useArea(AREA.gravity);
   const mission = useStore((s) => s.mission);
-  const [topic, setTopic] = useState<string | null>(null);
+  const [topic, setTopic] = useTopicState(TOPICS);
   if (!d.ready) return <p className="text-sm text-slate-400">Loading…</p>;
   const lv = (id: string) => d.a(id)?.displayLevel ?? 'unavailable';
   // Bone Protection Tracker: dias da última semana com o plano de exercício cumprido (só acompanhamento).

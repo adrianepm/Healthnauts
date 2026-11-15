@@ -1,5 +1,5 @@
-// Overview: resumo do dia (TodayHero), corpo humano clicável (Isolation, sinais vitais, Gravity) e os cartões de
-// Radiation, Environment e Distance com o valor principal que a API devolve. Nada aqui decide nível.
+// Overview, nesta ordem: resumo do dia (TodayHero), rotina do dia, My panels, corpo humano clicável (Isolation,
+// sinais vitais, Gravity) e os cartões de Radiation, Environment e Distance. Nada aqui decide nível.
 import { useEffect, type ReactNode } from 'react';
 import { Link } from 'react-router-dom';
 import { ChevronRight } from 'lucide-react';
@@ -7,6 +7,8 @@ import { useStore } from '../store/useStore';
 import { useSim } from '../components/DemoPanel';
 import { TodayHero, type AlsoItem } from '../components/lean/Home';
 import { BodyMap } from '../components/scene/BodyMap';
+import { TodayRoutine } from '../components/TodayRoutine';
+import { MyPanels } from '../components/MyPanels';
 import { StatusPill } from '../components/ui';
 import { MagicCard } from '../components/magic/magic-card';
 import { sceneState } from '../components/scene/sceneMapping';
@@ -24,7 +26,7 @@ export default function Overview() {
   const details = useStore((s) => s.details);
   const loadArea = useStore((s) => s.loadArea);
   const sim = useSim();
-  // Radiation e Environment: o valor principal está no detalhe da área (o store passa a atualizá-lo no refresh).
+  // Radiation e Environment: o valor principal está no detalhe da área (MyPanels carrega as 5 áreas; o store atualiza no refresh).
   useEffect(() => { loadArea(AREA.radiation).catch(() => undefined); loadArea(AREA.cabin).catch(() => undefined); }, []);
   if (!o) return null;
 
@@ -55,6 +57,8 @@ export default function Overview() {
     <div className="space-y-5">
       <h1 className="sr-only">Overview</h1>
       <TodayHero level={o.overallDisplayLevel} message={o.headline.message ?? ''} sub={o.headline.indicator ? info(o.headline.indicator).label : undefined} also={also} />
+      <TodayRoutine />
+      <MyPanels />
       <div className="grid lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)] gap-4 items-stretch">
         <BodyMap scene={scene} />
         <div className="grid gap-4">

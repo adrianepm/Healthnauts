@@ -1,6 +1,7 @@
 // Detalhe por tópico (do protótipo), genérico para todas as telas.
 // Compara hoje com os últimos 7 dias (padrão) ou com um período escolhido; o período chama /history?from&to.
 import { useEffect, useMemo, useState, type ReactNode } from 'react';
+import { useLocation } from 'react-router-dom';
 import { AnimatePresence, motion } from 'framer-motion';
 import { X } from 'lucide-react';
 import { api, type ApiRecord, type Assessment, type DisplayLevel } from '../../services/api';
@@ -23,6 +24,17 @@ export interface TopicCtx {
   periodLabel: string;
   assessment: (indicator: string) => Assessment | undefined;
   series: (indicator: string, from?: ApiRecord[]) => ApiRecord[];
+}
+
+/**
+ * Tópico aberto na página. Chegando de "My panels" (state.topicFor = indicador), abre o tópico que contém o indicador.
+ */
+export function useTopicState(topics: TopicDef[]) {
+  const loc = useLocation();
+  const wanted = (loc.state as { topicFor?: string } | null)?.topicFor;
+  const [topic, setTopic] = useState<string | null>(() => topics.find((t) => wanted && t.indicators.includes(wanted))?.id ?? null);
+  useEffect(() => { const t = topics.find((x) => wanted && x.indicators.includes(wanted)); if (t) setTopic(t.id); }, [loc.key]);
+  return [topic, setTopic] as const;
 }
 
 type Period = { mode: '7d' | 'custom'; from: string; to: string }; // datas YYYY-MM-DD
