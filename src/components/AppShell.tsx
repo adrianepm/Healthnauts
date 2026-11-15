@@ -9,7 +9,6 @@ import { AREA } from '../config/api';
 import { worstLevel } from '../../shared/config/levels.js';
 import { DAY_MS, fmtDuration } from '../lib/format';
 import type { DisplayLevel } from '../services/api';
-import { Notifications } from './Notifications';
 import { AlertBanner, EmergencyOverlay } from './AlertBanner';
 import { DemoPanel, useSim } from './DemoPanel';
 import { Modal, StatusPill } from './ui';
@@ -122,7 +121,6 @@ export function AppShell({ children }: { children: ReactNode }) {
               <span className="hidden md:inline">Live sensor {s.on ? 'on' : 'off'}</span>
             </p>
             <button type="button" onClick={() => setDemo(!demo)} aria-expanded={demo} aria-label="Demo scenarios" className="lg:hidden w-11 h-11 rounded-md border border-space-line grid place-items-center text-slate-200"><FlaskConical size={18} aria-hidden="true" /></button>
-            <Notifications />
           </div>
         </header>
 
