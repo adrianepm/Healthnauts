@@ -91,8 +91,9 @@ The interface never decides a level by itself: all levels and messages come from
 ## Use of AI
 
 - The idea, research questions, indicators, alert design and product decisions were made by the team.
-- AI assistants (Anthropic Claude, including Claude Code) helped summarize research, draft the specification, write and review code under the team's direction, and edit the 30-second demo video. All code was reviewed and tested by the team.
-- The demo video shows real screen recordings of the app and carries a visible "edited with AI assistance" watermark. No AI-generated images are used in the app. No NASA logos, flags or mission identifiers are used.
+- AI assistants (Anthropic Claude, including Claude Code) helped with brainstorming, research, the specification, code and debugging, writing and translation, visual design and the 30-second demo video, always under the team's direction. All code was reviewed and tested by the team.
+- Visual design: the interface, the logo mark and the health tree were coded as SVG and CSS with AI assistance and reviewed by the team. No AI image generators were used.
+- The demo video shows real screen recordings of the app and carries a visible "edited with AI assistance" watermark. No NASA logos, flags or mission identifiers are used.
 
 ## Team
 
